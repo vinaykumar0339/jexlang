@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:ts": "java -jar antlr-4.13.2-complete.jar -Dlanguage=TypeScript -visitor -no-listener -o packages/jexlang-ts/src/grammer JexLang.g4"
   },
   "keywords": [],
   "author": "",

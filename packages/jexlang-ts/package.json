@@ -28,5 +28,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "antlr4": "^4.13.2"
   }
 }
