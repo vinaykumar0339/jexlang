@@ -1,16 +1,18 @@
 import JexLangVisitor from "../grammer/JexLangVisitor";
 import * as JexLangParser from "../grammer/JexLangParser";
 import { ParseTree } from "antlr4";
-import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry } from "../types";
+import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformImpl, TransformRegistry, MapTransformRegistry } from "../types";
 import { BUILT_IN_FUNCTIONS } from "./functions";
+import { BUILT_IN_TRANSFORMS } from "./transforms/builtin";
 import { toNumber, toString } from "../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError } from "./errors";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
     private context: Context = {};
     private funcRegistry: FuncRegistry;
+    private transformRegistry: TransformRegistry;
 
-    constructor(context?: Context, funcsMap?: Record<string, FuncImpl>) {
+    constructor(context?: Context, funcsMap?: Record<string, FuncImpl>, transformsMap?: Record<string, TransformImpl>) {
         super();
         
         // Initialize context with provided values or defaults
@@ -29,10 +31,15 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             SQRT2: Math.SQRT2
         };
 
-        // Initialize function registry
+        // Initialize registries
         this.funcRegistry = new MapFuncRegistry({
           ...BUILT_IN_FUNCTIONS,
           ...funcsMap
+        });
+        
+        this.transformRegistry = new MapTransformRegistry({
+          ...BUILT_IN_TRANSFORMS,
+          ...transformsMap
         });
     }
 
@@ -52,6 +59,12 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     public setFunction(name: string, func: FuncImpl): void {
         if (this.funcRegistry instanceof MapFuncRegistry) {
             this.funcRegistry.set(name, func);
+        }
+    }
+    
+    public setTransform(name: string, transform: TransformImpl): void {
+        if (this.transformRegistry instanceof MapTransformRegistry) {
+            this.transformRegistry.set(name, transform);
         }
     }
 
@@ -405,13 +418,46 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return result;
     }
 
+    visitTransformExpression = (ctx: JexLangParser.TransformExpressionContext): JexValue => {
+        const input = this.visit(ctx.expression());
+        const transformName = ctx.IDENTIFIER().getText();
+        
+        // First check transform registry
+        if (this.transformRegistry.has(transformName)) {
+            try {
+                return this.transformRegistry.transform(transformName, input);
+            } catch (error) {
+                throw new JexLangRuntimeError(
+                    `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
+                );
+            }
+        }
+        
+        // Fall back to function registry
+        if (this.funcRegistry.has(transformName)) {
+            try {
+                return this.funcRegistry.call(transformName, [input]);
+            } catch (error) {
+                throw new JexLangRuntimeError(
+                    `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
+                );
+            }
+        }
+        
+        throw new JexLangRuntimeError(`Unknown transform: ${transformName}`);
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;
     }
 }
 
-// Factory function to create a default function registry
+// Factory functions for registries
 export function createDefaultFuncRegistry(): MapFuncRegistry {
     return new MapFuncRegistry(BUILT_IN_FUNCTIONS);
+}
+
+export function createDefaultTransformRegistry(): MapTransformRegistry {
+    return new MapTransformRegistry(BUILT_IN_TRANSFORMS);
 }

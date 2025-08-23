@@ -1,14 +1,18 @@
 import { CharStreams, CommonTokenStream } from "antlr4";
 import { EvalVisitor } from "./EvalVisitor";
-import { Context, FuncImpl, JexValue } from "../types";
+import { Context, FuncImpl, JexValue, TransformImpl } from "../types";
 import JexLangLexer from "../grammer/JexLangLexer";
 import JexLangParser from "../grammer/JexLangParser";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
   
-  constructor(private context: Context = {}, private funcs: Record<string, FuncImpl> = {}) {
-    this.visitor = new EvalVisitor(context, this.funcs);
+  constructor(
+    private context: Context = {},
+    private funcs: Record<string, FuncImpl> = {},
+    private transformsMap: Record<string, TransformImpl> = {}
+  ) {
+    this.visitor = new EvalVisitor(context, this.funcs, this.transformsMap);
   }
 
   evaluate(expr: string): JexValue {
@@ -41,4 +45,17 @@ export class JexEvaluator {
       this.visitor.setFunction(name, func);
     }
   }
+
+  setTransform(name: string, transform: TransformImpl): void {
+    this.transformsMap[name] = transform;
+    this.visitor.setTransform(name, transform);
+  }
+
+  setTransforms(transforms: Record<string, TransformImpl>): void {
+    this.transformsMap = transforms;
+    for (const [name, transform] of Object.entries(transforms)) {
+      this.visitor.setTransform(name, transform);
+    }
+  }
+
 }

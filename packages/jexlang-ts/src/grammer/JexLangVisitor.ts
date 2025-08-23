@@ -21,6 +21,7 @@ import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { AddSubExpressionContext } from "./JexLangParser.js";
 import { BooleanExpressionContext } from "./JexLangParser.js";
 import { UnaryMinusExpressionContext } from "./JexLangParser.js";
+import { TransformExpressionContext } from "./JexLangParser.js";
 import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
 import { ComparatorExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
@@ -164,6 +165,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `TransformExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitTransformExpression?: (ctx: TransformExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `DotPropertyAccessExpression`
 	 * labeled alternative in `JexLangParser.expression`.

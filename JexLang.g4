@@ -27,6 +27,7 @@ expression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
     | expression (PLUS | MINUS) expression         # AddSubExpression
     | expression (EQ | NEQ | LT | GT | LTE | GTE) expression # ComparatorExpression
+    | expression PIPE IDENTIFIER                    # TransformExpression
     | LPAREN expression RPAREN                     # ParenthesizedExpression
     | functionCall                                 # FunctionCallExpression
     | expression DOT IDENTIFIER                    # DotPropertyAccessExpression
@@ -147,3 +148,5 @@ LT          : '<' ;
 GT          : '>' ;
 LTE         : '<=' ;
 GTE         : '>='  ;
+
+PIPE        : '|'  ;
