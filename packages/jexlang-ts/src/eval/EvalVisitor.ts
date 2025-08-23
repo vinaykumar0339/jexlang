@@ -331,6 +331,22 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return obj;
     }
 
+    visitArrayLiteralExpression = (ctx: JexLangParser.ArrayLiteralExpressionContext): JexValue => {
+        const arrayLiteralCtx = ctx.arrayLiteral();
+        const result: JexValue[] = [];
+        
+        // Get all array elements
+        for (let i = 0; i < arrayLiteralCtx.getChildCount(); i++) {
+            const child = arrayLiteralCtx.getChild(i);
+            // Skip commas and brackets
+            if (child.getText() !== ',' && child.getText() !== '[' && child.getText() !== ']') {
+                result.push(this.visit(child));
+            }
+        }
+        
+        return result;
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;

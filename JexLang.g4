@@ -28,6 +28,7 @@ expression
     | expression QUESTION expression COLON expression # TernaryExpression
     | expression QUESTION COLON expression         # ShortTernaryExpression
     | objectLiteral                                # ObjectLiteralExpression
+    | arrayLiteral                                 # ArrayLiteralExpression
     | BOOLEAN                                      # BooleanExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
@@ -48,6 +49,10 @@ functionCall
 
 argumentList
     : expression (COMMA expression)*
+    ;
+
+arrayLiteral
+    : LBRACKET (expression (COMMA expression)*)? RBRACKET
     ;
 
 // Lexer Rules (Tokens)

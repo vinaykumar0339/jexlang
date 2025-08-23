@@ -25,6 +25,7 @@ const output = jexEvaluator.evaluate(`
             "age": 20,
             "age": "vinay"
         }
+        ar = [1, 2, 3, age]
 `);
 
 console.log(output);
