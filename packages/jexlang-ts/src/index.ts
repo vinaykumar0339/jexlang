@@ -19,6 +19,12 @@ const output = jexEvaluator.evaluate(`
         a = "vinay"
         "vinay" ?: 20
         a == true
+        age = 'agee'
+        con = {
+            "name": "vinay",
+            "age": 20,
+            "age": "vinay"
+        }
 `);
 
 console.log(output);

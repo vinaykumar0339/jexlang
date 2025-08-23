@@ -304,6 +304,33 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return ctx.BOOLEAN().getText() === "true";
     }
 
+    visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): JexValue => {
+        const obj: Record<string, JexValue> = {};
+        const objectLiteralCtx = ctx.objectLiteral();
+        
+        for (let i = 0; i < ctx.objectLiteral().getChildCount(); i++) {
+            const propCtx = objectLiteralCtx.objectProperty(i); // Can be Empty Object
+            if (propCtx) {
+                let key: string | null = null;
+                if (propCtx.IDENTIFIER()) {
+                    const keyValue = this.context[propCtx.IDENTIFIER().getText()];
+                    if (typeof keyValue === "string" || typeof keyValue === "number" || typeof keyValue === "symbol") {
+                        key = keyValue.toString();
+                    }
+                } else if (propCtx.STRING()) {
+                    // Support empty string keys
+                    key = propCtx.STRING().getText().slice(1, -1);
+                } else {
+                    key = "";
+                }
+                if (key) {
+                    obj[key] = this.visit(propCtx.expression());
+                }
+            }
+        }
+        return obj;
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;

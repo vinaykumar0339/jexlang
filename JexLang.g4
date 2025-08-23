@@ -27,10 +27,19 @@ expression
     | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
     | expression QUESTION expression COLON expression # TernaryExpression
     | expression QUESTION COLON expression         # ShortTernaryExpression
+    | objectLiteral                                # ObjectLiteralExpression
     | BOOLEAN                                      # BooleanExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
     | STRING                                       # StringExpression
+    ;
+
+objectLiteral
+    : LBRACE (objectProperty (COMMA objectProperty)*)? RBRACE
+    ;
+
+objectProperty
+    : (IDENTIFIER | STRING) COLON expression
     ;
 
 functionCall
@@ -114,6 +123,9 @@ BLOCK_COMMENT
 DOT         : '.' ;
 LBRACKET    : '[' ;
 RBRACKET    : ']'  ;
+
+LBRACE      : '{' ;
+RBRACE      : '}'  ;
 
 QUESTION    : '?' ;
 COLON       : ':'  ;

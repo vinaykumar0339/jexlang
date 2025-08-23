@@ -6,10 +6,12 @@ import {ParseTreeVisitor} from 'antlr4';
 import { ProgramContext } from "./JexLangParser.js";
 import { StatementContext } from "./JexLangParser.js";
 import { AssignmentContext } from "./JexLangParser.js";
+import { PropertyAssignmentContext } from "./JexLangParser.js";
 import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
+import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
 import { VariableExpressionContext } from "./JexLangParser.js";
 import { NumberExpressionContext } from "./JexLangParser.js";
 import { MulDivModExpressionContext } from "./JexLangParser.js";
@@ -22,6 +24,8 @@ import { ComparatorExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
 import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
 import { UnaryPlusExpressionContext } from "./JexLangParser.js";
+import { ObjectLiteralContext } from "./JexLangParser.js";
+import { ObjectPropertyContext } from "./JexLangParser.js";
 import { FunctionCallContext } from "./JexLangParser.js";
 import { ArgumentListContext } from "./JexLangParser.js";
 
@@ -53,6 +57,12 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitAssignment?: (ctx: AssignmentContext) => Result;
 	/**
+	 * Visit a parse tree produced by `JexLangParser.propertyAssignment`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPropertyAssignment?: (ctx: PropertyAssignmentContext) => Result;
+	/**
 	 * Visit a parse tree produced by the `ParenthesizedExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -80,6 +90,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitPowerExpression?: (ctx: PowerExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `ObjectLiteralExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `VariableExpression`
 	 * labeled alternative in `JexLangParser.expression`.
@@ -164,6 +181,18 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by `JexLangParser.objectLiteral`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitObjectLiteral?: (ctx: ObjectLiteralContext) => Result;
+	/**
+	 * Visit a parse tree produced by `JexLangParser.objectProperty`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitObjectProperty?: (ctx: ObjectPropertyContext) => Result;
 	/**
 	 * Visit a parse tree produced by `JexLangParser.functionCall`.
 	 * @param ctx the parse tree
