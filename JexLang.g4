@@ -8,6 +8,7 @@ program
 statement
     : expression SEMICOLON?
     | assignment SEMICOLON?
+    | localDeclaration SEMICOLON?
     | propertyAssignment SEMICOLON?
     ;
 
@@ -18,6 +19,10 @@ assignment
 propertyAssignment
     : expression DOT IDENTIFIER ASSIGN expression               # DotPropertyAssignment
     | expression LBRACKET expression RBRACKET ASSIGN expression # BracketPropertyAssignment
+    ;
+
+localDeclaration
+    : LET IDENTIFIER ASSIGN expression
     ;
 
 expression
@@ -106,6 +111,9 @@ BOOLEAN
     : 'true'
     | 'false'
     ;
+
+// Keywords (must be defined before IDENTIFIER)
+LET         : 'let' ;
 
 // Identifiers (variables and function names)
 IDENTIFIER

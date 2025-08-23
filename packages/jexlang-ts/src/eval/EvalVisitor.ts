@@ -6,11 +6,13 @@ import { BUILT_IN_FUNCTIONS } from "./functions";
 import { BUILT_IN_TRANSFORMS } from "./transforms/builtin";
 import { toNumber, toString } from "../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError } from "./errors";
+import { ScopeStack } from "./ScopeStack";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
     private context: Context = {};
     private funcRegistry: FuncRegistry;
     private transformRegistry: TransformRegistry;
+    private scopeStack: ScopeStack = new ScopeStack();
 
     constructor(context?: Context, funcsMap?: Record<string, FuncImpl>, transformsMap?: Record<string, TransformImpl>) {
         super();
@@ -86,17 +88,27 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     visitProgram = (ctx: JexLangParser.ProgramContext): JexValue => {
+        // Create a new scope for this program execution
+        this.pushScope();
+        
         let result!: JexValue;
         const childCount = ctx.getChildCount();
-        for (let i = 0; i < childCount; i++) {
-            const statement = ctx.getChild(i);
-            if (i == childCount - 1) {
-                // Last statement, return null so skip last item
-                continue;
-                
+        
+        try {
+            for (let i = 0; i < childCount; i++) {
+                const statement = ctx.getChild(i);
+                if (i == childCount - 1) {
+                    // Last statement, return null so skip last item
+                    continue;
+                    
+                }
+                result = this.visit(statement);
             }
-            result = this.visit(statement);
+        } finally {
+            // Ensure we pop the scope when done
+            this.popScope();
         }
+        
         return result;
     }
 
@@ -107,8 +119,19 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             return this.visit(ctx.expression()!);
         } else if (ctx.propertyAssignment()) {
             return this.visit(ctx.propertyAssignment()!);
+        } else if (ctx.localDeclaration()) {
+            return this.visit(ctx.localDeclaration()!);
         }
         return null;
+    }
+
+    visitLocalDeclaration = (ctx: JexLangParser.LocalDeclarationContext): JexValue => {
+        const variableName = ctx.IDENTIFIER().getText();
+        const value = this.visit(ctx.expression());
+        
+        // Set in current scope, not in the global context
+        this.scopeStack.set(variableName, value);
+        return value;
     }
 
     visitAssignment = (ctx: JexLangParser.AssignmentContext): JexValue => {
@@ -219,14 +242,21 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return this.visit(ctx.functionCall());
     }
 
+    // Override to check local variables before context
     visitVariableExpression = (ctx: JexLangParser.VariableExpressionContext): JexValue => {
         const variableName = ctx.IDENTIFIER().getText();
         
+        // Check if variable exists in local scope
+        if (this.scopeStack.has(variableName)) {
+            return this.scopeStack.get(variableName)!;
+        }
+        
+        // Fall back to global context
         if (variableName in this.context) {
             return this.context[variableName];
-        } else {
-            throw new UndefinedVariableError(variableName);
         }
+        
+        throw new UndefinedVariableError(variableName);
     }
 
     visitNumberExpression = (ctx: JexLangParser.NumberExpressionContext): JexValue => {
@@ -450,6 +480,15 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;
+    }
+
+    // Add methods to manage the scope stack
+    public pushScope(): void {
+        this.scopeStack.pushScope();
+    }
+
+    public popScope(): void {
+        this.scopeStack.popScope();
     }
 }
 
