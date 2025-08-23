@@ -291,7 +291,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const args: JexValue[] = [];
         for (let i = 0; i < childCount; i++) {
             const arg = this.visit(ctx.getChild(i));
-            if (arg) {
+            if (arg !== undefined && arg !== null) {
                 args.push(arg);
             }
         }
