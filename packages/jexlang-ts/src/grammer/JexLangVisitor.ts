@@ -10,6 +10,7 @@ import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { AddSubExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
 import { UnaryMinusExpressionContext } from "./JexLangParser.js";
+import { StringExpressionContext } from "./JexLangParser.js";
 import { UnaryPlusExpressionContext } from "./JexLangParser.js";
 import { VariableExpressionContext } from "./JexLangParser.js";
 import { NumberExpressionContext } from "./JexLangParser.js";
@@ -73,6 +74,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `StringExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitStringExpression?: (ctx: StringExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `UnaryPlusExpression`
 	 * labeled alternative in `JexLangParser.expression`.

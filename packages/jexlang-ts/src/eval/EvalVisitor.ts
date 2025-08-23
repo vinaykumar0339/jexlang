@@ -219,6 +219,10 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return args;
     }
 
+    visitStringExpression = (ctx: JexLangParser.StringExpressionContext): JexValue => {
+        return ctx.STRING().getText().slice(1, -1);
+    };
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;

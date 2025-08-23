@@ -24,6 +24,7 @@ expression
     | functionCall                                 # FunctionCallExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
+    | STRING                                       # StringExpression
     ;
 
 functionCall
@@ -77,6 +78,12 @@ fragment DIGIT
 // Identifiers (variables and function names)
 IDENTIFIER
     : [a-zA-Z_] [a-zA-Z0-9_]*
+    ;
+
+// Strings (single or double quotes, supports escape sequences)
+STRING
+    : '"' ( '\\' . | ~["\\\r\n] )* '"'
+    | '\'' ( '\\' . | ~['\\\r\n] )* '\''
     ;
 
 // Whitespace (ignored)

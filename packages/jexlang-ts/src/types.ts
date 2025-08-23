@@ -27,10 +27,6 @@ export class MapFuncRegistry implements FuncRegistry {
   call(name: string, args: JexValue[]) {
     const fn = this.map.get(name);
     if (!fn) throw new Error(`Unknown function: ${name}`);
-    const out = fn(...args);
-    if (!Number.isFinite(out)) {
-      throw new Error(`Function ${name} returned non-finite value`);
-    }
-    return out;
+    return fn(...args);
   }
 }
