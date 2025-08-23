@@ -276,13 +276,22 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         if (
             obj &&
             typeof obj === "object" &&
-            !Array.isArray(obj) &&
-            (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") &&
             prop !== null &&
-            prop !== undefined &&
-            prop in obj
+            prop !== undefined
         ) {
-            return (obj as { [k: string]: JexValue })[prop as string | number];
+            // If obj is array and prop is a valid index
+            if (Array.isArray(obj)) {
+                const index = typeof prop === "number" ? prop : Number(prop);
+                // Support negative indices: -1 is last element, -2 is second last, etc.
+                const normalizedIndex = index < 0 ? obj.length + index : index;
+                if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                    return obj[normalizedIndex];
+                }
+            } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
+                if (prop in obj) {
+                    return (obj as { [k: string]: JexValue })[prop as string | number];
+                }
+            }
         }
         return null;
     }

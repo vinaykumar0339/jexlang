@@ -13,19 +13,16 @@ jexEvaluator.setFunction('max', (...args) => {
 });
 
 const output = jexEvaluator.evaluate(`
-        max(x, user.age, 50) > 60 ? 10 : 30
-        a = true
-        true
-        a = "vinay"
-        "vinay" ?: 20
-        a == true
-        age = 'agee'
+        ar = ["1", 2, 3, 4, 5]
+        ar[0]
         con = {
-            "name": "vinay",
-            "age": 20,
-            "age": "vinay"
+            "1": "one",
+            "2": "two",
+            "3": "three",
+            "4": "four",
+            "5": "five"
         }
-        ar = [1, 2, 3, age]
+        con[ar[0]]
 `);
 
 console.log(output);
