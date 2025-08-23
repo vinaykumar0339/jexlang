@@ -92,6 +92,8 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             return this.visit(ctx.assignment()!);
         } else if (ctx.expression()) {
             return this.visit(ctx.expression()!);
+        } else if (ctx.propertyAssignment()) {
+            return this.visit(ctx.propertyAssignment()!);
         }
         return null;
     }
@@ -100,6 +102,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const variableName = ctx.IDENTIFIER().getText();
         const value = this.visit(ctx.expression());
         this.context[variableName] = value;
+        console.log(this.context);
         return value;
     }
 
@@ -270,6 +273,23 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return null;
     }
 
+    visitDotPropertyAssignment = (ctx: JexLangParser.DotPropertyAssignmentContext): JexValue => {
+        const obj = this.visit(ctx.expression(0));
+        const prop = ctx.IDENTIFIER().getText();
+        const value = this.visit(ctx.expression(1));
+
+        if (
+            obj &&
+            typeof obj === "object" &&
+            !Array.isArray(obj) &&
+            prop in obj
+        ) {
+            (obj as { [k: string]: JexValue })[prop] = value;
+            return value;
+        }
+        return null;
+    }
+
     visitBracketPropertyAccessExpression = (ctx: JexLangParser.BracketPropertyAccessExpressionContext): JexValue => {
         const obj = this.visit(ctx.expression(0));
         const prop = this.visit(ctx.expression(1));
@@ -290,6 +310,35 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
                 if (prop in obj) {
                     return (obj as { [k: string]: JexValue })[prop as string | number];
+                }
+            }
+        }
+        return null;
+    }
+
+    visitBracketPropertyAssignment = (ctx: JexLangParser.BracketPropertyAssignmentContext): JexValue => {
+        const obj = this.visit(ctx.expression(0));
+        const prop = this.visit(ctx.expression(1));
+        const value = this.visit(ctx.expression(2));
+        if (
+            obj &&
+            typeof obj === "object" &&
+            prop !== null &&
+            prop !== undefined
+        ) {
+            // If obj is array and prop is a valid index
+            if (Array.isArray(obj)) {
+                const index = typeof prop === "number" ? prop : Number(prop);
+                // Support negative indices: -1 is last element, -2 is second last, etc.
+                const normalizedIndex = index < 0 ? obj.length + index : index;
+                if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                    obj[normalizedIndex] = value;
+                    return value;
+                }
+            } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
+                if (prop in obj) {
+                    (obj as { [k: string]: JexValue })[prop as string | number] = value;
+                    return value;
                 }
             }
         }

@@ -6,6 +6,8 @@ import {ParseTreeVisitor} from 'antlr4';
 import { ProgramContext } from "./JexLangParser.js";
 import { StatementContext } from "./JexLangParser.js";
 import { AssignmentContext } from "./JexLangParser.js";
+import { DotPropertyAssignmentContext } from "./JexLangParser.js";
+import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
@@ -57,6 +59,20 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitAssignment?: (ctx: AssignmentContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `DotPropertyAssignment`
+	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitDotPropertyAssignment?: (ctx: DotPropertyAssignmentContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `BracketPropertyAssignment`
+	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `ParenthesizedExpression`
 	 * labeled alternative in `JexLangParser.expression`.

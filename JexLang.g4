@@ -8,10 +8,16 @@ program
 statement
     : expression SEMICOLON?
     | assignment SEMICOLON?
+    | propertyAssignment SEMICOLON?
     ;
 
 assignment
     : IDENTIFIER ASSIGN expression
+    ;
+
+propertyAssignment
+    : expression DOT IDENTIFIER ASSIGN expression               # DotPropertyAssignment
+    | expression LBRACKET expression RBRACKET ASSIGN expression # BracketPropertyAssignment
     ;
 
 expression

@@ -13,16 +13,15 @@ jexEvaluator.setFunction('max', (...args) => {
 });
 
 const output = jexEvaluator.evaluate(`
-        ar = ["1", 2, 3, 4, 5]
-        ar[0]
-        con = {
-            "1": "one",
-            "2": "two",
-            "3": "three",
-            "4": "four",
-            "5": "five"
-        }
-        con[ar[0]]
+    con = {
+        "name": "vinay"
+    }
+    con.name = "vinay2"
+    con
+
+    ar = [1, 2, 3]
+    ar[1] = 20
+    ar
 `);
 
 console.log(output);
