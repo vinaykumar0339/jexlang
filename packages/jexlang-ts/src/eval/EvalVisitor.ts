@@ -300,6 +300,10 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return condition ? condition : falseExpr;
     }
 
+    visitBooleanExpression = (ctx: JexLangParser.BooleanExpressionContext): JexValue => {
+        return ctx.BOOLEAN().getText() === "true";
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;

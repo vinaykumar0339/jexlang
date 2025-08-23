@@ -15,6 +15,7 @@ import { NumberExpressionContext } from "./JexLangParser.js";
 import { MulDivModExpressionContext } from "./JexLangParser.js";
 import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { AddSubExpressionContext } from "./JexLangParser.js";
+import { BooleanExpressionContext } from "./JexLangParser.js";
 import { UnaryMinusExpressionContext } from "./JexLangParser.js";
 import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
 import { ComparatorExpressionContext } from "./JexLangParser.js";
@@ -114,6 +115,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitAddSubExpression?: (ctx: AddSubExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `BooleanExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitBooleanExpression?: (ctx: BooleanExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `UnaryMinusExpression`
 	 * labeled alternative in `JexLangParser.expression`.

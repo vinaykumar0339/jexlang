@@ -27,6 +27,7 @@ expression
     | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
     | expression QUESTION expression COLON expression # TernaryExpression
     | expression QUESTION COLON expression         # ShortTernaryExpression
+    | BOOLEAN                                      # BooleanExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
     | STRING                                       # StringExpression
@@ -78,6 +79,11 @@ fragment EXPONENT_PART
 
 fragment DIGIT
     : [0-9]
+    ;
+
+BOOLEAN
+    : 'true'
+    | 'false'
     ;
 
 // Identifiers (variables and function names)

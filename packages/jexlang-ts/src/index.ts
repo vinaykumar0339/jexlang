@@ -14,7 +14,11 @@ jexEvaluator.setFunction('max', (...args) => {
 
 const output = jexEvaluator.evaluate(`
         max(x, user.age, 50) > 60 ? 10 : 30
+        a = true
+        true
+        a = "vinay"
         "vinay" ?: 20
+        a == true
 `);
 
 console.log(output);
