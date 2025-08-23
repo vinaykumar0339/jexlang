@@ -58,13 +58,13 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return this.context[name];
     }
 
-    public setFunction(name: string, func: FuncImpl): void {
+    public addFunction(name: string, func: FuncImpl): void {
         if (this.funcRegistry instanceof MapFuncRegistry) {
             this.funcRegistry.set(name, func);
         }
     }
     
-    public setTransform(name: string, transform: TransformImpl): void {
+    public addTransform(name: string, transform: TransformImpl): void {
         if (this.transformRegistry instanceof MapTransformRegistry) {
             this.transformRegistry.set(name, transform);
         }

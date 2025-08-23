@@ -48,27 +48,27 @@ export class JexEvaluator {
     return this.context;
   }
 
-  setFunction(name: string, func: FuncImpl): void {
+  addFunction(name: string, func: FuncImpl): void {
     this.funcs[name] = func;
-    this.visitor.setFunction(name, func);
+    this.visitor.addFunction(name, func);
   }
 
-  setFunctions(funcs: Record<string, FuncImpl>): void {
+  addFunctions(funcs: Record<string, FuncImpl>): void {
     this.funcs = funcs;
     for (const [name, func] of Object.entries(funcs)) {
-      this.visitor.setFunction(name, func);
+      this.visitor.addFunction(name, func);
     }
   }
 
-  setTransform(name: string, transform: TransformImpl): void {
+  addTransform(name: string, transform: TransformImpl): void {
     this.transformsMap[name] = transform;
-    this.visitor.setTransform(name, transform);
+    this.visitor.addTransform(name, transform);
   }
 
-  setTransforms(transforms: Record<string, TransformImpl>): void {
+  addTransforms(transforms: Record<string, TransformImpl>): void {
     this.transformsMap = transforms;
     for (const [name, transform] of Object.entries(transforms)) {
-      this.visitor.setTransform(name, transform);
+      this.visitor.addTransform(name, transform);
     }
   }
 
