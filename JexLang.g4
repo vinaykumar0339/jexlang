@@ -26,6 +26,7 @@ expression
     | expression DOT IDENTIFIER                    # DotPropertyAccessExpression
     | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
     | expression QUESTION expression COLON expression # TernaryExpression
+    | expression QUESTION COLON expression         # ShortTernaryExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
     | STRING                                       # StringExpression

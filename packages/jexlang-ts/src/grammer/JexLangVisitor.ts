@@ -7,6 +7,7 @@ import { ProgramContext } from "./JexLangParser.js";
 import { StatementContext } from "./JexLangParser.js";
 import { AssignmentContext } from "./JexLangParser.js";
 import { ParenthesizedExpressionContext } from "./JexLangParser.js";
+import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
 import { VariableExpressionContext } from "./JexLangParser.js";
@@ -57,6 +58,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `ShortTernaryExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `TernaryExpression`
 	 * labeled alternative in `JexLangParser.expression`.

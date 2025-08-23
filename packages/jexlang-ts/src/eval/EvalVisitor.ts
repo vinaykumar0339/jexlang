@@ -294,6 +294,12 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return condition ? trueExpr : falseExpr;
     }
 
+    visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): JexValue => {
+        const condition = this.visit(ctx.expression(0));
+        const falseExpr = this.visit(ctx.expression(1));
+        return condition ? condition : falseExpr;
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;
