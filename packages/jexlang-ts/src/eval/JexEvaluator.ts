@@ -72,4 +72,8 @@ export class JexEvaluator {
     }
   }
 
+  clearCachedParsedExpressions(): void {
+    this.cacheParsedTrees.clear();
+  }
+
 }
