@@ -12,8 +12,10 @@ import { LocalDeclarationContext } from "./JexLangParser.js";
 import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
+import { LogicalAndExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
+import { LogicalOrExpressionContext } from "./JexLangParser.js";
 import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
 import { VariableExpressionContext } from "./JexLangParser.js";
 import { NumberExpressionContext } from "./JexLangParser.js";
@@ -103,6 +105,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitTernaryExpression?: (ctx: TernaryExpressionContext) => Result;
 	/**
+	 * Visit a parse tree produced by the `LogicalAndExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitLogicalAndExpression?: (ctx: LogicalAndExpressionContext) => Result;
+	/**
 	 * Visit a parse tree produced by the `PowerExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -116,6 +125,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `LogicalOrExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `ArrayLiteralExpression`
 	 * labeled alternative in `JexLangParser.expression`.

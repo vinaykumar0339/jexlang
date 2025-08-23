@@ -32,6 +32,8 @@ expression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
     | expression (PLUS | MINUS) expression         # AddSubExpression
     | expression (EQ | NEQ | LT | GT | LTE | GTE) expression # ComparatorExpression
+    | expression AND expression                    # LogicalAndExpression
+    | expression OR expression                     # LogicalOrExpression
     | expression PIPE IDENTIFIER                    # TransformExpression
     | LPAREN expression RPAREN                     # ParenthesizedExpression
     | functionCall                                 # FunctionCallExpression
@@ -77,16 +79,34 @@ DIVIDE      : '/' ;
 MODULO      : '%' ;
 POW         : '^' | '**' ;
 
-// Assignment
+// Assignment & Comparison
 ASSIGN      : '=' ;
+EQ          : '==' ;
+NEQ         : '!=' ;
+LT          : '<' ;
+GT          : '>' ;
+LTE         : '<=' ;
+GTE         : '>=' ;
 
-// Parentheses
+// Logical operators
+AND         : '&&' | 'and' ;
+OR          : '||' | 'or' ;
+
+// Brackets, Braces, Parentheses
 LPAREN      : '(' ;
 RPAREN      : ')' ;
+LBRACE      : '{' ;
+RBRACE      : '}' ;
+LBRACKET    : '[' ;
+RBRACKET    : ']' ;
 
 // Punctuation
 SEMICOLON   : ';' ;
 COMMA       : ',' ;
+DOT         : '.' ;
+PIPE        : '|' ;
+QUESTION    : '?' ;
+COLON       : ':' ;
 
 // Numbers (supports integers, decimals, scientific notation)
 NUMBER
@@ -107,12 +127,8 @@ fragment DIGIT
     : [0-9]
     ;
 
-BOOLEAN
-    : 'true'
-    | 'false'
-    ;
-
-// Keywords (must be defined before IDENTIFIER)
+// Keywords and constants
+BOOLEAN     : 'true' | 'false' ;
 LET         : 'let' ;
 
 // Identifiers (variables and function names)
@@ -139,22 +155,3 @@ LINE_COMMENT
 BLOCK_COMMENT
     : '/*' .*? '*/' -> skip
     ;
-
-DOT         : '.' ;
-LBRACKET    : '[' ;
-RBRACKET    : ']'  ;
-
-LBRACE      : '{' ;
-RBRACE      : '}'  ;
-
-QUESTION    : '?' ;
-COLON       : ':'  ;
-
-EQ          : '==' ;
-NEQ         : '!=' ;
-LT          : '<' ;
-GT          : '>' ;
-LTE         : '<=' ;
-GTE         : '>='  ;
-
-PIPE        : '|'  ;

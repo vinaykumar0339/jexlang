@@ -477,6 +477,32 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         throw new JexLangRuntimeError(`Unknown transform: ${transformName}`);
     }
 
+    visitLogicalAndExpression = (ctx: JexLangParser.LogicalAndExpressionContext): JexValue => {
+        // Implement short-circuit evaluation for AND
+        const left = this.visit(ctx.expression(0));
+        
+        // If left is falsy, return it immediately without evaluating right
+        if (!left) {
+            return left;
+        }
+        
+        // Otherwise, return the right expression value
+        return this.visit(ctx.expression(1));
+    }
+    
+    visitLogicalOrExpression = (ctx: JexLangParser.LogicalOrExpressionContext): JexValue => {
+        // Implement short-circuit evaluation for OR
+        const left = this.visit(ctx.expression(0));
+        
+        // If left is truthy, return it immediately without evaluating right
+        if (left) {
+            return left;
+        }
+        
+        // Otherwise, return the right expression value
+        return this.visit(ctx.expression(1));
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;
