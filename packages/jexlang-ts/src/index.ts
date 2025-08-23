@@ -7,10 +7,13 @@ const jexEvaluator = new JexEvaluator({
     }
 });
 
+jexEvaluator.setFunction('max', (...args) => {
+    console.log(args);
+    return Math.max(...args as number[]);
+});
+
 const output = jexEvaluator.evaluate(`
-        age = 'age';
-        height = 30;
-        user[age]
+        max(x, user.age, 50)
 `);
 
 console.log(output);
