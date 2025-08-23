@@ -22,6 +22,8 @@ expression
     | expression (PLUS | MINUS) expression         # AddSubExpression
     | LPAREN expression RPAREN                     # ParenthesizedExpression
     | functionCall                                 # FunctionCallExpression
+    | expression DOT IDENTIFIER                    # DotPropertyAccessExpression
+    | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
     | STRING                                       # StringExpression
@@ -99,3 +101,7 @@ LINE_COMMENT
 BLOCK_COMMENT
     : '/*' .*? '*/' -> skip
     ;
+
+DOT         : '.' ;
+LBRACKET    : '[' ;
+RBRACKET    : ']'  ;

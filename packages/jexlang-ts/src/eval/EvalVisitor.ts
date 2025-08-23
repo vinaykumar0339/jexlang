@@ -228,6 +228,37 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return ctx.STRING().getText().slice(1, -1);
     };
 
+    visitDotPropertyAccessExpression = (ctx: JexLangParser.DotPropertyAccessExpressionContext): JexValue => {
+        const obj = this.visit(ctx.expression());
+        const prop = ctx.IDENTIFIER().getText();
+        if (
+            obj &&
+            typeof obj === "object" &&
+            !Array.isArray(obj) &&
+            prop in obj
+        ) {
+            return (obj as { [k: string]: JexValue })[prop];
+        }
+        return null;
+    }
+
+    visitBracketPropertyAccessExpression = (ctx: JexLangParser.BracketPropertyAccessExpressionContext): JexValue => {
+        const obj = this.visit(ctx.expression(0));
+        const prop = this.visit(ctx.expression(1));
+        if (
+            obj &&
+            typeof obj === "object" &&
+            !Array.isArray(obj) &&
+            (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") &&
+            prop !== null &&
+            prop !== undefined &&
+            prop in obj
+        ) {
+            return (obj as { [k: string]: JexValue })[prop as string | number];
+        }
+        return null;
+    }
+
     // Default visit method for unhandled nodes
     protected defaultResult(): JexValue {
         return null;

@@ -1,13 +1,17 @@
 import { JexEvaluator } from "./eval/JexEvaluator";
 
 const jexEvaluator = new JexEvaluator({
-    x: 40
+    x: 40,
+    user: {
+        age: 10
+    }
 });
 
 const output = jexEvaluator.evaluate(`
-        age = 23 + x;
+        age = 'age';
         height = 30;
-        age + height - 2;`);
+        user[age]
+`);
 
 console.log(output);
 
