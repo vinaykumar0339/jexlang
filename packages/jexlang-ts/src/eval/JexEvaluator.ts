@@ -2,11 +2,12 @@ import { CharStreams, CommonTokenStream } from "antlr4";
 import { EvalVisitor } from "./EvalVisitor";
 import { Context, FuncImpl, JexValue, TransformImpl } from "../types";
 import JexLangLexer from "../grammer/JexLangLexer";
-import JexLangParser from "../grammer/JexLangParser";
+import JexLangParser, { ProgramContext } from "../grammer/JexLangParser";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
-  
+  private cacheParsedTrees: Map<string, ProgramContext> = new Map();
+
   constructor(
     private context: Context = {},
     private funcs: Record<string, FuncImpl> = {},
@@ -15,13 +16,26 @@ export class JexEvaluator {
     this.visitor = new EvalVisitor(context, this.funcs, this.transformsMap);
   }
 
-  evaluate(expr: string): JexValue {
+  private parseExpression(expr: string): ProgramContext {
+    if (this.cacheParsedTrees.has(expr)) {
+      const cachedTree = this.cacheParsedTrees.get(expr);
+      if (cachedTree) {
+        return cachedTree;
+      }
+    }
+
     const chars = CharStreams.fromString(expr);
     const lexer = new JexLangLexer(chars);
     const tokens = new CommonTokenStream(lexer);
     const parser = new JexLangParser(tokens);
-
     const tree = parser.program();
+
+    this.cacheParsedTrees.set(expr, tree);
+    return tree;
+  }
+
+  evaluate(expr: string): JexValue {
+    const tree = this.parseExpression(expr);
     return this.visitor.visit(tree);
   }
 
