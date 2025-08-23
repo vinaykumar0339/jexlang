@@ -74,9 +74,14 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
     visitProgram = (ctx: JexLangParser.ProgramContext): JexValue => {
         let result!: JexValue;
-        const statementsLength = ctx.statement.length;
-        for (let i = 0; i < statementsLength; i++) {
-            const statement = ctx.statement(i);
+        const childCount = ctx.getChildCount();
+        for (let i = 0; i < childCount; i++) {
+            const statement = ctx.getChild(i);
+            if (i == childCount - 1) {
+                // Last statement, return null so skip last item
+                continue;
+                
+            }
             result = this.visit(statement);
         }
         return result;
@@ -211,10 +216,10 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     visitArgumentList = (ctx: JexLangParser.ArgumentListContext): JexValue[] => {
-        const expressionLength = ctx.expression.length;
+        const childCount = ctx.getChildCount();
         const args: JexValue[] = [];
-        for (let i = 0; i < expressionLength; i++) {
-            args.push(this.visit(ctx.expression(i)));
+        for (let i = 0; i < childCount; i++) {
+            args.push(this.visit(ctx.getChild(i)));
         }
         return args;
     }

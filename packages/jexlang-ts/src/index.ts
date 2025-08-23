@@ -1,11 +1,13 @@
 import { JexEvaluator } from "./eval/JexEvaluator";
-import { toString } from "./utils";
 
-const jexEvaluator = new JexEvaluator();
+const jexEvaluator = new JexEvaluator({
+    x: 40
+});
 
 const output = jexEvaluator.evaluate(`
-        upper('Hello, World!')
-    `);
+        age = 23 + x;
+        height = 30;
+        age + height - 2;`);
 
 console.log(output);
 
