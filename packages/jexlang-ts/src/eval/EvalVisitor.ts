@@ -166,6 +166,31 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         }
     }
 
+    visitComparatorExpression = (ctx: JexLangParser.ComparatorExpressionContext): JexValue => {
+        const left = this.visit(ctx.expression(0));
+        const right = this.visit(ctx.expression(1));
+        const operator = ctx.getChild(1).getText();
+
+        switch (operator) {
+            case '==':
+                return left === right;
+            case '!=':
+                return left !== right;
+            case '<':
+                // JS: null < number => true if number > 0, null < null => false
+                return (left == null ? 0 : left) < (right == null ? 0 : right);
+            case '>':
+                // JS: null > number => false, null > null => false
+                return (left == null ? 0 : left) > (right == null ? 0 : right);
+            case '<=':
+                return (left == null ? 0 : left) <= (right == null ? 0 : right);
+            case '>=':
+                return (left == null ? 0 : left) >= (right == null ? 0 : right);
+            default:
+                throw new JexLangRuntimeError(`Unknown comparator operator: ${operator}`);
+        }
+    }
+
     visit(tree: ParseTree): JexValue {
         return super.visit(tree);
     }
@@ -260,6 +285,13 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             return (obj as { [k: string]: JexValue })[prop as string | number];
         }
         return null;
+    }
+
+    visitTernaryExpression = (ctx: JexLangParser.TernaryExpressionContext): JexValue => {
+        const condition = this.visit(ctx.expression(0));
+        const trueExpr = this.visit(ctx.expression(1));
+        const falseExpr = this.visit(ctx.expression(2));
+        return condition ? trueExpr : falseExpr;
     }
 
     // Default visit method for unhandled nodes

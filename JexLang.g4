@@ -20,10 +20,12 @@ expression
     | PLUS expression                               # UnaryPlusExpression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
     | expression (PLUS | MINUS) expression         # AddSubExpression
+    | expression (EQ | NEQ | LT | GT | LTE | GTE) expression # ComparatorExpression
     | LPAREN expression RPAREN                     # ParenthesizedExpression
     | functionCall                                 # FunctionCallExpression
     | expression DOT IDENTIFIER                    # DotPropertyAccessExpression
     | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
+    | expression QUESTION expression COLON expression # TernaryExpression
     | IDENTIFIER                                   # VariableExpression
     | NUMBER                                       # NumberExpression
     | STRING                                       # StringExpression
@@ -105,3 +107,13 @@ BLOCK_COMMENT
 DOT         : '.' ;
 LBRACKET    : '[' ;
 RBRACKET    : ']'  ;
+
+QUESTION    : '?' ;
+COLON       : ':'  ;
+
+EQ          : '==' ;
+NEQ         : '!=' ;
+LT          : '<' ;
+GT          : '>' ;
+LTE         : '<=' ;
+GTE         : '>='  ;

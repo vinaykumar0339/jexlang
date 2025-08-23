@@ -13,7 +13,7 @@ jexEvaluator.setFunction('max', (...args) => {
 });
 
 const output = jexEvaluator.evaluate(`
-        max(x, user.age, 50)
+        max(x, user.age, 50) > 60 ? 10 : 30
 `);
 
 console.log(output);
