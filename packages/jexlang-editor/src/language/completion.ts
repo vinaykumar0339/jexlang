@@ -473,7 +473,7 @@ const JEX_SNIPPETS = [
     label: 'array-literal', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
     detail: 'Array literal',
-    insertText: '[${1:item1}${2:, item2}]',
+    insertText: '[${1:item1}, ${2:item2}]',
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
   },
   { 
@@ -516,23 +516,84 @@ export function registerCompletionItemProvider(m = monaco) {
         endColumn: position.column
       });
 
-      // Check if we're after a pipe symbol (transform context)
-      const isPipeContext = /\|\s*$/.test(textUntilPosition);
+      // Get the text before the current word being typed
+      let textBeforeWord = textUntilPosition;
+      if (word.word.length > 0) {
+        textBeforeWord = textUntilPosition.substring(0, textUntilPosition.length - word.word.length);
+      }
+      
+      // Check if the word being typed is immediately preceded by a pipe
+      const isPipeBeforeWord = /\|\s*$/.test(textBeforeWord);
 
-      // Create completion items with appropriate range
-      const createCompletionItem = (item: any) => {
-        return {
-          ...item,
-          range
-        };
-      };
+      // Get the line content for additional context
+      const lineContent = model.getLineContent(position.lineNumber);
+      
+      // Find the last pipe character in the line before current position
+      let lastPipeIndex = textUntilPosition.lastIndexOf('|');
+      
+      // Check if the pipe is not part of "||" (OR operator)
+      const isNotLogicalOr = lastPipeIndex > 0 && 
+                             textUntilPosition.charAt(lastPipeIndex - 1) !== '|' && 
+                             (lastPipeIndex + 1 >= textUntilPosition.length || 
+                              textUntilPosition.charAt(lastPipeIndex + 1) !== '|');
+      
+      // Combined condition: either the word is immediately after a pipe
+      // or there's a pipe in the text that's not part of "||"
+      const isPipeContext = isPipeBeforeWord || (lastPipeIndex >= 0 && isNotLogicalOr);
+      
+      // Special case for strings: don't activate in strings
+      const textBeforePipe = lastPipeIndex > 0 ? textUntilPosition.substring(0, lastPipeIndex) : "";
+      const openQuotes = (textBeforePipe.match(/'/g) || []).length + 
+                         (textBeforePipe.match(/"/g) || []).length + 
+                         (textBeforePipe.match(/`/g) || []).length;
+      const isInString = openQuotes % 2 !== 0;
 
       // Determine which suggestions to show
       let suggestions: any[] = [];
       
-      if (isPipeContext) {
+      if (isPipeContext && !isInString) {
         // After a pipe, only show transforms
         suggestions = [...JEX_TRANSFORMS];
+        
+        // Add visual indicators in the completion list labels but REMOVE pipe from insertText
+        suggestions = suggestions.map(item => ({
+          ...item,
+          label: `→ ${item.label}`,
+          detail: `Transform: ${item.detail.replace('Transform: ', '')}`,
+          // Remove the pipe character from insertText since we're already after a pipe
+          insertText: item.insertText.replace(/^\|\s*/, '')
+        }));
+        
+        // For pipe context, use a more specific range from after the pipe symbol
+        if (lastPipeIndex >= 0) {
+          // Find the start position right after the pipe and any whitespace
+          let pipeStartColumn = lastPipeIndex + 2; // +1 for the pipe, +1 for 1-based indexing
+          
+          // Skip whitespace after pipe
+          while (pipeStartColumn <= position.column && 
+                 /\s/.test(lineContent.charAt(pipeStartColumn - 1))) {
+            pipeStartColumn++;
+          }
+          
+          // Update the range for all suggestions
+          const pipeRange = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: pipeStartColumn,
+            endColumn: position.column
+          };
+          
+          // Apply this range to all suggestions
+          suggestions = suggestions.map(item => ({
+            ...item,
+            range: pipeRange,
+            kind: monaco.languages.CompletionItemKind.Operator,
+            sortText: '0' + item.label
+          }));
+          
+          // Return directly with the mapped suggestions
+          return { suggestions };
+        }
       } else {
         // Normal context, show all suggestions
         suggestions = [
@@ -543,8 +604,12 @@ export function registerCompletionItemProvider(m = monaco) {
         ];
       }
 
+      // Map the remaining suggestions with the standard range
       return {
-        suggestions: suggestions.map(createCompletionItem)
+        suggestions: suggestions.map(item => ({
+          ...item,
+          range
+        }))
       };
     }
   });

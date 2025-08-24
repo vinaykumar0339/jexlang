@@ -11,9 +11,9 @@ export default defineConfig({
     build: {
         lib: {
             entry: resolve(__dirname, "src/index.ts"),
-            name: "jexlang-ts",
+            name: "jexlang-editor",
             formats: ["es", "umd"],
-            fileName: (format) => `jexlang-ts.${format}.js`
+            fileName: (format) => `jexlang-editor.${format}.js`
         },
         rollupOptions: {
             external: ["monaco-editor"],

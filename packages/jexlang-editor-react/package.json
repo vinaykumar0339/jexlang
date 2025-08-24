@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "jexlang-editor": "link:../../../../../Library/pnpm/global/5/node_modules/jexlang-editor",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
