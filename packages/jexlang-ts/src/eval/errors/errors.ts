@@ -1,5 +1,3 @@
-
-// Custom error classes
 export class JexLangRuntimeError extends Error {
     constructor(message: string) {
         super(message);
@@ -33,4 +31,20 @@ export class TypeMismatchError extends JexLangRuntimeError {
         super(`Type mismatch in ${operation}: expected ${expected}, got ${actual}`);
         this.name = 'TypeMismatchError';
     }
+}
+
+export interface SyntaxErrorLocation {
+  line: number;
+  column: number;
+  offendingSymbol: string | null;
+}
+
+export class JexLangSyntaxError extends JexLangRuntimeError {
+  readonly location: SyntaxErrorLocation;
+
+  constructor(message: string, location: SyntaxErrorLocation) {
+    super(message);
+    this.name = 'JexLangSyntaxError';
+    this.location = location;
+  }
 }

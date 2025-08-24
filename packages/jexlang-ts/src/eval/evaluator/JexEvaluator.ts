@@ -1,20 +1,23 @@
-import { CharStreams, CommonTokenStream } from "antlr4";
-import { EvalVisitor } from "./EvalVisitor";
-import { Context, FuncImpl, JexValue, TransformImpl } from "../types";
-import JexLangLexer from "../grammer/JexLangLexer";
-import JexLangParser, { ProgramContext } from "../grammer/JexLangParser";
+import { CharStreams, CommonTokenStream, InputStream } from "antlr4";
+import { JexLangErrorListener } from "../listeners/JexLangErrorListener";
+import { EvalVisitor } from "../visitors/EvalVisitor";
+import { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
+import JexLangLexer from "../../grammer/JexLangLexer";
+import JexLangParser, { ProgramContext } from "../../grammer/JexLangParser";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
+  private errorListener: JexLangErrorListener;
   private cacheParsedTrees: Map<string, ProgramContext> = new Map();
+  private cacheExpressions: boolean = false;
 
   constructor(
     private context: Context = {},
     private funcs: Record<string, FuncImpl> = {},
-    private transformsMap: Record<string, TransformImpl> = {},
-    private cacheExpressions: boolean = false
+    private transformsMap: Record<string, TransformImpl> = {}
   ) {
     this.visitor = new EvalVisitor(context, this.funcs, this.transformsMap);
+    this.errorListener = new JexLangErrorListener();
   }
 
   private parseExpression(expr: string): ProgramContext {
@@ -29,14 +32,33 @@ export class JexEvaluator {
     const lexer = new JexLangLexer(chars);
     const tokens = new CommonTokenStream(lexer);
     const parser = new JexLangParser(tokens);
+
+    // Remove the default console error listener
+    lexer.removeErrorListeners();
+
+    // Add our custom error listener
+    this.errorListener.clear();
+    lexer.addErrorListener(this.errorListener);
+
+
+    // Remove default console error listener from parser too
+    parser.removeErrorListeners();
+    parser.addErrorListener(this.errorListener);
+
+    // Parse the expression
     const tree = parser.program();
+
+    // Check if we have any syntax errors
+    if (this.errorListener.hasErrors()) {
+      // Throw the first error
+      throw this.errorListener.getErrors()[0];
+    }
 
     if (this.cacheExpressions) {
       this.cacheParsedTrees.set(expr, tree);
     }
     return tree;
   }
-
 
   setCacheExpressions(value: boolean): void {
     this.cacheExpressions = value;
@@ -87,5 +109,4 @@ export class JexEvaluator {
   clearCachedParsedExpressions(): void {
     this.cacheParsedTrees.clear();
   }
-
 }

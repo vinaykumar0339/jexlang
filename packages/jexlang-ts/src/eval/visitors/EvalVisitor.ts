@@ -1,12 +1,12 @@
-import JexLangVisitor from "../grammer/JexLangVisitor";
-import * as JexLangParser from "../grammer/JexLangParser";
-import { ParseTree } from "antlr4";
-import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformImpl, TransformRegistry, MapTransformRegistry } from "../types";
-import { BUILT_IN_FUNCTIONS } from "./functions";
-import { BUILT_IN_TRANSFORMS } from "./transforms/builtin";
-import { toNumber, toString } from "../utils";
-import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError } from "./errors";
-import { ScopeStack } from "./ScopeStack";
+import JexLangVisitor from "../../grammer/JexLangVisitor";
+import * as JexLangParser from "../../grammer/JexLangParser";
+import { ErrorNode, ParseTree } from "antlr4";
+import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformImpl, TransformRegistry, MapTransformRegistry } from "../../types";
+import { BUILT_IN_FUNCTIONS } from "../functions";
+import { BUILT_IN_TRANSFORMS } from "../transforms";
+import { toNumber, toString } from "../../utils";
+import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError } from "../errors/errors";
+import { ScopeStack } from "../scopes";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
     private context: Context = {};
@@ -515,6 +515,47 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         
         // Otherwise, return the right expression value
         return this.visit(ctx.expression(1));
+    }
+
+    visitErrorNode(node: ErrorNode): JexValue {
+        // Extract location information if available
+        const location = {
+            line: node.symbol?.line || 0,
+            column: node.symbol?.column || 0,
+            offendingSymbol: node.getText() || null
+        };
+        
+        // Create a more descriptive error message
+        let errorMessage = "Syntax error";
+        
+        if (node.symbol) {
+            // Try to provide more context
+            const tokenType = node.symbol.type;
+            const tokenText = this.escapeTokenText(node.symbol.text || '');
+            
+            if (tokenType >= 0) {
+                errorMessage = `Unexpected token '${tokenText}'`;
+            } else {
+                errorMessage = `Invalid syntax near '${tokenText}'`;
+            }
+            
+            // Add location if available
+            if (node.symbol.line > 0) {
+                errorMessage += ` at line ${node.symbol.line}:${node.symbol.column + 1}`;
+            }
+        } else {
+            errorMessage = `Syntax error encountered: ${node.getText()}`;
+        }
+        
+        throw new JexLangSyntaxError(errorMessage, location);
+    }
+
+    // Helper to escape special characters in error messages
+    private escapeTokenText(text: string): string {
+        return text
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
     }
 
     // Default visit method for unhandled nodes

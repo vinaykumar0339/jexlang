@@ -1,4 +1,4 @@
-import { JexValue } from "../types";
+import { JexValue } from "../../types";
 
 /**
  * Represents a single scope of local variables.

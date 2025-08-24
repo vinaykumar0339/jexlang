@@ -11,6 +11,7 @@ import {
 	Token, TokenStream,
 	Interval, IntervalSet
 } from 'antlr4';
+import JexLangListener from "./JexLangListener.js";
 import JexLangVisitor from "./JexLangVisitor.js";
 
 // for running tests with parameters, TODO: discuss strategy for typed parameters in CI
@@ -1082,6 +1083,16 @@ export class ProgramContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_program;
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterProgram) {
+	 		listener.enterProgram(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitProgram) {
+	 		listener.exitProgram(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitProgram) {
@@ -1116,6 +1127,16 @@ export class StatementContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_statement;
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterStatement) {
+	 		listener.enterStatement(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitStatement) {
+	 		listener.exitStatement(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitStatement) {
@@ -1143,6 +1164,16 @@ export class AssignmentContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_assignment;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterAssignment) {
+	 		listener.enterAssignment(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitAssignment) {
+	 		listener.exitAssignment(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1187,6 +1218,16 @@ export class BracketPropertyAssignmentContext extends PropertyAssignmentContext 
 	public ASSIGN(): TerminalNode {
 		return this.getToken(JexLangParser.ASSIGN, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterBracketPropertyAssignment) {
+	 		listener.enterBracketPropertyAssignment(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitBracketPropertyAssignment) {
+	 		listener.exitBracketPropertyAssignment(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitBracketPropertyAssignment) {
@@ -1215,6 +1256,16 @@ export class DotPropertyAssignmentContext extends PropertyAssignmentContext {
 	}
 	public ASSIGN(): TerminalNode {
 		return this.getToken(JexLangParser.ASSIGN, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterDotPropertyAssignment) {
+	 		listener.enterDotPropertyAssignment(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitDotPropertyAssignment) {
+	 		listener.exitDotPropertyAssignment(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1246,6 +1297,16 @@ export class LocalDeclarationContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_localDeclaration;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterLocalDeclaration) {
+	 		listener.enterLocalDeclaration(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitLocalDeclaration) {
+	 		listener.exitLocalDeclaration(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1284,6 +1345,16 @@ export class ParenthesizedExpressionContext extends ExpressionContext {
 	public RPAREN(): TerminalNode {
 		return this.getToken(JexLangParser.RPAREN, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterParenthesizedExpression) {
+	 		listener.enterParenthesizedExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitParenthesizedExpression) {
+	 		listener.exitParenthesizedExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitParenthesizedExpression) {
@@ -1309,6 +1380,16 @@ export class ShortTernaryExpressionContext extends ExpressionContext {
 	}
 	public COLON(): TerminalNode {
 		return this.getToken(JexLangParser.COLON, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterShortTernaryExpression) {
+	 		listener.enterShortTernaryExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitShortTernaryExpression) {
+	 		listener.exitShortTernaryExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1336,6 +1417,16 @@ export class TernaryExpressionContext extends ExpressionContext {
 	public COLON(): TerminalNode {
 		return this.getToken(JexLangParser.COLON, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterTernaryExpression) {
+	 		listener.enterTernaryExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitTernaryExpression) {
+	 		listener.exitTernaryExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitTernaryExpression) {
@@ -1358,6 +1449,16 @@ export class LogicalAndExpressionContext extends ExpressionContext {
 	}
 	public AND(): TerminalNode {
 		return this.getToken(JexLangParser.AND, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterLogicalAndExpression) {
+	 		listener.enterLogicalAndExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitLogicalAndExpression) {
+	 		listener.exitLogicalAndExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1382,6 +1483,16 @@ export class PowerExpressionContext extends ExpressionContext {
 	public POW(): TerminalNode {
 		return this.getToken(JexLangParser.POW, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterPowerExpression) {
+	 		listener.enterPowerExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitPowerExpression) {
+	 		listener.exitPowerExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitPowerExpression) {
@@ -1398,6 +1509,16 @@ export class ObjectLiteralExpressionContext extends ExpressionContext {
 	}
 	public objectLiteral(): ObjectLiteralContext {
 		return this.getTypedRuleContext(ObjectLiteralContext, 0) as ObjectLiteralContext;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterObjectLiteralExpression) {
+	 		listener.enterObjectLiteralExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitObjectLiteralExpression) {
+	 		listener.exitObjectLiteralExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1422,6 +1543,16 @@ export class LogicalOrExpressionContext extends ExpressionContext {
 	public OR(): TerminalNode {
 		return this.getToken(JexLangParser.OR, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterLogicalOrExpression) {
+	 		listener.enterLogicalOrExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitLogicalOrExpression) {
+	 		listener.exitLogicalOrExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitLogicalOrExpression) {
@@ -1438,6 +1569,16 @@ export class ArrayLiteralExpressionContext extends ExpressionContext {
 	}
 	public arrayLiteral(): ArrayLiteralContext {
 		return this.getTypedRuleContext(ArrayLiteralContext, 0) as ArrayLiteralContext;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterArrayLiteralExpression) {
+	 		listener.enterArrayLiteralExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitArrayLiteralExpression) {
+	 		listener.exitArrayLiteralExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1456,6 +1597,16 @@ export class VariableExpressionContext extends ExpressionContext {
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterVariableExpression) {
+	 		listener.enterVariableExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitVariableExpression) {
+	 		listener.exitVariableExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitVariableExpression) {
@@ -1472,6 +1623,16 @@ export class NumberExpressionContext extends ExpressionContext {
 	}
 	public NUMBER(): TerminalNode {
 		return this.getToken(JexLangParser.NUMBER, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterNumberExpression) {
+	 		listener.enterNumberExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitNumberExpression) {
+	 		listener.exitNumberExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1502,6 +1663,16 @@ export class MulDivModExpressionContext extends ExpressionContext {
 	public MODULO(): TerminalNode {
 		return this.getToken(JexLangParser.MODULO, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterMulDivModExpression) {
+	 		listener.enterMulDivModExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitMulDivModExpression) {
+	 		listener.exitMulDivModExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitMulDivModExpression) {
@@ -1518,6 +1689,16 @@ export class FunctionCallExpressionContext extends ExpressionContext {
 	}
 	public functionCall(): FunctionCallContext {
 		return this.getTypedRuleContext(FunctionCallContext, 0) as FunctionCallContext;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterFunctionCallExpression) {
+	 		listener.enterFunctionCallExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitFunctionCallExpression) {
+	 		listener.exitFunctionCallExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1545,6 +1726,16 @@ export class AddSubExpressionContext extends ExpressionContext {
 	public MINUS(): TerminalNode {
 		return this.getToken(JexLangParser.MINUS, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterAddSubExpression) {
+	 		listener.enterAddSubExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitAddSubExpression) {
+	 		listener.exitAddSubExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitAddSubExpression) {
@@ -1561,6 +1752,16 @@ export class BooleanExpressionContext extends ExpressionContext {
 	}
 	public BOOLEAN(): TerminalNode {
 		return this.getToken(JexLangParser.BOOLEAN, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterBooleanExpression) {
+	 		listener.enterBooleanExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitBooleanExpression) {
+	 		listener.exitBooleanExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1581,6 +1782,16 @@ export class UnaryMinusExpressionContext extends ExpressionContext {
 	}
 	public expression(): ExpressionContext {
 		return this.getTypedRuleContext(ExpressionContext, 0) as ExpressionContext;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterUnaryMinusExpression) {
+	 		listener.enterUnaryMinusExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitUnaryMinusExpression) {
+	 		listener.exitUnaryMinusExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1605,6 +1816,16 @@ export class TransformExpressionContext extends ExpressionContext {
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterTransformExpression) {
+	 		listener.enterTransformExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitTransformExpression) {
+	 		listener.exitTransformExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitTransformExpression) {
@@ -1627,6 +1848,16 @@ export class DotPropertyAccessExpressionContext extends ExpressionContext {
 	}
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterDotPropertyAccessExpression) {
+	 		listener.enterDotPropertyAccessExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitDotPropertyAccessExpression) {
+	 		listener.exitDotPropertyAccessExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1666,6 +1897,16 @@ export class ComparatorExpressionContext extends ExpressionContext {
 	public GTE(): TerminalNode {
 		return this.getToken(JexLangParser.GTE, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterComparatorExpression) {
+	 		listener.enterComparatorExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitComparatorExpression) {
+	 		listener.exitComparatorExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitComparatorExpression) {
@@ -1682,6 +1923,16 @@ export class StringExpressionContext extends ExpressionContext {
 	}
 	public STRING(): TerminalNode {
 		return this.getToken(JexLangParser.STRING, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterStringExpression) {
+	 		listener.enterStringExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitStringExpression) {
+	 		listener.exitStringExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1709,6 +1960,16 @@ export class BracketPropertyAccessExpressionContext extends ExpressionContext {
 	public RBRACKET(): TerminalNode {
 		return this.getToken(JexLangParser.RBRACKET, 0);
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterBracketPropertyAccessExpression) {
+	 		listener.enterBracketPropertyAccessExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitBracketPropertyAccessExpression) {
+	 		listener.exitBracketPropertyAccessExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitBracketPropertyAccessExpression) {
@@ -1729,6 +1990,16 @@ export class UnaryPlusExpressionContext extends ExpressionContext {
 	public expression(): ExpressionContext {
 		return this.getTypedRuleContext(ExpressionContext, 0) as ExpressionContext;
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterUnaryPlusExpression) {
+	 		listener.enterUnaryPlusExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitUnaryPlusExpression) {
+	 		listener.exitUnaryPlusExpression(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitUnaryPlusExpression) {
@@ -1748,6 +2019,16 @@ export class SquareRootExpressionContext extends ExpressionContext {
 	}
 	public expression(): ExpressionContext {
 		return this.getTypedRuleContext(ExpressionContext, 0) as ExpressionContext;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterSquareRootExpression) {
+	 		listener.enterSquareRootExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitSquareRootExpression) {
+	 		listener.exitSquareRootExpression(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1786,6 +2067,16 @@ export class ObjectLiteralContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_objectLiteral;
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterObjectLiteral) {
+	 		listener.enterObjectLiteral(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitObjectLiteral) {
+	 		listener.exitObjectLiteral(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitObjectLiteral) {
@@ -1816,6 +2107,16 @@ export class ObjectPropertyContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_objectProperty;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterObjectProperty) {
+	 		listener.enterObjectProperty(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitObjectProperty) {
+	 		listener.exitObjectProperty(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1848,6 +2149,16 @@ export class FunctionCallContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_functionCall;
 	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterFunctionCall) {
+	 		listener.enterFunctionCall(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitFunctionCall) {
+	 		listener.exitFunctionCall(this);
+		}
+	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitFunctionCall) {
@@ -1878,6 +2189,16 @@ export class ArgumentListContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_argumentList;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterArgumentList) {
+	 		listener.enterArgumentList(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitArgumentList) {
+	 		listener.exitArgumentList(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1915,6 +2236,16 @@ export class ArrayLiteralContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_arrayLiteral;
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterArrayLiteral) {
+	 		listener.enterArrayLiteral(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitArrayLiteral) {
+	 		listener.exitArrayLiteral(this);
+		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {

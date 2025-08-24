@@ -1,4 +1,4 @@
-import { TypeMismatchError } from "./eval/errors";
+import { TypeMismatchError } from "./eval/errors/errors";
 import { JexValue } from "./types";
 
 // Utility functions for type checking and conversion
