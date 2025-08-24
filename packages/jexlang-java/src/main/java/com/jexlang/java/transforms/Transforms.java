@@ -36,7 +36,6 @@ public class Transforms {
                     if (v.isArray()) return num((v).asArray("length transform").size());
                     if (v.isString()) return num((v).asString("length transform").length());
                     if (v.isString()) return num((v).asObject("length transform").size());
-                    // Align with your TS: other types -> 0
                     return num(0);
                 }),
 
