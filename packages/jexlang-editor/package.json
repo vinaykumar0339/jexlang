@@ -3,6 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/jexlang-editor.umd.js",
+  "module": "dist/jexlang-editor.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/jexlang-editor.es.js",
+      "require": "./dist/jexlang-editor.umd.js",
+      "default": "./dist/jexlang-editor.es.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
