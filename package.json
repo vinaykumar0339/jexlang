@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "build:ts": "java -jar antlr-4.13.2-complete.jar -Dlanguage=TypeScript -visitor -o packages/jexlang-ts/src/grammar JexLang.g4",
-    "build:new:ts": "java -jar antlr-4.13.2-complete.jar -Dlanguage=TypeScript -visitor -o packages2/jexlang-ts/src/grammar JexLang.g4",
     "build:java": "java -jar antlr-4.13.2-complete.jar -Dlanguage=Java -visitor -o packages/jexlang-java/src/main/java/com/jexlang/java/grammar JexLang.g4"
   },
   "keywords": [],
