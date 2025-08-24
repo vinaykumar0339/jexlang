@@ -20,19 +20,29 @@ public class JexEvaluator {
     private final Map<String, FuncImpl> funcsMap;
     private final Map<String, TransformImpl> transformMap;
     private final EvalVisitor evalVisitor;
-    private JexLangErrorListener errorListener;
-    private Map<String, JexLangParser.ProgramContext> cacheParsedTrees = new HashMap<>();
+    private final JexLangErrorListener errorListener;
+    private final Map<String, JexLangParser.ProgramContext> cacheParsedTrees = new HashMap<>();
     private boolean cacheExpressions = false;
 
+    private Map<String, JexValue> convertContextToJexValue(Map<String, Object> context) {
+        Map<String, JexValue> jexContext = new HashMap<>();
+        if (context != null) {
+            for (Map.Entry<String, Object> entry : context.entrySet()) {
+                jexContext.put(entry.getKey(), JexValue.from(entry.getValue()));
+            }
+        }
+        return jexContext;
+    }
+
     public JexEvaluator(
-            Map<String, JexValue> context,
+            Map<String, Object> context,
             Map<String, FuncImpl> funcsMap,
             Map<String, TransformImpl> transformMap
     ) {
-        this.context = context != null ? context : new HashMap<>();
+        this.context = context != null ? convertContextToJexValue(context) : new HashMap<>();
         this.funcsMap = funcsMap != null ? funcsMap : new HashMap<>();
         this.transformMap = transformMap != null ? transformMap : new HashMap<>();
-        this.evalVisitor = new EvalVisitor(context, funcsMap, transformMap);
+        this.evalVisitor = new EvalVisitor(this.context, funcsMap, transformMap);
         this.errorListener = new JexLangErrorListener();
     }
 

@@ -39,11 +39,15 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         this.context.putAll(mathConstants());
 
         Map<String, FuncImpl> funcHashMap = new HashMap<>(Functions.makeBuiltins());
-        funcHashMap.putAll(funcsMap);
+        if (funcsMap != null) {
+            funcHashMap.putAll(funcsMap);
+        }
         this.funcRegistry = new MapFuncRegistry(funcHashMap);
 
         Map<String, TransformImpl> transformHashMap = new HashMap<>(Transforms.makeBuiltins());
-        transformHashMap.putAll(transformsMap);
+        if (transformsMap != null) {
+            transformHashMap.putAll(transformsMap);
+        }
         this.transformRegistry = new MapTransformRegistry(transformHashMap);
     }
 
