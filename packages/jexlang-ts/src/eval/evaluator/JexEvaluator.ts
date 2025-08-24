@@ -1,4 +1,4 @@
-import { CharStreams, CommonTokenStream, InputStream } from "antlr4";
+import { CharStreams, CommonTokenStream } from "antlr4";
 import { JexLangErrorListener } from "../listeners/JexLangErrorListener";
 import { EvalVisitor } from "../visitors/EvalVisitor";
 import { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
