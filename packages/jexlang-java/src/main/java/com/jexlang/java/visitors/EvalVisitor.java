@@ -3,12 +3,14 @@ package com.jexlang.java.visitors;
 import com.jexlang.java.Utils;
 import com.jexlang.java.eval.errors.*;
 import com.jexlang.java.functions.FuncImpl;
+import com.jexlang.java.functions.Functions;
 import com.jexlang.java.functions.MapFuncRegistry;
 import com.jexlang.java.grammar.JexLangBaseVisitor;
 import com.jexlang.java.grammar.JexLangParser;
 import com.jexlang.java.scopes.ScopeStack;
 import com.jexlang.java.transforms.MapTransformRegistry;
 import com.jexlang.java.transforms.TransformImpl;
+import com.jexlang.java.transforms.Transforms;
 import com.jexlang.java.types.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -17,10 +19,10 @@ import java.util.*;
 
 public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private Map<String, JexValue> context = new HashMap<>();
-    private MapFuncRegistry funcRegistry;
-    private MapTransformRegistry transformRegistry;
+    private final MapFuncRegistry funcRegistry;
+    private final MapTransformRegistry transformRegistry;
 
-    private ScopeStack scopeStack = new ScopeStack();
+    private final ScopeStack scopeStack = new ScopeStack();
 
     public EvalVisitor(
             Map<String, JexValue> context,
@@ -35,8 +37,13 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
         this.context.putAll(mathConstants());
 
-        this.funcRegistry = new MapFuncRegistry(); // TODO: Need to pass default functions and incoming functions
-        this.transformRegistry = new MapTransformRegistry(); // TODO: Need to pass default transforms and incoming transforms
+        Map<String, FuncImpl> funcHashMap = new HashMap<>(Functions.makeBuiltins());
+        funcHashMap.putAll(funcsMap);
+        this.funcRegistry = new MapFuncRegistry(funcHashMap);
+
+        Map<String, TransformImpl> transformHashMap = new HashMap<>(Transforms.makeBuiltins());
+        transformHashMap.putAll(transformsMap);
+        this.transformRegistry = new MapTransformRegistry(transformHashMap);
     }
 
     private Map<String, JexValue> mathConstants() {
