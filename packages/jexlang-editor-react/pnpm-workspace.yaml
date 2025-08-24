@@ -1,2 +1,3 @@
 overrides:
   jexlang-editor: link:../../../../../Library/pnpm/global/5/node_modules/jexlang-editor
+  jexlang-ts: link:../../../../../Library/pnpm/global/5/node_modules/jexlang-ts

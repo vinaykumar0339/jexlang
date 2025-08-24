@@ -425,15 +425,20 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): JexValue => {
         const obj: Record<string, JexValue> = {};
         const objectLiteralCtx = ctx.objectLiteral();
-        
-        for (let i = 0; i < ctx.objectLiteral().getChildCount(); i++) {
+
+        for (let i = 0; i < objectLiteralCtx.getChildCount(); i++) {
             const propCtx = objectLiteralCtx.objectProperty(i); // Can be Empty Object
             if (propCtx) {
                 let key: string | null = null;
                 if (propCtx.IDENTIFIER()) {
-                    const keyValue = this.context[propCtx.IDENTIFIER().getText()];
-                    if (typeof keyValue === "string" || typeof keyValue === "number" || typeof keyValue === "symbol") {
-                        key = keyValue.toString();
+                    // If the identifier is a variable in local scope, use its value as key
+                    const idText = propCtx.IDENTIFIER().getText();
+                    if (this.scopeStack.has(idText)) {
+                        key = String(this.scopeStack.get(idText));
+                    } else if (idText in this.context) {
+                        key = String(this.context[idText]);
+                    } else {
+                        key = idText; // Use the identifier as the key if not found in context or scope
                     }
                 } else if (propCtx.STRING()) {
                     // Support empty string keys
@@ -441,7 +446,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
                 } else {
                     key = "";
                 }
-                if (key) {
+                if (key !== null) {
                     obj[key] = this.visit(propCtx.expression());
                 }
             }

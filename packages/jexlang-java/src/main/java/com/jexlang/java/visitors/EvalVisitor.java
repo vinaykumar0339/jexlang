@@ -606,9 +606,15 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             if (propertyContext != null) {
                 String key = null;
                 if (propertyContext.IDENTIFIER() != null) {
-                    JexValue keyValue = this.context.get(propertyContext.IDENTIFIER().getText());
-                    if (keyValue instanceof JexString || keyValue instanceof JexNumber) {
+                    String idText = propertyContext.IDENTIFIER().getText();
+                    if (this.scopeStack.has(idText)) {
+                        JexValue keyValue = this.scopeStack.get(idText);
                         key = Utils.toString(keyValue, "ObjectLiteralExpression");
+                    } else if (this.context.containsKey(idText)) {
+                        JexValue keyValue = this.context.get(idText);
+                        key = Utils.toString(keyValue, "ObjectLiteralExpression");
+                    } else {
+                        key = idText; // Use the identifier as the key if not found in context or scope
                     }
                 } else if (propertyContext.STRING() != null) {
                     // Support empty string keys
