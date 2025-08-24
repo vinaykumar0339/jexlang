@@ -3,6 +3,12 @@ package com.jexlang.java.types;
 public class JexBoolean implements JexValue {
     private final boolean value;
     public JexBoolean(boolean value) { this.value = value; }
+
+    @Override
+    public String getType() {
+        return "boolean";
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return true; }
     public boolean isString() { return false; }

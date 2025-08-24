@@ -1,7 +1,46 @@
 package com.jexlang.java.eval.errors;
 
-public interface SyntaxErrorLocation {
-    int line = 0;
-    int column = 0;
-    String offendingSymbol = "";
+public class SyntaxErrorLocation {
+    private int line;
+    private int column;
+    private String offendingSymbol;
+
+    public SyntaxErrorLocation(int line, int column, String offendingSymbol) {
+        this.line = line;
+        this.column = column;
+        this.offendingSymbol = offendingSymbol;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public void setColumn(int column) {
+        this.column = column;
+    }
+
+    public String getOffendingSymbol() {
+        return offendingSymbol;
+    }
+
+    public void setOffendingSymbol(String offendingSymbol) {
+        this.offendingSymbol = offendingSymbol;
+    }
+
+    @Override
+    public String toString() {
+        return "SyntaxErrorLocation{" +
+                "line=" + line +
+                ", column=" + column +
+                ", offendingSymbol='" + offendingSymbol + '\'' +
+                '}';
+    }
 }

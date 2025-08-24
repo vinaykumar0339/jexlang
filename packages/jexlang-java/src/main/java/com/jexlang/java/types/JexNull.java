@@ -2,6 +2,12 @@ package com.jexlang.java.types;
 
 public class JexNull implements JexValue {
     public JexNull() {}
+
+    @Override
+    public String getType() {
+        return "null";
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

@@ -19,6 +19,13 @@ export class UndefinedFunctionError extends JexLangRuntimeError {
     }
 }
 
+export class UndefinedTransformError extends JexLangRuntimeError {
+    constructor(transformName: string) {
+        super(`Undefined transform: ${transformName}`);
+        this.name = 'UndefinedTransformError';
+    }
+}
+
 export class DivisionByZeroError extends JexLangRuntimeError {
     constructor() {
         super('Division by zero');

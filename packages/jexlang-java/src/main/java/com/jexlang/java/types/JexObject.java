@@ -3,6 +3,12 @@ package com.jexlang.java.types;
 public class JexObject implements JexValue {
     private final java.util.Map<String, JexValue> value;
     public JexObject(java.util.Map<String, JexValue> value) { this.value = value; }
+
+    @Override
+    public String getType() {
+        return "object";
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

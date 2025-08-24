@@ -9,11 +9,13 @@ public interface JexValue {
     boolean isArray();
     boolean isObject();
 
-    Number asNumber(String context) throws Exception;
-    boolean asBoolean(String context) throws Exception;
-    String asString(String context) throws Exception;
-    java.util.List<JexValue> asArray(String context) throws Exception;
-    java.util.Map<String, JexValue> asObject(String context) throws Exception;
+    String getType();
+
+    Number asNumber(String context);
+    boolean asBoolean(String context);
+    String asString(String context);
+    java.util.List<JexValue> asArray(String context);
+    java.util.Map<String, JexValue> asObject(String context);
 
     static RuntimeException typeError(String want, String ctx) {
         return new RuntimeException("Expected " + want + " in " + ctx);

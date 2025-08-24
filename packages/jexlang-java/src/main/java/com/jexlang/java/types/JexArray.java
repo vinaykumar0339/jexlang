@@ -3,6 +3,12 @@ package com.jexlang.java.types;
 public class JexArray implements JexValue {
     private final java.util.List<JexValue> value;
     public JexArray(java.util.List<JexValue> value) { this.value = value; }
+
+    @Override
+    public String getType() {
+        return "array";
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

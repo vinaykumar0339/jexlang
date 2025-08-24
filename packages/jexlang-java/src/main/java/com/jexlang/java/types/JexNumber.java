@@ -3,6 +3,12 @@ package com.jexlang.java.types;
 public class JexNumber implements JexValue {
     private final Number value;
     public JexNumber(Number value) { this.value = value; }
+
+    @Override
+    public String getType() {
+        return "number";
+    }
+
     public boolean isNumber() { return true; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

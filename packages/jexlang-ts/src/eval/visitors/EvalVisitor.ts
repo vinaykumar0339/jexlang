@@ -5,7 +5,7 @@ import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformIm
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toNumber, toString } from "../../utils";
-import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError } from "../errors/errors";
+import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { ScopeStack } from "../scopes";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
@@ -154,11 +154,11 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const numValue = Number(value);
 
         if (isNaN(numValue)) {
-            throw new Error(`Cannot calculate square root of non-numeric value: ${value}`);
+            throw new JexLangRuntimeError(`Cannot calculate square root of non-numeric value: ${value}`);
         }
 
         if (numValue < 0) {
-            throw new Error(`Cannot calculate square root of negative number: ${numValue}`);
+            throw new JexLangRuntimeError(`Cannot calculate square root of negative number: ${numValue}`);
         }
 
         return Math.sqrt(numValue);
@@ -315,6 +315,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     visitStringExpression = (ctx: JexLangParser.StringExpressionContext): JexValue => {
+        // Remove surrounding quotes by using slice
         return ctx.STRING().getText().slice(1, -1);
     };
 
@@ -489,8 +490,8 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
                 );
             }
         }
-        
-        throw new JexLangRuntimeError(`Unknown transform: ${transformName}`);
+
+        throw new UndefinedTransformError(transformName);
     }
 
     visitLogicalAndExpression = (ctx: JexLangParser.LogicalAndExpressionContext): JexValue => {
@@ -566,11 +567,11 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     // Add methods to manage the scope stack
-    public pushScope(): void {
+    private pushScope(): void {
         this.scopeStack.pushScope();
     }
 
-    public popScope(): void {
+    private popScope(): void {
         this.scopeStack.popScope();
     }
 
@@ -592,9 +593,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
         // Check if variable exists in local scope
         if (this.scopeStack.has(variableName)) {
-            if (!this.scopeStack.has(variableName)) {
-                throw new UndefinedVariableError(variableName);
-            }
             const value = this.scopeStack.get(variableName)!;
             currentValue = toNumber(value);
             const newValue = currentValue + 1;
@@ -631,9 +629,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
         // Check if variable exists in local scope
         if (this.scopeStack.has(variableName)) {
-            if (!this.scopeStack.has(variableName)) {
-                throw new UndefinedVariableError(variableName);
-            }
             const value = this.scopeStack.get(variableName)!;
             currentValue = toNumber(value);
             const newValue = currentValue - 1;
@@ -671,9 +666,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
         // Check if variable exists in local scope
         if (this.scopeStack.has(variableName)) {
-            if (!this.scopeStack.has(variableName)) {
-                throw new UndefinedVariableError(variableName);
-            }
             const value = this.scopeStack.get(variableName)!;
             currentValue = toNumber(value);
             const newValue = currentValue + 1;
@@ -711,9 +703,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
         // Check if variable exists in local scope
         if (this.scopeStack.has(variableName)) {
-            if (!this.scopeStack.has(variableName)) {
-                throw new UndefinedVariableError(variableName);
-            }
             const value = this.scopeStack.get(variableName)!;
             currentValue = toNumber(value);
             const newValue = currentValue - 1;
