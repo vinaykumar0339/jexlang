@@ -23,14 +23,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         // Add mathematical constants
         this.context = {
             ...this.context,
-            PI: Math.PI,
-            E: Math.E,
-            LN2: Math.LN2,
-            LN10: Math.LN10,
-            LOG2E: Math.LOG2E,
-            LOG10E: Math.LOG10E,
-            SQRT1_2: Math.SQRT1_2,
-            SQRT2: Math.SQRT2
+            ...this.mathConstants(),
         };
 
         // Initialize registries
@@ -43,6 +36,19 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
           ...BUILT_IN_TRANSFORMS,
           ...transformsMap
         });
+    }
+
+    private mathConstants() {
+        return {
+            PI: Math.PI,
+            E: Math.E,
+            LN2: Math.LN2,
+            LN10: Math.LN10,
+            LOG2E: Math.LOG2E,
+            LOG10E: Math.LOG10E,
+            SQRT1_2: Math.SQRT1_2,
+            SQRT2: Math.SQRT2
+        };
     }
 
     public setContext(context: Context): void {
@@ -75,16 +81,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     public clearVariables(): void {
-        this.context = {
-            PI: Math.PI,
-            E: Math.E,
-            LN2: Math.LN2,
-            LN10: Math.LN10,
-            LOG2E: Math.LOG2E,
-            LOG10E: Math.LOG10E,
-            SQRT1_2: Math.SQRT1_2,
-            SQRT2: Math.SQRT2
-        };
+        this.context = this.mathConstants();
     }
 
     visitProgram = (ctx: JexLangParser.ProgramContext): JexValue => {

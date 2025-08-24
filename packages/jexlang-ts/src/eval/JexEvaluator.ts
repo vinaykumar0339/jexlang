@@ -11,13 +11,14 @@ export class JexEvaluator {
   constructor(
     private context: Context = {},
     private funcs: Record<string, FuncImpl> = {},
-    private transformsMap: Record<string, TransformImpl> = {}
+    private transformsMap: Record<string, TransformImpl> = {},
+    private cacheExpressions: boolean = false
   ) {
     this.visitor = new EvalVisitor(context, this.funcs, this.transformsMap);
   }
 
   private parseExpression(expr: string): ProgramContext {
-    if (this.cacheParsedTrees.has(expr)) {
+    if (this.cacheParsedTrees.has(expr) && this.cacheExpressions) {
       const cachedTree = this.cacheParsedTrees.get(expr);
       if (cachedTree) {
         return cachedTree;
@@ -30,8 +31,19 @@ export class JexEvaluator {
     const parser = new JexLangParser(tokens);
     const tree = parser.program();
 
-    this.cacheParsedTrees.set(expr, tree);
+    if (this.cacheExpressions) {
+      this.cacheParsedTrees.set(expr, tree);
+    }
     return tree;
+  }
+
+
+  setCacheExpressions(value: boolean): void {
+    this.cacheExpressions = value;
+  }
+
+  getCacheExpressions(): boolean {
+    return this.cacheExpressions;
   }
 
   evaluate(expr: string): JexValue {
