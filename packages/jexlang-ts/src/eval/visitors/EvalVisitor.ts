@@ -1,5 +1,5 @@
-import JexLangVisitor from "../../grammer/JexLangVisitor";
-import * as JexLangParser from "../../grammer/JexLangParser";
+import JexLangVisitor from "../../grammar/JexLangVisitor";
+import * as JexLangParser from "../../grammar/JexLangParser";
 import { ErrorNode, ParseTree } from "antlr4";
 import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformImpl, TransformRegistry, MapTransformRegistry } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";

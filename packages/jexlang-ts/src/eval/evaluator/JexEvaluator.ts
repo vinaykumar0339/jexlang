@@ -2,8 +2,8 @@ import { CharStreams, CommonTokenStream } from "antlr4";
 import { JexLangErrorListener } from "../listeners/JexLangErrorListener";
 import { EvalVisitor } from "../visitors/EvalVisitor";
 import { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
-import JexLangLexer from "../../grammer/JexLangLexer";
-import JexLangParser, { ProgramContext } from "../../grammer/JexLangParser";
+import JexLangLexer from "../../grammar/JexLangLexer";
+import JexLangParser, { ProgramContext } from "../../grammar/JexLangParser";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
