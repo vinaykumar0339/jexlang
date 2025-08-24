@@ -1,71 +1,172 @@
 import * as monaco from 'monaco-editor';
 import { JEX_LANGUAGE_ID } from './jexlang-language';
 
+const GLOBAL_VARIABLES: monaco.languages.CompletionItem[] = [
+  {
+    label: 'PI',
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: 'Mathematical constant',
+    documentation: 'Represents the ratio of a circle\'s circumference to its diameter',
+    insertText: 'PI',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'E',
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: 'Mathematical constant',
+    documentation: 'Represents the base of the natural logarithm',
+    insertText: 'E',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "LN2",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the natural logarithm of 2 (≈ 0.693)",
+    insertText: "LN2",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "LN10",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the natural logarithm of 10 (≈ 2.302)",
+    insertText: "LN10",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "LOG2E",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the base-2 logarithm of E (≈ 1.442)",
+    insertText: "LOG2E",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "LOG10E",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the base-10 logarithm of E (≈ 0.434)",
+    insertText: "LOG10E",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "SQRT1_2",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the square root of 1/2 (≈ 0.707)",
+    insertText: "SQRT1_2",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: "SQRT2",
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Mathematical constant",
+    documentation: "Represents the square root of 2 (≈ 1.414)",
+    insertText: "SQRT2",
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  }
+];
+
 // Keywords based on JexLang grammar
-const JEX_KEYWORDS = [
-  { label: 'let', kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Variable declaration' },
-  { label: 'true', kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Boolean literal' },
-  { label: 'false', kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Boolean literal' },
+const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
+  { 
+    label: 'let', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Variable declaration',
+    documentation: 'Declares a new variable',
+    insertText: 'let ${1:name} = ${2:value}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'true', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Boolean literal',
+    documentation: 'Represents the boolean value true',
+    insertText: 'true',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'false', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Boolean literal',
+    documentation: 'Represents the boolean value false',
+    insertText: 'false',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
 ];
 
 // Operators
-const JEX_OPERATORS = [
-  { label: '+', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Addition operator' },
-  { label: '-', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Subtraction operator' },
-  { label: '*', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Multiplication operator' },
-  { label: '/', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Division operator' },
-  { label: '%', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Modulo operator' },
-  { label: '^', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Power operator' },
-  { label: '**', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Power operator' },
-  { label: '==', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Equality operator' },
-  { label: '!=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Inequality operator' },
-  { label: '<', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Less than operator' },
-  { label: '>', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Greater than operator' },
-  { label: '<=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Less than or equal operator' },
-  { label: '>=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Greater than or equal operator' },
-  { label: '&&', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical AND operator' },
-  { label: '||', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical OR operator' },
-  { label: 'and', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical AND operator' },
-  { label: 'or', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical OR operator' },
+const JEX_OPERATORS: monaco.languages.CompletionItem[] = [
+  { label: '+', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Addition operator', insertText: '+', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '-', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Subtraction operator', insertText: '-', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '*', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Multiplication operator', insertText: '*', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '/', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Division operator', insertText: '/', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '%', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Modulo operator', insertText: '%', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '^', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Power operator', insertText: '^', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '**', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Power operator', insertText: '**', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '==', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Equality operator', insertText: '==', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '!=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Inequality operator', insertText: '!=', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '<', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Less than operator', insertText: '<', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '>', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Greater than operator', insertText: '>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '<=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Less than or equal operator', insertText: '<=', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '>=', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Greater than or equal operator', insertText: '>=', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '&&', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical AND operator', insertText: '&&', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: '||', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical OR operator', insertText: '||', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: 'and', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical AND operator', insertText: 'and', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
+  { label: 'or', kind: monaco.languages.CompletionItemKind.Operator, detail: 'Logical OR operator', insertText: 'or', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, range: new monaco.Range(1, 1, 1, 1) },
 ];
 
 // Functions from builtin.ts
-const JEX_FUNCTIONS = [
+const JEX_FUNCTIONS: monaco.languages.CompletionItem[] = [
   // Math functions
   { 
     label: 'abs', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the absolute value of a number',
     insertText: 'abs(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'ceil', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Rounds a number up to the next largest integer',
     insertText: 'ceil(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'floor', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Rounds a number down to the nearest integer',
     insertText: 'floor(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'round', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Rounds a number to the nearest integer',
     insertText: 'round(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'trunc', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the integer part of a number',
     insertText: 'trunc(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Trigonometric functions
@@ -74,49 +175,56 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the sine of a number',
     insertText: 'sin(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'cos', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the cosine of a number',
     insertText: 'cos(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'tan', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the tangent of a number',
     insertText: 'tan(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'asin', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the arcsine of a number',
     insertText: 'asin(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'acos', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the arccosine of a number',
     insertText: 'acos(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'atan', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the arctangent of a number',
     insertText: 'atan(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'atan2', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the arctangent of the quotient of its arguments',
     insertText: 'atan2(${1:y}, ${2:x})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Exponential and logarithmic functions
@@ -125,42 +233,48 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns e raised to the power of a number',
     insertText: 'exp(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'log', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the natural logarithm of a number',
     insertText: 'log(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'log10', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the base-10 logarithm of a number',
     insertText: 'log10(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'log2', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the base-2 logarithm of a number',
     insertText: 'log2(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'sqrt', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the square root of a number',
     insertText: 'sqrt(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'cbrt', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the cube root of a number',
     insertText: 'cbrt(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Hyperbolic functions
@@ -169,42 +283,48 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the hyperbolic sine of a number',
     insertText: 'sinh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'cosh', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the hyperbolic cosine of a number',
     insertText: 'cosh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'tanh', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the hyperbolic tangent of a number',
     insertText: 'tanh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'asinh', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the inverse hyperbolic sine of a number',
     insertText: 'asinh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'acosh', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the inverse hyperbolic cosine of a number',
     insertText: 'acosh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'atanh', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the inverse hyperbolic tangent of a number',
     insertText: 'atanh(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Utility functions
@@ -213,35 +333,40 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the smallest of zero or more numbers',
     insertText: 'min(${1:values})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'max', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the largest of zero or more numbers',
     insertText: 'max(${1:values})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'pow', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns base to the exponent power',
     insertText: 'pow(${1:base}, ${2:exponent})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'random', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns a random number between 0 and 1',
     insertText: 'random()', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'sign', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the sign of a number',
     insertText: 'sign(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Custom math functions
@@ -250,28 +375,32 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts radians to degrees',
     insertText: 'deg(${1:radians})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'rad', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts degrees to radians',
     insertText: 'rad(${1:degrees})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'clamp', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Clamps a value between min and max',
     insertText: 'clamp(${1:value}, ${2:min}, ${3:max})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'lerp', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Linear interpolation between two values',
     insertText: 'lerp(${1:a}, ${2:b}, ${3:t})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Type conversion functions
@@ -280,21 +409,24 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts a value to a number',
     insertText: 'number(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'string', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts a value to a string',
     insertText: 'string(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'boolean', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts a value to a boolean',
     insertText: 'boolean(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // String functions
@@ -303,28 +435,32 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the length of a string or array',
     insertText: 'length(${1:value})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'upper', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts a string to uppercase',
     insertText: 'upper(${1:string})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'lower', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Converts a string to lowercase',
     insertText: 'lower(${1:string})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'trim', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Removes whitespace from both ends of a string',
     insertText: 'trim(${1:string})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   
   // Array functions
@@ -333,156 +469,185 @@ const JEX_FUNCTIONS = [
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Creates an array from the arguments',
     insertText: 'array(${1:items})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'first', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the first element of an array',
     insertText: 'first(${1:array})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'last', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the last element of an array',
     insertText: 'last(${1:array})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'sum', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the sum of all elements in an array',
     insertText: 'sum(${1:array})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'avg', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Returns the average of all elements in an array',
     insertText: 'avg(${1:array})', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   }
 ];
 
 // Transforms from builtin.ts
-const JEX_TRANSFORMS = [
+const JEX_TRANSFORMS: monaco.languages.CompletionItem[] = [
   { 
     label: 'upper', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Converts a string to uppercase',
     insertText: '| upper', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'lower', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Converts a string to lowercase',
     insertText: '| lower', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'capitalize', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Capitalizes each word in a string',
     insertText: '| capitalize', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'trim', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Removes whitespace from both ends of a string',
     insertText: '| trim', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'abs', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Returns the absolute value of a number',
     insertText: '| abs', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'floor', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Rounds down to the nearest integer',
     insertText: '| floor', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'ceil', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Rounds up to the nearest integer',
     insertText: '| ceil', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'round', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Rounds to the nearest integer',
     insertText: '| round', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'length', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Returns the length of a string, array, or object',
     insertText: '| length', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'number', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Converts a value to a number',
     insertText: '| number', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'string', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Converts a value to a string',
     insertText: '| string', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'boolean', 
     kind: monaco.languages.CompletionItemKind.Function, 
     detail: 'Transform: Converts a value to a boolean',
     insertText: '| boolean', 
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet 
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   }
 ];
 
 // Snippets for common patterns
-const JEX_SNIPPETS = [
+const JEX_SNIPPETS: monaco.languages.CompletionItem[] = [
   { 
     label: 'let-declaration', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
     detail: 'Variable declaration',
     insertText: 'let ${1:name} = ${2:value};',
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'object-literal', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
     detail: 'Object literal',
     insertText: '{\n\t${1:key}: ${2:value}${3:,}\n}',
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'array-literal', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
     detail: 'Array literal',
     insertText: '[${1:item1}, ${2:item2}]',
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
   { 
     label: 'ternary', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
     detail: 'Ternary expression',
     insertText: '${1:condition} ? ${2:trueValue} : ${3:falseValue}',
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   },
+  {
+    label: 'short-ternary',
+    kind: monaco.languages.CompletionItemKind.Snippet,
+    detail: 'Short ternary expression',
+    insertText: '${1:condition} ?: ${2:default}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  }
 ];
 
 // Transform pipe snippet
@@ -491,7 +656,8 @@ JEX_SNIPPETS.push({
   kind: monaco.languages.CompletionItemKind.Snippet,
   detail: 'Pipe expression to transform',
   insertText: '${1:expression} | ${2:transform}',
-  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+  range: new monaco.Range(1, 1, 1, 1)
 });
 
 /**
@@ -592,11 +758,17 @@ export function registerCompletionItemProvider(m = monaco) {
           }));
           
           // Return directly with the mapped suggestions
-          return { suggestions };
+          return { 
+            suggestions: [
+              ...GLOBAL_VARIABLES,
+              ...suggestions,
+            ]
+          };
         }
       } else {
         // Normal context, show all suggestions
         suggestions = [
+          ...GLOBAL_VARIABLES,
           ...JEX_KEYWORDS,
           ...JEX_OPERATORS,
           ...JEX_FUNCTIONS,

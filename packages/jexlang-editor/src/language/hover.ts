@@ -8,6 +8,18 @@ const KEYWORD_DOCS: Record<string, string> = {
   'false': 'Boolean literal representing the false value.',
 };
 
+// Documentation for global variables/constants
+const GLOBAL_VAR_DOCS: Record<string, string> = {
+  'PI': 'Mathematical constant representing the ratio of a circle\'s circumference to its diameter, approximately 3.14159.',
+  'E': 'Mathematical constant representing the base of the natural logarithm, approximately 2.71828.',
+  'LN2': 'Mathematical constant representing the natural logarithm of 2, approximately 0.693.',
+  'LN10': 'Mathematical constant representing the natural logarithm of 10, approximately 2.302.',
+  'LOG2E': 'Mathematical constant representing the base-2 logarithm of E, approximately 1.442.',
+  'LOG10E': 'Mathematical constant representing the base-10 logarithm of E, approximately 0.434.',
+  'SQRT1_2': 'Mathematical constant representing the square root of 1/2, approximately 0.707.',
+  'SQRT2': 'Mathematical constant representing the square root of 2, approximately 1.414.'
+};
+
 // Documentation for operators
 const OPERATOR_DOCS: Record<string, string> = {
   '+': 'Addition operator. Adds two numbers or concatenates strings.',
@@ -136,6 +148,9 @@ export function registerHoverProvider(m = monaco) {
       } else if (OPERATOR_DOCS[token]) {
         // Operator documentation
         contents = [{ value: OPERATOR_DOCS[token] }];
+      } else if (GLOBAL_VAR_DOCS[token]) {
+        // Global variable documentation
+        contents = [{ value: GLOBAL_VAR_DOCS[token] }];
       }
       
       if (contents.length > 0) {
