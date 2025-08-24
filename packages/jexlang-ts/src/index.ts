@@ -1,1 +1,3 @@
-export * from "./eval/JexEvaluator";
+export * from "./eval";
+export * from './types';
+export * from './utils';
