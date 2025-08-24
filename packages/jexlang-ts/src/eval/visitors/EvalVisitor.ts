@@ -135,7 +135,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const variableName = ctx.IDENTIFIER().getText();
         const value = this.visit(ctx.expression());
         this.context[variableName] = value;
-        console.log(this.context);
         return value;
     }
 
@@ -570,6 +569,164 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
     public popScope(): void {
         this.scopeStack.popScope();
+    }
+
+    visitPrefixIncrementExpression = (ctx: JexLangParser.PrefixIncrementExpressionContext): JexValue => {
+        // For prefix increment (++x), we need to:
+        // 1. Ensure the expression is a variable
+        // 2. Get its current value
+        // 3. Increment it
+        // 4. Store the new value
+        // 5. Return the new value
+
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+        let currentValue: number;
+
+        // Check if variable exists in local scope
+        if (this.scopeStack.has(variableName)) {
+            if (!this.scopeStack.has(variableName)) {
+                throw new UndefinedVariableError(variableName);
+            }
+            const value = this.scopeStack.get(variableName)!;
+            currentValue = toNumber(value);
+            const newValue = currentValue + 1;
+            this.scopeStack.set(variableName, newValue);
+            return newValue;
+        }
+        
+        // Fall back to global context
+        if (variableName in this.context) {
+            currentValue = toNumber(this.context[variableName]);
+            const newValue = currentValue + 1;
+            this.context[variableName] = newValue;
+            return newValue;
+        }
+        
+        throw new UndefinedVariableError(variableName);
+    }
+
+    visitPrefixDecrementExpression = (ctx: JexLangParser.PrefixDecrementExpressionContext): JexValue => {
+        // For prefix decrement (--x), we need to:
+        // 1. Ensure the expression is a variable
+        // 2. Get its current value
+        // 3. Decrement it
+        // 4. Store the new value
+        // 5. Return the new value
+
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+        let currentValue: number;
+
+        // Check if variable exists in local scope
+        if (this.scopeStack.has(variableName)) {
+            if (!this.scopeStack.has(variableName)) {
+                throw new UndefinedVariableError(variableName);
+            }
+            const value = this.scopeStack.get(variableName)!;
+            currentValue = toNumber(value);
+            const newValue = currentValue - 1;
+            this.scopeStack.set(variableName, newValue);
+            return newValue;
+        }
+        
+        // Fall back to global context
+        if (variableName in this.context) {
+            currentValue = toNumber(this.context[variableName]);
+            const newValue = currentValue - 1;
+            this.context[variableName] = newValue;
+            return newValue;
+        }
+        
+        throw new UndefinedVariableError(variableName);
+    }
+
+    visitPostfixIncrementExpression = (ctx: JexLangParser.PostfixIncrementExpressionContext): JexValue => {
+        // For postfix increment (x++), we need to:
+        // 1. Ensure the expression is a variable
+        // 2. Get its current value
+        // 3. Store the current value to return it
+        // 4. Increment the value
+        // 5. Update the stored value
+        // 6. Return the original value
+
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+        let currentValue: number;
+
+        // Check if variable exists in local scope
+        if (this.scopeStack.has(variableName)) {
+            if (!this.scopeStack.has(variableName)) {
+                throw new UndefinedVariableError(variableName);
+            }
+            const value = this.scopeStack.get(variableName)!;
+            currentValue = toNumber(value);
+            const newValue = currentValue + 1;
+            this.scopeStack.set(variableName, newValue);
+            return currentValue; // Return the original value for postfix
+        }
+        
+        // Fall back to global context
+        if (variableName in this.context) {
+            currentValue = toNumber(this.context[variableName]);
+            const newValue = currentValue + 1;
+            this.context[variableName] = newValue;
+            return currentValue; // Return the original value for postfix
+        }
+        
+        throw new UndefinedVariableError(variableName);
+    }
+
+    visitPostfixDecrementExpression = (ctx: JexLangParser.PostfixDecrementExpressionContext): JexValue => {
+        // For postfix decrement (x--), we need to:
+        // 1. Ensure the expression is a variable
+        // 2. Get its current value
+        // 3. Store the current value to return it
+        // 4. Decrement the value
+        // 5. Update the stored value
+        // 6. Return the original value
+
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+        let currentValue: number;
+
+        // Check if variable exists in local scope
+        if (this.scopeStack.has(variableName)) {
+            if (!this.scopeStack.has(variableName)) {
+                throw new UndefinedVariableError(variableName);
+            }
+            const value = this.scopeStack.get(variableName)!;
+            currentValue = toNumber(value);
+            const newValue = currentValue - 1;
+            this.scopeStack.set(variableName, newValue);
+            return currentValue; // Return the original value for postfix
+        }
+        
+        // Fall back to global context
+        if (variableName in this.context) {
+            currentValue = toNumber(this.context[variableName]);
+            const newValue = currentValue - 1;
+            this.context[variableName] = newValue;
+            return currentValue; // Return the original value for postfix
+        }
+        
+        throw new UndefinedVariableError(variableName);
     }
 }
 

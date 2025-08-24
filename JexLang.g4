@@ -30,6 +30,10 @@ expression
     | SQRT expression                               # SquareRootExpression
     | MINUS expression                              # UnaryMinusExpression
     | PLUS expression                               # UnaryPlusExpression
+    | INCREMENT expression                          # PrefixIncrementExpression
+    | DECREMENT expression                          # PrefixDecrementExpression
+    | expression INCREMENT                          # PostfixIncrementExpression
+    | expression DECREMENT                          # PostfixDecrementExpression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
     | expression (PLUS | MINUS) expression         # AddSubExpression
     | expression (EQ | NEQ | LT | GT | LTE | GTE) expression # ComparatorExpression
@@ -80,6 +84,8 @@ DIVIDE      : '/' ;
 MODULO      : '%' ;
 POW         : '^' | '**' ;
 SQRT        : '√' | 'sqrt' ;
+INCREMENT   : '++' ;
+DECREMENT   : '--' ;
 
 // Assignment & Comparison
 ASSIGN      : '=' ;

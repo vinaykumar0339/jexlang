@@ -9,27 +9,31 @@ import { AssignmentContext } from "./JexLangParser.js";
 import { DotPropertyAssignmentContext } from "./JexLangParser.js";
 import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { LocalDeclarationContext } from "./JexLangParser.js";
-import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
 import { LogicalAndExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
 import { LogicalOrExpressionContext } from "./JexLangParser.js";
-import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
-import { VariableExpressionContext } from "./JexLangParser.js";
-import { NumberExpressionContext } from "./JexLangParser.js";
+import { PrefixIncrementExpressionContext } from "./JexLangParser.js";
 import { MulDivModExpressionContext } from "./JexLangParser.js";
 import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { AddSubExpressionContext } from "./JexLangParser.js";
 import { BooleanExpressionContext } from "./JexLangParser.js";
 import { UnaryMinusExpressionContext } from "./JexLangParser.js";
+import { ComparatorExpressionContext } from "./JexLangParser.js";
+import { UnaryPlusExpressionContext } from "./JexLangParser.js";
+import { PostfixIncrementExpressionContext } from "./JexLangParser.js";
+import { PrefixDecrementExpressionContext } from "./JexLangParser.js";
+import { ParenthesizedExpressionContext } from "./JexLangParser.js";
+import { PostfixDecrementExpressionContext } from "./JexLangParser.js";
+import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
+import { VariableExpressionContext } from "./JexLangParser.js";
+import { NumberExpressionContext } from "./JexLangParser.js";
 import { TransformExpressionContext } from "./JexLangParser.js";
 import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
-import { ComparatorExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
 import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
-import { UnaryPlusExpressionContext } from "./JexLangParser.js";
 import { SquareRootExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralContext } from "./JexLangParser.js";
 import { ObjectPropertyContext } from "./JexLangParser.js";
@@ -85,13 +89,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitLocalDeclaration?: (ctx: LocalDeclarationContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `ShortTernaryExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -134,26 +131,12 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `ArrayLiteralExpression`
+	 * Visit a parse tree produced by the `PrefixIncrementExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `VariableExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitVariableExpression?: (ctx: VariableExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `NumberExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitNumberExpression?: (ctx: NumberExpressionContext) => Result;
+	visitPrefixIncrementExpression?: (ctx: PrefixIncrementExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `MulDivModExpression`
 	 * labeled alternative in `JexLangParser.expression`.
@@ -190,6 +173,69 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => Result;
 	/**
+	 * Visit a parse tree produced by the `ComparatorExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitComparatorExpression?: (ctx: ComparatorExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `UnaryPlusExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `PostfixIncrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPostfixIncrementExpression?: (ctx: PostfixIncrementExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `PrefixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPrefixDecrementExpression?: (ctx: PrefixDecrementExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `ParenthesizedExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `PostfixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPostfixDecrementExpression?: (ctx: PostfixDecrementExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `ArrayLiteralExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `VariableExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVariableExpression?: (ctx: VariableExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `NumberExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitNumberExpression?: (ctx: NumberExpressionContext) => Result;
+	/**
 	 * Visit a parse tree produced by the `TransformExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -204,13 +250,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitDotPropertyAccessExpression?: (ctx: DotPropertyAccessExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `ComparatorExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitComparatorExpression?: (ctx: ComparatorExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `StringExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -224,13 +263,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitBracketPropertyAccessExpression?: (ctx: BracketPropertyAccessExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `UnaryPlusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `SquareRootExpression`
 	 * labeled alternative in `JexLangParser.expression`.

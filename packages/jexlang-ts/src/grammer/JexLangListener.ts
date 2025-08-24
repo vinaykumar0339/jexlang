@@ -9,27 +9,31 @@ import { AssignmentContext } from "./JexLangParser.js";
 import { DotPropertyAssignmentContext } from "./JexLangParser.js";
 import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { LocalDeclarationContext } from "./JexLangParser.js";
-import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
 import { LogicalAndExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
 import { LogicalOrExpressionContext } from "./JexLangParser.js";
-import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
-import { VariableExpressionContext } from "./JexLangParser.js";
-import { NumberExpressionContext } from "./JexLangParser.js";
+import { PrefixIncrementExpressionContext } from "./JexLangParser.js";
 import { MulDivModExpressionContext } from "./JexLangParser.js";
 import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { AddSubExpressionContext } from "./JexLangParser.js";
 import { BooleanExpressionContext } from "./JexLangParser.js";
 import { UnaryMinusExpressionContext } from "./JexLangParser.js";
+import { ComparatorExpressionContext } from "./JexLangParser.js";
+import { UnaryPlusExpressionContext } from "./JexLangParser.js";
+import { PostfixIncrementExpressionContext } from "./JexLangParser.js";
+import { PrefixDecrementExpressionContext } from "./JexLangParser.js";
+import { ParenthesizedExpressionContext } from "./JexLangParser.js";
+import { PostfixDecrementExpressionContext } from "./JexLangParser.js";
+import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
+import { VariableExpressionContext } from "./JexLangParser.js";
+import { NumberExpressionContext } from "./JexLangParser.js";
 import { TransformExpressionContext } from "./JexLangParser.js";
 import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
-import { ComparatorExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
 import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
-import { UnaryPlusExpressionContext } from "./JexLangParser.js";
 import { SquareRootExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralContext } from "./JexLangParser.js";
 import { ObjectPropertyContext } from "./JexLangParser.js";
@@ -108,18 +112,6 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitLocalDeclaration?: (ctx: LocalDeclarationContext) => void;
 	/**
-	 * Enter a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
-	/**
 	 * Enter a parse tree produced by the `ShortTernaryExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -192,41 +184,17 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `ArrayLiteralExpression`
+	 * Enter a parse tree produced by the `PrefixIncrementExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
 	 */
-	enterArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	enterPrefixIncrementExpression?: (ctx: PrefixIncrementExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `ArrayLiteralExpression`
+	 * Exit a parse tree produced by the `PrefixIncrementExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
 	 */
-	exitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `VariableExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterVariableExpression?: (ctx: VariableExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `VariableExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitVariableExpression?: (ctx: VariableExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `NumberExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterNumberExpression?: (ctx: NumberExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `NumberExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitNumberExpression?: (ctx: NumberExpressionContext) => void;
+	exitPrefixIncrementExpression?: (ctx: PrefixIncrementExpressionContext) => void;
 	/**
 	 * Enter a parse tree produced by the `MulDivModExpression`
 	 * labeled alternative in `JexLangParser.expression`.
@@ -288,6 +256,114 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => void;
 	/**
+	 * Enter a parse tree produced by the `ComparatorExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `ComparatorExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `UnaryPlusExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `UnaryPlusExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `PostfixIncrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterPostfixIncrementExpression?: (ctx: PostfixIncrementExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `PostfixIncrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitPostfixIncrementExpression?: (ctx: PostfixIncrementExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `PrefixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterPrefixDecrementExpression?: (ctx: PrefixDecrementExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `PrefixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitPrefixDecrementExpression?: (ctx: PrefixDecrementExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `ParenthesizedExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `ParenthesizedExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `PostfixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterPostfixDecrementExpression?: (ctx: PostfixDecrementExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `PostfixDecrementExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitPostfixDecrementExpression?: (ctx: PostfixDecrementExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `ArrayLiteralExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `ArrayLiteralExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `VariableExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterVariableExpression?: (ctx: VariableExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `VariableExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitVariableExpression?: (ctx: VariableExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `NumberExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterNumberExpression?: (ctx: NumberExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `NumberExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitNumberExpression?: (ctx: NumberExpressionContext) => void;
+	/**
 	 * Enter a parse tree produced by the `TransformExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -312,18 +388,6 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitDotPropertyAccessExpression?: (ctx: DotPropertyAccessExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `ComparatorExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `ComparatorExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
-	/**
 	 * Enter a parse tree produced by the `StringExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -347,18 +411,6 @@ export default class JexLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitBracketPropertyAccessExpression?: (ctx: BracketPropertyAccessExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `UnaryPlusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `UnaryPlusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
 	/**
 	 * Enter a parse tree produced by the `SquareRootExpression`
 	 * labeled alternative in `JexLangParser.expression`.
