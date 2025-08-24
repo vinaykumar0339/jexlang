@@ -1,5 +1,5 @@
 import { TypeMismatchError } from "./eval/errors/errors";
-import { JexValue } from "./types";
+import type { JexValue } from "./types";
 
 // Utility functions for type checking and conversion
 export function getJexValueType(value: JexValue): string {

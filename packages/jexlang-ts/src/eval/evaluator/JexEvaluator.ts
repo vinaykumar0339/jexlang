@@ -1,7 +1,7 @@
 import { CharStreams, CommonTokenStream } from "antlr4";
 import { JexLangErrorListener } from "../listeners/JexLangErrorListener";
 import { EvalVisitor } from "../visitors/EvalVisitor";
-import { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
+import type { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
 import JexLangLexer from "../../grammar/JexLangLexer";
 import JexLangParser, { ProgramContext } from "../../grammar/JexLangParser";
 
@@ -11,12 +11,19 @@ export class JexEvaluator {
   private cacheParsedTrees: Map<string, ProgramContext> = new Map();
   private cacheExpressions: boolean = false;
 
+  private context: Context;
+  private funcs: Record<string, FuncImpl>;
+  private transformsMap: Record<string, TransformImpl>;
+
   constructor(
-    private context: Context = {},
-    private funcs: Record<string, FuncImpl> = {},
-    private transformsMap: Record<string, TransformImpl> = {}
+    context: Context = {},
+    funcs: Record<string, FuncImpl> = {},
+    transformsMap: Record<string, TransformImpl> = {}
   ) {
-    this.visitor = new EvalVisitor(context, this.funcs, this.transformsMap);
+    this.context = context;
+    this.funcs = funcs;
+    this.transformsMap = transformsMap;
+    this.visitor = new EvalVisitor(this.context, this.funcs, this.transformsMap);
     this.errorListener = new JexLangErrorListener();
   }
 

@@ -1,4 +1,4 @@
-import { TransformImpl } from "../../types";
+import type { TransformImpl } from "../../types";
 import { toString } from "../../utils";
 
 export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {

@@ -5,12 +5,12 @@ export class JexLangErrorListener extends ErrorListener<any> {
   private errors: JexLangSyntaxError[] = [];
 
   syntaxError(
-    recognizer: Recognizer<any>,
+    _recognizer: Recognizer<any>,
     offendingSymbol: any,
     line: number,
     charPositionInLine: number,
     msg: string,
-    e: RecognitionException | undefined
+    _e: RecognitionException | undefined
   ): void {
     // Create a more user-friendly error message
     const formattedMessage = this.formatErrorMessage(line, charPositionInLine, msg, offendingSymbol);

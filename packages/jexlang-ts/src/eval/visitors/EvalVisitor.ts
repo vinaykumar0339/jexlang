@@ -1,7 +1,7 @@
 import JexLangVisitor from "../../grammar/JexLangVisitor";
 import * as JexLangParser from "../../grammar/JexLangParser";
 import { ErrorNode, ParseTree } from "antlr4";
-import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, TransformImpl, TransformRegistry, MapTransformRegistry } from "../../types";
+import { type Context, type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toNumber, toString } from "../../utils";

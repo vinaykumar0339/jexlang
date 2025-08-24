@@ -1,4 +1,4 @@
-import { FuncImpl, JexValue } from "../../types";
+import type { FuncImpl, JexValue } from "../../types";
 import { getJexValueType, toNumber, toString } from "../../utils";
 import { TypeMismatchError } from "../errors";
 
