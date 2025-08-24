@@ -1,5 +1,10 @@
 grammar JexLang;
 
+// Enable this when target is Java.
+// @header {
+//     package com.jexlang.java.grammar;
+// }
+
 // Parser Rules
 program
     : statement* EOF
