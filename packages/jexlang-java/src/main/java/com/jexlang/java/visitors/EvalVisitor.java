@@ -125,7 +125,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         try {
             for (int i = 0; i < childCount; i++) {
                 ParseTree child = ctx.getChild(i);
-                if (i == childCount - 1) { // TODO: need to check this really requires skipping the last item always
+                if (i == childCount - 1) {
                     // Last statement, return null so skip last item
                     continue;
                 }
