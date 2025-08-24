@@ -14,6 +14,7 @@ import com.jexlang.java.transforms.Transforms;
 import com.jexlang.java.types.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -48,14 +49,14 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
     private Map<String, JexValue> mathConstants() {
         Map<String, JexValue> constants = new HashMap<>();
-        constants.put("PI", new JexNumber(Math.PI));
-        constants.put("E", new JexNumber(Math.E));
-        constants.put("LN2", new JexNumber(Math.log(2)));
-        constants.put("LN10", new JexNumber(Math.log(10)));
-        constants.put("LOG2E", new JexNumber(1 / Math.log(2)));
-        constants.put("LOG10E", new JexNumber(1 / Math.log(10)));
-        constants.put("SQRT1_2", new JexNumber(Math.sqrt(0.5)));
-        constants.put("SQRT2", new JexNumber(Math.sqrt(2)));
+        constants.put("PI", new JexNumber(FastMath.PI));
+        constants.put("E", new JexNumber(FastMath.E));
+        constants.put("LN2", new JexNumber(FastMath.log(2)));
+        constants.put("LN10", new JexNumber(FastMath.log(10)));
+        constants.put("LOG2E", new JexNumber(1 / FastMath.log(2)));
+        constants.put("LOG10E", new JexNumber(1 / FastMath.log(10)));
+        constants.put("SQRT1_2", new JexNumber(FastMath.sqrt(0.5)));
+        constants.put("SQRT2", new JexNumber(FastMath.sqrt(2)));
         return constants;
     }
 
@@ -89,7 +90,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     }
 
     public Map<String, JexValue> getContext() {
-        return context;
+        return Map.copyOf(context);
     }
 
     public void clearVariables() {
@@ -145,7 +146,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             return this.visit(ctx.localDeclaration());
         }
 
-        return null;
+        return new JexNull();
     }
 
     @Override
@@ -572,7 +573,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         JexValue falseExpr = this.visit(ctx.expression(2));
 
         if (condition instanceof JexBoolean) {
-            return ((JexBoolean) condition).asBoolean("TernaryExpression") ? trueExpr : falseExpr;
+            return condition.asBoolean("TernaryExpression") ? trueExpr : falseExpr;
         }
 
         // If condition is not a boolean, treat it as truthy / falsy
@@ -674,7 +675,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     public JexValue visitLogicalAndExpression(JexLangParser.LogicalAndExpressionContext ctx) {
         JexValue left = this.visit(ctx.expression(0));
-        if (left instanceof JexBoolean && !((JexBoolean) left).asBoolean("LogicalAndExpression")) {
+        if (left instanceof JexBoolean && !left.asBoolean("LogicalAndExpression")) {
             return left; // Short-circuit if left is false
         }
 
@@ -685,7 +686,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     public JexValue visitLogicalOrExpression(JexLangParser.LogicalOrExpressionContext ctx) {
         JexValue left = this.visit(ctx.expression(0));
-        if (left instanceof JexBoolean && ((JexBoolean) left).asBoolean("LogicalOrExpression")) {
+        if (left instanceof JexBoolean && left.asBoolean("LogicalOrExpression")) {
             return left; // Short-circuit if left is true
         }
 
