@@ -44,7 +44,7 @@ public class JexLangErrorListener extends BaseErrorListener {
                 .replaceAll("expecting", "expected");
 
         if (offendingTextOrNull != null) {
-            cleanMessage += cleanMessage.replaceAll(offendingTextOrNull, this.escapeString(offendingTextOrNull));
+            cleanMessage = cleanMessage.replaceAll(offendingTextOrNull, this.escapeString(offendingTextOrNull));
         }
 
 
