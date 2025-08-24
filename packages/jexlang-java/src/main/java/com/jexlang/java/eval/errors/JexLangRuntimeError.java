@@ -1,10 +1,12 @@
 package com.jexlang.java.eval.errors;
 
-public class JexLangRuntimeError extends Error {
+import javax.management.RuntimeErrorException;
+
+public class JexLangRuntimeError extends RuntimeErrorException {
     private final String name;
 
     public JexLangRuntimeError(String message) {
-        super(message);
+        super(new Error(message));
         this.name = "JexLangRuntimeError";
     }
 

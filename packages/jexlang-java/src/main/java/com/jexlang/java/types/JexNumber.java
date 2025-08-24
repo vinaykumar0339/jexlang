@@ -9,6 +9,15 @@ public class JexNumber implements JexValue {
         return "number";
     }
 
+    @Override
+    public String toString() {
+        if (value instanceof Double || value instanceof Float) {
+            return String.format("%.2f", value.doubleValue());
+        } else {
+            return value.toString();
+        }
+    }
+
     public boolean isNumber() { return true; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }
@@ -16,8 +25,8 @@ public class JexNumber implements JexValue {
     public boolean isArray() { return false; }
     public boolean isObject() { return false; }
     public Number asNumber(String ctx) { return value; }
-    public boolean asBoolean(String ctx) { throw JexValue.typeError("boolean", ctx); }
-    public String asString(String ctx) { throw JexValue.typeError("string", ctx); }
-    public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx); }
-    public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx); }
+    public boolean asBoolean(String ctx) { throw JexValue.typeError("boolean", ctx, this); }
+    public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
+    public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
+    public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
 }

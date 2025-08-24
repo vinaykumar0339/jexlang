@@ -9,15 +9,30 @@ public class JexObject implements JexValue {
         return "object";
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("{");
+        int i = 0;
+        for (java.util.Map.Entry<String, JexValue> entry : value.entrySet()) {
+            sb.append("\"").append(entry.getKey()).append("\": ").append(entry.getValue().toString());
+            if (i < value.size() - 1) {
+                sb.append(", ");
+            }
+            i++;
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }
     public boolean isNull() { return false; }
     public boolean isArray() { return false; }
     public boolean isObject() { return true; }
-    public Number asNumber(String ctx) { throw JexValue.typeError("number", ctx); }
-    public boolean asBoolean(String ctx) { throw JexValue.typeError("boolean", ctx); }
-    public String asString(String ctx) { throw JexValue.typeError("string", ctx); }
-    public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx); }
+    public Number asNumber(String ctx) { throw JexValue.typeError("number", ctx, this); }
+    public boolean asBoolean(String ctx) { throw JexValue.typeError("boolean", ctx, this); }
+    public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
+    public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { return value; }
 }

@@ -17,8 +17,9 @@ public interface JexValue {
     java.util.List<JexValue> asArray(String context);
     java.util.Map<String, JexValue> asObject(String context);
 
-    static RuntimeException typeError(String want, String ctx) {
-        return new RuntimeException("Expected " + want + " in " + ctx);
+    static RuntimeException typeError(String want, String ctx, JexValue actualValue) {
+        return new RuntimeException("Expected " + want + " in '" + ctx +
+                "', but got type '" + actualValue.getType() + "' of value " + actualValue);
     }
 
     static JexNumber fromNumber(Number number) {
