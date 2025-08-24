@@ -71,8 +71,8 @@ function formatJexLang(code: string): string {
     // Add indentation based on the current level
     const indentation = '  '.repeat(indentLevel);
     
-    // Format operators with spaces
-    let formatted = formatOperators(trimmed);
+    // Format operators with spaces, preserving comments
+    let formatted = formatOperatorsPreservingComments(trimmed);
     
     // Add the formatted line to the result
     result.push(indentation + formatted);
@@ -92,6 +92,91 @@ function formatJexLang(code: string): string {
   }
   
   return result.join('\n');
+}
+
+/**
+ * Add appropriate spacing around operators while preserving comments
+ */
+function formatOperatorsPreservingComments(text: string): string {
+  // Check if the entire line is a comment
+  if (text.trim().startsWith('//')) {
+    // For line comments, preserve the entire content after //
+    const commentStart = text.indexOf('//');
+    const beforeComment = text.substring(0, commentStart).trim();
+    const commentContent = text.substring(commentStart);
+    
+    // Format any code before the comment if it exists
+    return beforeComment ? formatOperators(beforeComment) + ' ' + commentContent : commentContent;
+  }
+  
+  // Handle inline comments (code followed by a comment)
+  const commentStart = text.indexOf('//');
+  if (commentStart >= 0) {
+    const codeContent = text.substring(0, commentStart);
+    const commentContent = text.substring(commentStart);
+    
+    // Format only the code part, preserve the comment as is
+    return formatOperators(codeContent.trim()) + ' ' + commentContent;
+  }
+  
+  // Handle block comments (not perfect but a basic implementation)
+  if (text.includes('/*') && text.includes('*/')) {
+    const parts = splitByBlockComments(text);
+    return parts.map(part => {
+      return part.isComment ? part.text : formatOperators(part.text);
+    }).join('');
+  }
+  
+  // No comments, format the entire line
+  return formatOperators(text);
+}
+
+/**
+ * Split text by block comments to preserve comment content
+ */
+function splitByBlockComments(text: string): Array<{text: string, isComment: boolean}> {
+  const result: Array<{text: string, isComment: boolean}> = [];
+  let currentIndex = 0;
+  let startCommentIndex;
+  let endCommentIndex;
+  
+  // Find all block comments and split the text
+  while ((startCommentIndex = text.indexOf('/*', currentIndex)) !== -1) {
+    // Add the code before the comment
+    if (startCommentIndex > currentIndex) {
+      result.push({
+        text: text.substring(currentIndex, startCommentIndex),
+        isComment: false
+      });
+    }
+    
+    // Find the end of this comment
+    endCommentIndex = text.indexOf('*/', startCommentIndex + 2);
+    if (endCommentIndex === -1) {
+      // Unclosed comment, treat the rest as a comment
+      endCommentIndex = text.length;
+    } else {
+      endCommentIndex += 2; // Include the */ in the comment
+    }
+    
+    // Add the comment
+    result.push({
+      text: text.substring(startCommentIndex, endCommentIndex),
+      isComment: true
+    });
+    
+    currentIndex = endCommentIndex;
+  }
+  
+  // Add any remaining code after the last comment
+  if (currentIndex < text.length) {
+    result.push({
+      text: text.substring(currentIndex),
+      isComment: false
+    });
+  }
+  
+  return result;
 }
 
 /**
