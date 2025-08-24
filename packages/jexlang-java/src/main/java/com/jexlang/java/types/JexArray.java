@@ -22,6 +22,15 @@ public class JexArray implements JexValue {
         return sb.toString();
     }
 
+    @Override
+    public Object toObject() {
+        java.util.List<Object> list = new java.util.ArrayList<>();
+        for (JexValue item : value) {
+            list.add(item.toObject());
+        }
+        return list;
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

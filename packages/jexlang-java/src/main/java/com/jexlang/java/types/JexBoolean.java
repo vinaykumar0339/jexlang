@@ -14,6 +14,11 @@ public class JexBoolean implements JexValue {
         return value ? "true" : "false";
     }
 
+    @Override
+    public Object toObject() {
+        return value;
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return true; }
     public boolean isString() { return false; }

@@ -14,6 +14,11 @@ public class JexString implements JexValue {
         return "\"" + value.replace("\"", "\\\"") + "\""; // Escape quotes for JSON-like representation
     }
 
+    @Override
+    public Object toObject() {
+        return value; // Represents the string value in Java
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return true; }

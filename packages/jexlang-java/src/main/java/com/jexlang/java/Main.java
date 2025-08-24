@@ -21,7 +21,7 @@ public class Main {
             evaluator.setCacheExpressions(true);
 
             System.out.println(
-                    evaluator.evaluate("true = 'vinay'").asString("main()") // Should print 5
+                    evaluator.evaluate("√(x^2 + y^2)")
             );
         } catch (Exception e) {
             e.printStackTrace();

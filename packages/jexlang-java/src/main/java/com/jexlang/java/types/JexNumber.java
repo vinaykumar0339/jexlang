@@ -18,6 +18,11 @@ public class JexNumber implements JexValue {
         }
     }
 
+    @Override
+    public Object toObject() {
+        return value; // Represents the number value in Java
+    }
+
     public boolean isNumber() { return true; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

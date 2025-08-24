@@ -24,6 +24,15 @@ public class JexObject implements JexValue {
         return sb.toString();
     }
 
+    @Override
+    public Object toObject() {
+        java.util.Map<String, Object> map = new java.util.HashMap<>();
+        for (java.util.Map.Entry<String, JexValue> entry : value.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().toObject());
+        }
+        return map;
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }

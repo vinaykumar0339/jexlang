@@ -13,9 +13,15 @@ public class Utils {
     public interface Binary { double apply(double a, double b); }
     public interface Ternary { double apply(double a, double b, double c); }
 
-    public static JexValue num(double v) { return new JexNumber(v); }
-    public static JexValue str(String s) { return new JexString(s); }
-    public static JexValue bool(boolean b) { return new JexBoolean(b); }
+    public static JexValue num(double v) { return Values.num(v); }
+    public static JexValue str(String s) { return Values.str(s); }
+    public static JexValue bool(boolean b) { return Values.bool(b); }
+
+    public static JexValue nil() { return Values.nil(); }
+
+    public static JexValue arr(java.util.List<JexValue> vs) { return Values.arr(vs); }
+
+    public static JexValue obj(java.util.Map<String, JexValue> m) { return Values.obj(m); }
 
     public static void assertFinite(String name, double x) {
         if (!Double.isFinite(x)) throw new JexLangRuntimeError(name + " produced non-finite result");
@@ -70,27 +76,27 @@ public class Utils {
 
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
-        if (v instanceof JexBoolean) return ((JexBoolean) v).asBoolean(ctx);
+        if (v instanceof JexBoolean) return v.asBoolean(ctx);
         if (v instanceof JexNumber) {
-            double d = ((JexNumber) v).asNumber(ctx).doubleValue();
+            double d = v.asNumber(ctx).doubleValue();
             return d != 0.0 && !Double.isNaN(d);
         }
-        if (v instanceof JexString) return !((JexString) v).asString(ctx).isEmpty();
-        if (v instanceof JexArray) return !((JexArray) v).asArray(ctx).isEmpty();
-        if (v instanceof JexObject) return !((JexObject) v).asObject(ctx).isEmpty();
+        if (v instanceof JexString) return !v.asString(ctx).isEmpty();
+        if (v instanceof JexArray) return !v.asArray(ctx).isEmpty();
+        if (v instanceof JexObject) return !v.asObject(ctx).isEmpty();
         return v != null;
     }
 
     public static Number toNumber(JexValue value, String ctx) {
         if (value instanceof JexNumber) {
-            return ((JexNumber) value).asNumber(ctx);
+            return value.asNumber(ctx);
         }
         if (value instanceof JexBoolean) {
-            return ((JexBoolean) value).asBoolean(ctx) ? 1 : 0;
+            return value.asBoolean(ctx) ? 1 : 0;
         }
         if (value instanceof JexString) {
             try {
-                Number num = Double.parseDouble(((JexString) value).asString(ctx));
+                Number num = Double.parseDouble(value.asString(ctx));
                 if (!Double.isNaN(num.doubleValue())) {
                     return num;
                 }
@@ -106,23 +112,23 @@ public class Utils {
             return "null";
         }
         if (value instanceof JexString) {
-            return ((JexString) value).asString(ctx);
+            return value.asString(ctx);
         }
         if (value instanceof JexNumber) {
-            return String.valueOf(((JexNumber) value).asNumber(ctx));
+            return String.valueOf(value.asNumber(ctx));
         }
         if (value instanceof JexBoolean) {
-            return ((JexBoolean) value).asBoolean(ctx) ? "true" : "false";
+            return value.asBoolean(ctx) ? "true" : "false";
         }
         if (value instanceof JexArray) {
             return "[" +
-                String.join(", ", ((JexArray) value).asArray(ctx).stream()
+                String.join(", ", value.asArray(ctx).stream()
                     .map(v -> toString(v, ctx))
                     .toList()) + "]";
         }
         if (value instanceof JexObject) {
             return "{" +
-                ((JexObject) value).asObject(ctx).entrySet().stream()
+                value.asObject(ctx).entrySet().stream()
                     .map(entry -> "\"" + entry.getKey() + "\": " + toString(entry.getValue(), ctx))
                     .collect(java.util.stream.Collectors.joining(", ")) + "}";
         }

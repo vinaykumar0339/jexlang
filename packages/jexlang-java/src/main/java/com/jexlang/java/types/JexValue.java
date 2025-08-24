@@ -11,6 +11,8 @@ public interface JexValue {
 
     String getType();
 
+    Object toObject();
+
     Number asNumber(String context);
     boolean asBoolean(String context);
     String asString(String context);

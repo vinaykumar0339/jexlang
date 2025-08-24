@@ -93,9 +93,9 @@ public class JexEvaluator {
         return this.cacheExpressions;
     }
 
-    public JexValue evaluate(String expr) {
+    public Object evaluate(String expr) {
         JexLangParser.ProgramContext programContext = parseExpression(expr);
-        return evalVisitor.visit(programContext);
+        return evalVisitor.visit(programContext).toObject();
     }
 
     public void setContext(Map<String, JexValue> context) {

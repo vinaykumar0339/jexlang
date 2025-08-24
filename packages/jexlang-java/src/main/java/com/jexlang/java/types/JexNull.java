@@ -13,6 +13,11 @@ public class JexNull implements JexValue {
         return "null";
     }
 
+    @Override
+    public Object toObject() {
+        return null; // Represents the null value in Java
+    }
+
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return false; }
