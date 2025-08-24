@@ -369,7 +369,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String prop = ctx.IDENTIFIER().getText();
         if (object.isObject()) {
             Map<String, JexValue> jexObject = object.asObject("DotPropertyAccessExpression");
-            return jexObject.getOrDefault(prop, null);
+            return jexObject.getOrDefault(prop, new JexNull());
         } else {
             return new JexNull();
         }
@@ -386,7 +386,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             jexObject.put(prop, value);
             return value;
         } else {
-            return null;
+            return new JexNull();
         }
 
     }

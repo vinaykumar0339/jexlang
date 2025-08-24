@@ -409,13 +409,13 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const condition = this.visit(ctx.expression(0));
         const trueExpr = this.visit(ctx.expression(1));
         const falseExpr = this.visit(ctx.expression(2));
-        return condition ? trueExpr : falseExpr;
+        return condition != null && condition != undefined ? trueExpr : falseExpr;
     }
 
     visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): JexValue => {
         const condition = this.visit(ctx.expression(0));
         const falseExpr = this.visit(ctx.expression(1));
-        return condition ? condition : falseExpr;
+        return condition != null && condition != undefined ? condition : falseExpr;
     }
 
     visitBooleanExpression = (ctx: JexLangParser.BooleanExpressionContext): JexValue => {
