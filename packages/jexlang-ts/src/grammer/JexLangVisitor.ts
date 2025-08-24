@@ -30,6 +30,7 @@ import { ComparatorExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
 import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
 import { UnaryPlusExpressionContext } from "./JexLangParser.js";
+import { SquareRootExpressionContext } from "./JexLangParser.js";
 import { ObjectLiteralContext } from "./JexLangParser.js";
 import { ObjectPropertyContext } from "./JexLangParser.js";
 import { FunctionCallContext } from "./JexLangParser.js";
@@ -230,6 +231,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `SquareRootExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitSquareRootExpression?: (ctx: SquareRootExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by `JexLangParser.objectLiteral`.
 	 * @param ctx the parse tree

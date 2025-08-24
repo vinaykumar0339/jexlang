@@ -27,6 +27,7 @@ localDeclaration
 
 expression
     : expression POW expression                     # PowerExpression
+    | SQRT expression                               # SquareRootExpression
     | MINUS expression                              # UnaryMinusExpression
     | PLUS expression                               # UnaryPlusExpression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
@@ -78,6 +79,7 @@ MULTIPLY    : '*' ;
 DIVIDE      : '/' ;
 MODULO      : '%' ;
 POW         : '^' | '**' ;
+SQRT        : '√' | 'sqrt' ;
 
 // Assignment & Comparison
 ASSIGN      : '=' ;

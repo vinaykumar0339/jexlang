@@ -145,6 +145,23 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return Math.pow(toNumber(left), toNumber(right));
     }
 
+    visitSquareRootExpression = (ctx: JexLangParser.SquareRootExpressionContext): JexValue => {
+        const value = this.visit(ctx.expression());
+
+        // Ensure the value is a number
+        const numValue = Number(value);
+
+        if (isNaN(numValue)) {
+            throw new Error(`Cannot calculate square root of non-numeric value: ${value}`);
+        }
+
+        if (numValue < 0) {
+            throw new Error(`Cannot calculate square root of negative number: ${numValue}`);
+        }
+
+        return Math.sqrt(numValue);
+    }
+
     visitUnaryMinusExpression = (ctx: JexLangParser.UnaryMinusExpressionContext): JexValue => {
         return -toNumber(this.visit(ctx.expression()));
     }
