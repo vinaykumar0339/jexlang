@@ -343,18 +343,6 @@ public class JexLangBaseListener implements JexLangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTransformExpression(JexLangParser.TransformExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTransformExpression(JexLangParser.TransformExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -362,6 +350,18 @@ public class JexLangBaseListener implements JexLangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTransformExpression(JexLangParser.TransformExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTransformExpression(JexLangParser.TransformExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

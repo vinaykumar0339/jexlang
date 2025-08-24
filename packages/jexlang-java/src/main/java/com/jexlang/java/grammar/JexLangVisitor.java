@@ -198,19 +198,19 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNumberExpression(JexLangParser.NumberExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code TransformExpression}
-	 * labeled alternative in {@link JexLangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTransformExpression(JexLangParser.TransformExpressionContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code DotPropertyAccessExpression}
 	 * labeled alternative in {@link JexLangParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code TransformExpression}
+	 * labeled alternative in {@link JexLangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTransformExpression(JexLangParser.TransformExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code StringExpression}
 	 * labeled alternative in {@link JexLangParser#expression}.

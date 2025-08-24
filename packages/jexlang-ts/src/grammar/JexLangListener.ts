@@ -30,8 +30,8 @@ import { PostfixDecrementExpressionContext } from "./JexLangParser.js";
 import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
 import { VariableExpressionContext } from "./JexLangParser.js";
 import { NumberExpressionContext } from "./JexLangParser.js";
-import { TransformExpressionContext } from "./JexLangParser.js";
 import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
+import { TransformExpressionContext } from "./JexLangParser.js";
 import { StringExpressionContext } from "./JexLangParser.js";
 import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
 import { SquareRootExpressionContext } from "./JexLangParser.js";
@@ -364,18 +364,6 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitNumberExpression?: (ctx: NumberExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `TransformExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterTransformExpression?: (ctx: TransformExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `TransformExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitTransformExpression?: (ctx: TransformExpressionContext) => void;
-	/**
 	 * Enter a parse tree produced by the `DotPropertyAccessExpression`
 	 * labeled alternative in `JexLangParser.expression`.
 	 * @param ctx the parse tree
@@ -387,6 +375,18 @@ export default class JexLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitDotPropertyAccessExpression?: (ctx: DotPropertyAccessExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `TransformExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterTransformExpression?: (ctx: TransformExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `TransformExpression`
+	 * labeled alternative in `JexLangParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitTransformExpression?: (ctx: TransformExpressionContext) => void;
 	/**
 	 * Enter a parse tree produced by the `StringExpression`
 	 * labeled alternative in `JexLangParser.expression`.

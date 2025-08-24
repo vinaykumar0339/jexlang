@@ -209,14 +209,14 @@ public class JexLangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implement
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTransformExpression(JexLangParser.TransformExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTransformExpression(JexLangParser.TransformExpressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

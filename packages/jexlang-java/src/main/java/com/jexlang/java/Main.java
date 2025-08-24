@@ -9,7 +9,11 @@ import java.util.Map;
 public class Main {
     private static final Map<String, Object> context = Map.ofEntries(
             Map.entry("x", 3),
-            Map.entry("y", 4)
+            Map.entry("y", 4),
+            Map.entry("user", Map.ofEntries(
+                    Map.entry("name", "Alice"),
+                    Map.entry("age", 30)
+            ))
     );
     private static final Map<String, TransformImpl> transforms = Map.ofEntries(
             Map.entry("greet", (name) -> JexValue.fromString("Hello, " + name.asString("greet transform") + "!"))
@@ -21,7 +25,8 @@ public class Main {
             evaluator.setCacheExpressions(true);
 
             System.out.println(
-                    evaluator.evaluate("√(x^2 + y^2)")
+                    evaluator.evaluate("user.name + ' is ' + user.age + ' years old. '" +
+                            " + 'x is ' + x + ' and y is ' + y + '. ' | greet")
             );
         } catch (Exception e) {
             e.printStackTrace();

@@ -326,18 +326,6 @@ public interface JexLangListener extends ParseTreeListener {
 	 */
 	void exitNumberExpression(JexLangParser.NumberExpressionContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code TransformExpression}
-	 * labeled alternative in {@link JexLangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterTransformExpression(JexLangParser.TransformExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code TransformExpression}
-	 * labeled alternative in {@link JexLangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitTransformExpression(JexLangParser.TransformExpressionContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code DotPropertyAccessExpression}
 	 * labeled alternative in {@link JexLangParser#expression}.
 	 * @param ctx the parse tree
@@ -349,6 +337,18 @@ public interface JexLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code TransformExpression}
+	 * labeled alternative in {@link JexLangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterTransformExpression(JexLangParser.TransformExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code TransformExpression}
+	 * labeled alternative in {@link JexLangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitTransformExpression(JexLangParser.TransformExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code StringExpression}
 	 * labeled alternative in {@link JexLangParser#expression}.

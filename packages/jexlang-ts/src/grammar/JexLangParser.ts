@@ -412,7 +412,7 @@ export default class JexLangParser extends Parser {
 				this.state = 73;
 				this.match(JexLangParser.SQRT);
 				this.state = 74;
-				this.expression(25);
+				this.expression(26);
 				}
 				break;
 			case 2:
@@ -423,7 +423,7 @@ export default class JexLangParser extends Parser {
 				this.state = 75;
 				this.match(JexLangParser.MINUS);
 				this.state = 76;
-				this.expression(24);
+				this.expression(25);
 				}
 				break;
 			case 3:
@@ -434,7 +434,7 @@ export default class JexLangParser extends Parser {
 				this.state = 77;
 				this.match(JexLangParser.PLUS);
 				this.state = 78;
-				this.expression(23);
+				this.expression(24);
 				}
 				break;
 			case 4:
@@ -445,7 +445,7 @@ export default class JexLangParser extends Parser {
 				this.state = 79;
 				this.match(JexLangParser.INCREMENT);
 				this.state = 80;
-				this.expression(22);
+				this.expression(23);
 				}
 				break;
 			case 5:
@@ -456,7 +456,7 @@ export default class JexLangParser extends Parser {
 				this.state = 81;
 				this.match(JexLangParser.DECREMENT);
 				this.state = 82;
-				this.expression(21);
+				this.expression(22);
 				}
 				break;
 			case 6:
@@ -555,13 +555,13 @@ export default class JexLangParser extends Parser {
 						localctx = new PowerExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 96;
-						if (!(this.precpred(this._ctx, 26))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 26)");
+						if (!(this.precpred(this._ctx, 15))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
 						}
 						this.state = 97;
 						this.match(JexLangParser.POW);
 						this.state = 98;
-						this.expression(27);
+						this.expression(16);
 						}
 						break;
 					case 2:
@@ -569,8 +569,8 @@ export default class JexLangParser extends Parser {
 						localctx = new MulDivModExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 99;
-						if (!(this.precpred(this._ctx, 18))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 18)");
+						if (!(this.precpred(this._ctx, 14))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
 						}
 						this.state = 100;
 						_la = this._input.LA(1);
@@ -582,7 +582,7 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 101;
-						this.expression(19);
+						this.expression(15);
 						}
 						break;
 					case 3:
@@ -590,8 +590,8 @@ export default class JexLangParser extends Parser {
 						localctx = new AddSubExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 102;
-						if (!(this.precpred(this._ctx, 17))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 17)");
+						if (!(this.precpred(this._ctx, 13))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
 						}
 						this.state = 103;
 						_la = this._input.LA(1);
@@ -603,7 +603,7 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 104;
-						this.expression(18);
+						this.expression(14);
 						}
 						break;
 					case 4:
@@ -611,8 +611,8 @@ export default class JexLangParser extends Parser {
 						localctx = new ComparatorExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 105;
-						if (!(this.precpred(this._ctx, 16))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 16)");
+						if (!(this.precpred(this._ctx, 12))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
 						}
 						this.state = 106;
 						_la = this._input.LA(1);
@@ -624,7 +624,7 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 107;
-						this.expression(17);
+						this.expression(13);
 						}
 						break;
 					case 5:
@@ -632,13 +632,13 @@ export default class JexLangParser extends Parser {
 						localctx = new LogicalAndExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 108;
-						if (!(this.precpred(this._ctx, 15))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
+						if (!(this.precpred(this._ctx, 11))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 11)");
 						}
 						this.state = 109;
 						this.match(JexLangParser.AND);
 						this.state = 110;
-						this.expression(16);
+						this.expression(12);
 						}
 						break;
 					case 6:
@@ -646,13 +646,13 @@ export default class JexLangParser extends Parser {
 						localctx = new LogicalOrExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 111;
-						if (!(this.precpred(this._ctx, 14))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
+						if (!(this.precpred(this._ctx, 10))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 10)");
 						}
 						this.state = 112;
 						this.match(JexLangParser.OR);
 						this.state = 113;
-						this.expression(15);
+						this.expression(11);
 						}
 						break;
 					case 7:
@@ -694,8 +694,8 @@ export default class JexLangParser extends Parser {
 						localctx = new PostfixIncrementExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 124;
-						if (!(this.precpred(this._ctx, 20))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 20)");
+						if (!(this.precpred(this._ctx, 21))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 21)");
 						}
 						this.state = 125;
 						this.match(JexLangParser.INCREMENT);
@@ -706,8 +706,8 @@ export default class JexLangParser extends Parser {
 						localctx = new PostfixDecrementExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 126;
-						if (!(this.precpred(this._ctx, 19))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 19)");
+						if (!(this.precpred(this._ctx, 20))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 20)");
 						}
 						this.state = 127;
 						this.match(JexLangParser.DECREMENT);
@@ -715,46 +715,46 @@ export default class JexLangParser extends Parser {
 						break;
 					case 11:
 						{
-						localctx = new TransformExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+						localctx = new DotPropertyAccessExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 128;
-						if (!(this.precpred(this._ctx, 13))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
+						if (!(this.precpred(this._ctx, 17))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 17)");
 						}
 						this.state = 129;
-						this.match(JexLangParser.PIPE);
+						this.match(JexLangParser.DOT);
 						this.state = 130;
 						this.match(JexLangParser.IDENTIFIER);
 						}
 						break;
 					case 12:
 						{
-						localctx = new DotPropertyAccessExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+						localctx = new BracketPropertyAccessExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
 						this.state = 131;
-						if (!(this.precpred(this._ctx, 10))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 10)");
+						if (!(this.precpred(this._ctx, 16))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 16)");
 						}
 						this.state = 132;
-						this.match(JexLangParser.DOT);
+						this.match(JexLangParser.LBRACKET);
 						this.state = 133;
-						this.match(JexLangParser.IDENTIFIER);
+						this.expression(0);
+						this.state = 134;
+						this.match(JexLangParser.RBRACKET);
 						}
 						break;
 					case 13:
 						{
-						localctx = new BracketPropertyAccessExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
+						localctx = new TransformExpressionContext(this, new ExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_expression);
-						this.state = 134;
+						this.state = 136;
 						if (!(this.precpred(this._ctx, 9))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 9)");
 						}
-						this.state = 135;
-						this.match(JexLangParser.LBRACKET);
-						this.state = 136;
-						this.expression(0);
 						this.state = 137;
-						this.match(JexLangParser.RBRACKET);
+						this.match(JexLangParser.PIPE);
+						this.state = 138;
+						this.match(JexLangParser.IDENTIFIER);
 						}
 						break;
 					}
@@ -1018,29 +1018,29 @@ export default class JexLangParser extends Parser {
 	private expression_sempred(localctx: ExpressionContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return this.precpred(this._ctx, 26);
-		case 1:
-			return this.precpred(this._ctx, 18);
-		case 2:
-			return this.precpred(this._ctx, 17);
-		case 3:
-			return this.precpred(this._ctx, 16);
-		case 4:
 			return this.precpred(this._ctx, 15);
-		case 5:
+		case 1:
 			return this.precpred(this._ctx, 14);
+		case 2:
+			return this.precpred(this._ctx, 13);
+		case 3:
+			return this.precpred(this._ctx, 12);
+		case 4:
+			return this.precpred(this._ctx, 11);
+		case 5:
+			return this.precpred(this._ctx, 10);
 		case 6:
 			return this.precpred(this._ctx, 8);
 		case 7:
 			return this.precpred(this._ctx, 7);
 		case 8:
-			return this.precpred(this._ctx, 20);
+			return this.precpred(this._ctx, 21);
 		case 9:
-			return this.precpred(this._ctx, 19);
+			return this.precpred(this._ctx, 20);
 		case 10:
-			return this.precpred(this._ctx, 13);
+			return this.precpred(this._ctx, 17);
 		case 11:
-			return this.precpred(this._ctx, 10);
+			return this.precpred(this._ctx, 16);
 		case 12:
 			return this.precpred(this._ctx, 9);
 		}
@@ -1075,27 +1075,27 @@ export default class JexLangParser extends Parser {
 	10,5,0,59,60,5,23,0,0,60,61,3,10,5,0,61,62,5,24,0,0,62,63,5,10,0,0,63,64,
 	3,10,5,0,64,66,1,0,0,0,65,52,1,0,0,0,65,58,1,0,0,0,66,7,1,0,0,0,67,68,5,
 	33,0,0,68,69,5,34,0,0,69,70,5,10,0,0,70,71,3,10,5,0,71,9,1,0,0,0,72,73,
-	6,5,-1,0,73,74,5,7,0,0,74,95,3,10,5,25,75,76,5,2,0,0,76,95,3,10,5,24,77,
-	78,5,1,0,0,78,95,3,10,5,23,79,80,5,8,0,0,80,95,3,10,5,22,81,82,5,9,0,0,
-	82,95,3,10,5,21,83,84,5,19,0,0,84,85,3,10,5,0,85,86,5,20,0,0,86,95,1,0,
+	6,5,-1,0,73,74,5,7,0,0,74,95,3,10,5,26,75,76,5,2,0,0,76,95,3,10,5,25,77,
+	78,5,1,0,0,78,95,3,10,5,24,79,80,5,8,0,0,80,95,3,10,5,23,81,82,5,9,0,0,
+	82,95,3,10,5,22,83,84,5,19,0,0,84,85,3,10,5,0,85,86,5,20,0,0,86,95,1,0,
 	0,0,87,95,3,16,8,0,88,95,3,12,6,0,89,95,3,20,10,0,90,95,5,32,0,0,91,95,
 	5,34,0,0,92,95,5,31,0,0,93,95,5,35,0,0,94,72,1,0,0,0,94,75,1,0,0,0,94,77,
 	1,0,0,0,94,79,1,0,0,0,94,81,1,0,0,0,94,83,1,0,0,0,94,87,1,0,0,0,94,88,1,
 	0,0,0,94,89,1,0,0,0,94,90,1,0,0,0,94,91,1,0,0,0,94,92,1,0,0,0,94,93,1,0,
-	0,0,95,141,1,0,0,0,96,97,10,26,0,0,97,98,5,6,0,0,98,140,3,10,5,27,99,100,
-	10,18,0,0,100,101,7,0,0,0,101,140,3,10,5,19,102,103,10,17,0,0,103,104,7,
-	1,0,0,104,140,3,10,5,18,105,106,10,16,0,0,106,107,7,2,0,0,107,140,3,10,
-	5,17,108,109,10,15,0,0,109,110,5,17,0,0,110,140,3,10,5,16,111,112,10,14,
-	0,0,112,113,5,18,0,0,113,140,3,10,5,15,114,115,10,8,0,0,115,116,5,29,0,
+	0,0,95,141,1,0,0,0,96,97,10,15,0,0,97,98,5,6,0,0,98,140,3,10,5,16,99,100,
+	10,14,0,0,100,101,7,0,0,0,101,140,3,10,5,15,102,103,10,13,0,0,103,104,7,
+	1,0,0,104,140,3,10,5,14,105,106,10,12,0,0,106,107,7,2,0,0,107,140,3,10,
+	5,13,108,109,10,11,0,0,109,110,5,17,0,0,110,140,3,10,5,12,111,112,10,10,
+	0,0,112,113,5,18,0,0,113,140,3,10,5,11,114,115,10,8,0,0,115,116,5,29,0,
 	0,116,117,3,10,5,0,117,118,5,30,0,0,118,119,3,10,5,9,119,140,1,0,0,0,120,
 	121,10,7,0,0,121,122,5,29,0,0,122,123,5,30,0,0,123,140,3,10,5,8,124,125,
-	10,20,0,0,125,140,5,8,0,0,126,127,10,19,0,0,127,140,5,9,0,0,128,129,10,
-	13,0,0,129,130,5,28,0,0,130,140,5,34,0,0,131,132,10,10,0,0,132,133,5,27,
-	0,0,133,140,5,34,0,0,134,135,10,9,0,0,135,136,5,23,0,0,136,137,3,10,5,0,
-	137,138,5,24,0,0,138,140,1,0,0,0,139,96,1,0,0,0,139,99,1,0,0,0,139,102,
+	10,21,0,0,125,140,5,8,0,0,126,127,10,20,0,0,127,140,5,9,0,0,128,129,10,
+	17,0,0,129,130,5,27,0,0,130,140,5,34,0,0,131,132,10,16,0,0,132,133,5,23,
+	0,0,133,134,3,10,5,0,134,135,5,24,0,0,135,140,1,0,0,0,136,137,10,9,0,0,
+	137,138,5,28,0,0,138,140,5,34,0,0,139,96,1,0,0,0,139,99,1,0,0,0,139,102,
 	1,0,0,0,139,105,1,0,0,0,139,108,1,0,0,0,139,111,1,0,0,0,139,114,1,0,0,0,
 	139,120,1,0,0,0,139,124,1,0,0,0,139,126,1,0,0,0,139,128,1,0,0,0,139,131,
-	1,0,0,0,139,134,1,0,0,0,140,143,1,0,0,0,141,139,1,0,0,0,141,142,1,0,0,0,
+	1,0,0,0,139,136,1,0,0,0,140,143,1,0,0,0,141,139,1,0,0,0,141,142,1,0,0,0,
 	142,11,1,0,0,0,143,141,1,0,0,0,144,153,5,21,0,0,145,150,3,14,7,0,146,147,
 	5,26,0,0,147,149,3,14,7,0,148,146,1,0,0,0,149,152,1,0,0,0,150,148,1,0,0,
 	0,150,151,1,0,0,0,151,154,1,0,0,0,152,150,1,0,0,0,153,145,1,0,0,0,153,154,
@@ -2058,39 +2058,6 @@ export class NumberExpressionContext extends ExpressionContext {
 		}
 	}
 }
-export class TransformExpressionContext extends ExpressionContext {
-	constructor(parser: JexLangParser, ctx: ExpressionContext) {
-		super(parser, ctx.parentCtx, ctx.invokingState);
-		super.copyFrom(ctx);
-	}
-	public expression(): ExpressionContext {
-		return this.getTypedRuleContext(ExpressionContext, 0) as ExpressionContext;
-	}
-	public PIPE(): TerminalNode {
-		return this.getToken(JexLangParser.PIPE, 0);
-	}
-	public IDENTIFIER(): TerminalNode {
-		return this.getToken(JexLangParser.IDENTIFIER, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterTransformExpression) {
-	 		listener.enterTransformExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitTransformExpression) {
-	 		listener.exitTransformExpression(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
-		if (visitor.visitTransformExpression) {
-			return visitor.visitTransformExpression(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
-}
 export class DotPropertyAccessExpressionContext extends ExpressionContext {
 	constructor(parser: JexLangParser, ctx: ExpressionContext) {
 		super(parser, ctx.parentCtx, ctx.invokingState);
@@ -2119,6 +2086,39 @@ export class DotPropertyAccessExpressionContext extends ExpressionContext {
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitDotPropertyAccessExpression) {
 			return visitor.visitDotPropertyAccessExpression(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
+export class TransformExpressionContext extends ExpressionContext {
+	constructor(parser: JexLangParser, ctx: ExpressionContext) {
+		super(parser, ctx.parentCtx, ctx.invokingState);
+		super.copyFrom(ctx);
+	}
+	public expression(): ExpressionContext {
+		return this.getTypedRuleContext(ExpressionContext, 0) as ExpressionContext;
+	}
+	public PIPE(): TerminalNode {
+		return this.getToken(JexLangParser.PIPE, 0);
+	}
+	public IDENTIFIER(): TerminalNode {
+		return this.getToken(JexLangParser.IDENTIFIER, 0);
+	}
+	public enterRule(listener: JexLangListener): void {
+	    if(listener.enterTransformExpression) {
+	 		listener.enterTransformExpression(this);
+		}
+	}
+	public exitRule(listener: JexLangListener): void {
+	    if(listener.exitTransformExpression) {
+	 		listener.exitTransformExpression(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
+		if (visitor.visitTransformExpression) {
+			return visitor.visitTransformExpression(this);
 		} else {
 			return visitor.visitChildren(this);
 		}

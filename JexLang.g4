@@ -31,32 +31,32 @@ localDeclaration
     ;
 
 expression
-    : expression POW expression                     # PowerExpression
-    | SQRT expression                               # SquareRootExpression
+    : SQRT expression                               # SquareRootExpression
     | MINUS expression                              # UnaryMinusExpression
     | PLUS expression                               # UnaryPlusExpression
     | INCREMENT expression                          # PrefixIncrementExpression
     | DECREMENT expression                          # PrefixDecrementExpression
     | expression INCREMENT                          # PostfixIncrementExpression
     | expression DECREMENT                          # PostfixDecrementExpression
+    | LPAREN expression RPAREN                      # ParenthesizedExpression
+    | functionCall                                  # FunctionCallExpression
+    | expression DOT IDENTIFIER                     # DotPropertyAccessExpression
+    | expression LBRACKET expression RBRACKET       # BracketPropertyAccessExpression
+    | expression POW expression                     # PowerExpression
     | expression (MULTIPLY | DIVIDE | MODULO) expression  # MulDivModExpression
-    | expression (PLUS | MINUS) expression         # AddSubExpression
+    | expression (PLUS | MINUS) expression          # AddSubExpression
     | expression (EQ | NEQ | LT | GT | LTE | GTE) expression # ComparatorExpression
-    | expression AND expression                    # LogicalAndExpression
-    | expression OR expression                     # LogicalOrExpression
+    | expression AND expression                     # LogicalAndExpression
+    | expression OR expression                      # LogicalOrExpression
     | expression PIPE IDENTIFIER                    # TransformExpression
-    | LPAREN expression RPAREN                     # ParenthesizedExpression
-    | functionCall                                 # FunctionCallExpression
-    | expression DOT IDENTIFIER                    # DotPropertyAccessExpression
-    | expression LBRACKET expression RBRACKET      # BracketPropertyAccessExpression
     | expression QUESTION expression COLON expression # TernaryExpression
-    | expression QUESTION COLON expression         # ShortTernaryExpression
-    | objectLiteral                                # ObjectLiteralExpression
-    | arrayLiteral                                 # ArrayLiteralExpression
-    | BOOLEAN                                      # BooleanExpression
-    | IDENTIFIER                                   # VariableExpression
-    | NUMBER                                       # NumberExpression
-    | STRING                                       # StringExpression
+    | expression QUESTION COLON expression          # ShortTernaryExpression
+    | objectLiteral                                 # ObjectLiteralExpression
+    | arrayLiteral                                  # ArrayLiteralExpression
+    | BOOLEAN                                       # BooleanExpression
+    | IDENTIFIER                                    # VariableExpression
+    | NUMBER                                        # NumberExpression
+    | STRING                                        # StringExpression
     ;
 
 objectLiteral
