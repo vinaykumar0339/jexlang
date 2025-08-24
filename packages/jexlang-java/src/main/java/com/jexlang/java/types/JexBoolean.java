@@ -1,0 +1,17 @@
+package com.jexlang.java.types;
+
+public class JexBoolean implements JexValue {
+    private final boolean value;
+    public JexBoolean(boolean value) { this.value = value; }
+    public boolean isNumber() { return false; }
+    public boolean isBoolean() { return true; }
+    public boolean isString() { return false; }
+    public boolean isNull() { return false; }
+    public boolean isArray() { return false; }
+    public boolean isObject() { return false; }
+    public Number asNumber(String ctx) { throw JexValue.typeError("number", ctx); }
+    public boolean asBoolean(String ctx) { return value; }
+    public String asString(String ctx) { throw JexValue.typeError("string", ctx); }
+    public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx); }
+    public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx); }
+}

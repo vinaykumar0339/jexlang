@@ -106,6 +106,9 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             this.popScope();
         }
         
+        if (result === undefined || result === null) {
+            return null // JexLang Won't support undefined type so return null instead of undefined
+        }
         return result;
     }
 
