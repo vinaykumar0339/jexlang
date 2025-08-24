@@ -1,9 +1,13 @@
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { JEX_LANGUAGE_ID, registerJexLangFeatures } from "jexlang-editor";
-import { JexEvaluator, type JexValue } from "jexlang-ts";
+import { JexEvaluator, type Context, type JexValue } from "jexlang-ts";
 import { useRef, useEffect, useState } from "react";
 
-export const ReactJexLangEditor = () => {
+export const ReactJexLangEditor = ({
+  context = {},
+}: {
+  context?: Context;
+}) => {
 
   const disposeRef = useRef<() => void>(undefined);
   const [text, setText] = useState<string>("");
@@ -18,9 +22,10 @@ export const ReactJexLangEditor = () => {
   const validate = (value: string) => {
     // Perform validation logic here
     try {
-      const jexeval = new JexEvaluator();
+      const jexeval = new JexEvaluator(context);
       setResult(jexeval.evaluate(value));
     } catch (error) {
+      setResult(null);
       console.error("Error evaluating JexLang code:", error);
     }
   };
