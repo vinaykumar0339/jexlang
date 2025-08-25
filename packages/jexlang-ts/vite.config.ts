@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import dts from 'vite-plugin-dts';
@@ -5,7 +6,7 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
     plugins: [
         dts({
-            tsconfigPath: resolve(__dirname, "tsconfig.json")
+            tsconfigPath: resolve(__dirname, "tsconfig.lib.json")
         }),
     ],
     build: {
@@ -17,4 +18,5 @@ export default defineConfig({
         },
         rollupOptions: {},
     },
+    test: {}
 })
