@@ -23,8 +23,5 @@ export default defineConfig({
                 }
             }
         },
-        sourcemap: true,
-        // Ensure declaration files are included
-        emptyOutDir: false,
     },
 })

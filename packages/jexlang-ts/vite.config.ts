@@ -16,8 +16,5 @@ export default defineConfig({
             fileName: (format) => `jexlang-ts.${format}.js`
         },
         rollupOptions: {},
-        sourcemap: true,
-        // Ensure declaration files are included
-        emptyOutDir: false,
     },
 })
