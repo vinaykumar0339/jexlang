@@ -597,50 +597,70 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     }
 
     @Override
-    public JexValue visitObjectLiteralExpression(JexLangParser.ObjectLiteralExpressionContext ctx) {
-        Map<String, JexValue> objectMap = new HashMap<>();
-        JexLangParser.ObjectLiteralContext objectLiteralContext = ctx.objectLiteral();
+    public JexValue visitObjectLiteral(JexLangParser.ObjectLiteralContext ctx) {
+        Map<String, JexValue> obj = new HashMap<>();
 
         for (int i = 0; i < ctx.getChildCount(); i++) {
-            JexLangParser.ObjectPropertyContext propertyContext = objectLiteralContext.objectProperty(i);
-            if (propertyContext != null) {
-                String key = null;
-                if (propertyContext.IDENTIFIER() != null) {
-                    String idText = propertyContext.IDENTIFIER().getText();
-                    if (this.scopeStack.has(idText)) {
-                        JexValue keyValue = this.scopeStack.get(idText);
-                        key = Utils.toString(keyValue, "ObjectLiteralExpression");
-                    } else if (this.context.containsKey(idText)) {
-                        JexValue keyValue = this.context.get(idText);
-                        key = Utils.toString(keyValue, "ObjectLiteralExpression");
-                    } else {
-                        key = idText; // Use the identifier as the key if not found in context or scope
-                    }
-                } else if (propertyContext.STRING() != null) {
-                    // Support empty string keys
-                    key = propertyContext.STRING().getText();
-                    key = key.substring(1, key.length() - 1);
-                } else {
-                    key = "";
-                }
-                if (key != null) {
-                    JexValue value = this.visit(propertyContext.expression());
-                    // Default to JexNull if no value is provided
-                    objectMap.put(key, Objects.requireNonNullElseGet(value, JexNull::new));
-                }
+            JexValue value = this.visit(ctx.getChild(i));
+            if (value != null && value.isObject()) {
+                obj.putAll(value.asObject("ObjectLiteral"));
             }
         }
 
-        return new JexObject(objectMap);
+        return new JexObject(obj);
+    }
+
+    @Override
+    public JexValue visitObjectProperty(JexLangParser.ObjectPropertyContext ctx) {
+        Map<String, JexValue> obj = new HashMap<>(Map.ofEntries());
+        String key = null;
+        if (ctx.IDENTIFIER() != null) {
+            String idText = ctx.IDENTIFIER().getText();
+            if (this.scopeStack.has(idText)) {
+                JexValue keyValue = this.scopeStack.get(idText);
+                if (keyValue != null) {
+                    key = Utils.toString(keyValue, "ObjectProperty");
+                }
+            } else if (this.context.containsKey(idText)) {
+                JexValue keyValue = this.context.get(idText);
+                if (keyValue != null) {
+                    key = Utils.toString(keyValue, "ObjectProperty");
+                }
+            } else {
+                key = idText; // Use the identifier as the key if not found in context or scope
+            }
+        } else if (ctx.STRING() != null) {
+            // Use the string literal as the key
+            key = ctx.STRING().getText();
+            key = key.substring(1, key.length() - 1);
+        }
+
+        // lets not consider the empty strings and null keys
+        if (key != null && !key.isEmpty()) {
+            JexValue value = this.visit(ctx.expression());
+            // Default to JexNull if no value is provided
+            obj.put(key, Objects.requireNonNullElseGet(value, JexNull::new));
+        }
+
+        return new JexObject(obj);
+    }
+
+    @Override
+    public JexValue visitObjectLiteralExpression(JexLangParser.ObjectLiteralExpressionContext ctx) {
+        return this.visit(ctx.objectLiteral());
     }
 
     @Override
     public JexValue visitArrayLiteralExpression(JexLangParser.ArrayLiteralExpressionContext ctx) {
-        JexLangParser.ArrayLiteralContext arrayLiteralContext = ctx.arrayLiteral();
+        return this.visit(ctx.arrayLiteral());
+    }
+
+    @Override
+    public JexValue visitArrayLiteral(JexLangParser.ArrayLiteralContext ctx) {
         ArrayList<JexValue> elements = new ArrayList<>();
 
-        for (int i = 0; i < arrayLiteralContext.getChildCount(); i++) {
-            ParseTree child = arrayLiteralContext.getChild(i);
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            ParseTree child = ctx.getChild(i);
             // Skip commas and brackets
             if (!Objects.equals(child.getText(), ",") && !Objects.equals(child.getText(), "[") && !Objects.equals(child.getText(), "]")) {
                 JexValue element = this.visit(child);

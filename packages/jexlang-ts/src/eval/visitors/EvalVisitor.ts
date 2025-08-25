@@ -7,6 +7,7 @@ import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { ScopeStack } from "../scopes";
+import { channel } from "diagnostics_channel";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
     private context: Context = {};
@@ -422,51 +423,69 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return ctx.BOOLEAN().getText() === "true";
     }
 
-    visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): JexValue => {
+    visitObjectLiteral = (ctx: JexLangParser.ObjectLiteralContext): JexValue => {
         const obj: Record<string, JexValue> = {};
-        const objectLiteralCtx = ctx.objectLiteral();
-
-        for (let i = 0; i < objectLiteralCtx.getChildCount(); i++) {
-            const propCtx = objectLiteralCtx.objectProperty(i); // Can be Empty Object
-            if (propCtx) {
-                let key: string | null = null;
-                if (propCtx.IDENTIFIER()) {
-                    // If the identifier is a variable in local scope, use its value as key
-                    const idText = propCtx.IDENTIFIER().getText();
-                    if (this.scopeStack.has(idText)) {
-                        key = String(this.scopeStack.get(idText));
-                    } else if (idText in this.context) {
-                        key = String(this.context[idText]);
-                    } else {
-                        key = idText; // Use the identifier as the key if not found in context or scope
-                    }
-                } else if (propCtx.STRING()) {
-                    // Support empty string keys
-                    key = propCtx.STRING().getText().slice(1, -1);
-                } else {
-                    key = "";
-                }
-                if (key !== null) {
-                    obj[key] = this.visit(propCtx.expression());
-                }
+        for (let i = 0; i < ctx.getChildCount(); i++) {
+            const value = this.visit(ctx.getChild(i));
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                Object.assign(obj, value);
             }
         }
         return obj;
     }
 
+    visitObjectProperty = (ctx: JexLangParser.ObjectPropertyContext): JexValue => {
+        const obj: Record<string, JexValue> = {};
+        let key: string | null = null;
+        if (ctx.IDENTIFIER()) {
+            // If the identifier is a variable in local scope, use its value as key
+            const idText = ctx.IDENTIFIER().getText();
+            if (this.scopeStack.has(idText)) {
+                const keyValue = this.scopeStack.get(idText);
+                if (keyValue !== null && keyValue !== undefined) {
+                    key = toString(keyValue);
+                }
+            } else if (idText in this.context) {
+                const keyValue = this.context[idText];
+                if (keyValue !== null && keyValue !== undefined) {
+                    key = toString(keyValue);
+                }
+            } else {
+                key = idText; // Use the identifier as the key if not found in context or scope
+            }
+        } else if (ctx.STRING()) {
+            // Use the string literal as the key
+            key = ctx.STRING().getText().slice(1, -1);
+        }
+
+        // lets not consider the empty strings and undefined keys
+        if (key !== null && key !== undefined && key.length > 0) {
+            obj[toString(key)] = this.visit(ctx.expression());
+        }
+        return obj;
+    }
+
+    visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): JexValue => {
+        return this.visit(ctx.objectLiteral());
+    }
+
+
     visitArrayLiteralExpression = (ctx: JexLangParser.ArrayLiteralExpressionContext): JexValue => {
-        const arrayLiteralCtx = ctx.arrayLiteral();
+        return this.visit(ctx.arrayLiteral());
+    }
+
+    visitArrayLiteral = (ctx: JexLangParser.ArrayLiteralContext): JexValue => {
         const result: JexValue[] = [];
-        
+
         // Get all array elements
-        for (let i = 0; i < arrayLiteralCtx.getChildCount(); i++) {
-            const child = arrayLiteralCtx.getChild(i);
+        for (let i = 0; i < ctx.getChildCount(); i++) {
+            const child = ctx.getChild(i);
             // Skip commas and brackets
             if (child.getText() !== ',' && child.getText() !== '[' && child.getText() !== ']') {
                 result.push(this.visit(child));
             }
         }
-        
+
         return result;
     }
 
