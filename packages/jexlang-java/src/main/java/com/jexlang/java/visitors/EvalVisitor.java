@@ -347,9 +347,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
         for (JexLangParser.ExpressionContext exprCtx : ctx.expression()) {
             JexValue argValue = this.visit(exprCtx);
-            if (argValue != null) {
-                args.add(argValue);
-            }
+            args.add(argValue);
         }
 
         return new JexArray(args);

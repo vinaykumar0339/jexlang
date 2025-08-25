@@ -304,13 +304,10 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
     }
 
     visitArgumentList = (ctx: JexLangParser.ArgumentListContext): JexValue[] => {
-        const childCount = ctx.getChildCount();
         const args: JexValue[] = [];
-        for (let i = 0; i < childCount; i++) {
-            const arg = this.visit(ctx.getChild(i));
-            if (arg !== undefined && arg !== null) {
-                args.push(arg);
-            }
+        for (let i = 0; i < ctx.expression_list.length; i++) {
+            const arg = this.visit(ctx.expression(i));
+            args.push(arg);
         }
         return args;
     }
