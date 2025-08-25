@@ -1,5 +1,5 @@
 import type { TransformImpl } from "../../types";
-import { toString } from "../../utils";
+import { toBoolean, toNumber, toString } from "../../utils";
 
 export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {
   // String transforms
@@ -44,13 +44,13 @@ export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {
   
   // Type transforms
   number: (val) => {
-    return Number(val);
+    return toNumber(val);
   },
 
   string: (val) => {
     return toString(val);
   },
   boolean: (val) => {
-    return Boolean(val);
+    return toBoolean(val);
   },
 };

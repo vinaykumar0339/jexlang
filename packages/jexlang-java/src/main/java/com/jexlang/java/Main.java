@@ -25,8 +25,7 @@ public class Main {
             evaluator.setCacheExpressions(true);
 
             System.out.println(
-                    evaluator.evaluate("user.name + ' is ' + user.age + ' years old. '" +
-                            " + 'x is ' + x + ' and y is ' + y + '. ' | greet")
+                    evaluator.evaluate("user.agee | number")
             );
         } catch (Exception e) {
             e.printStackTrace();

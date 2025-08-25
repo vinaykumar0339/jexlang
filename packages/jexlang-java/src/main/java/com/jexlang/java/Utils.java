@@ -88,6 +88,9 @@ public class Utils {
     }
 
     public static Number toNumber(JexValue value, String ctx) {
+        if (value instanceof JexNull) {
+            return 0;
+        }
         if (value instanceof JexNumber) {
             return value.asNumber(ctx);
         }

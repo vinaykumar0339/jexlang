@@ -38,7 +38,7 @@ export const ReactJexLangEditor = ({
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <div>
-        {result ? <pre>{JSON.stringify(result, null, 2)}</pre> : <p>No result or might be invalid syntax</p>}
+        {result !== null && result !== undefined ? <pre>{JSON.stringify(result, null, 2)}</pre> : <p>No result or might be invalid syntax</p>}
       </div>
       <Editor
         defaultLanguage={JEX_LANGUAGE_ID}

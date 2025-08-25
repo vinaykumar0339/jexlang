@@ -14,6 +14,7 @@ export function isNumeric(value: JexValue): value is number {
 }
 
 export function toNumber(value: JexValue): number {
+    if (value == null || value === undefined) return 0;
     if (typeof value === 'number') return value;
     if (typeof value === 'boolean') return value ? 1 : 0;
     if (typeof value === 'string') {
@@ -21,6 +22,15 @@ export function toNumber(value: JexValue): number {
         if (!Number.isNaN(num)) return num;
     }
     throw new TypeMismatchError('number conversion', 'number', getJexValueType(value));
+}
+
+export function toBoolean(value: JexValue): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0 && !Number.isNaN(value);
+    if (typeof value === 'string') return value.length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    if (value && typeof value === 'object') return Object.keys(value).length > 0;
+    return value !== null && value !== undefined;
 }
 
 export function toString(value: JexValue): string {
