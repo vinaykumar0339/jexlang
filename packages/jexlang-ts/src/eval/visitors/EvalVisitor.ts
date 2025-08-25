@@ -474,12 +474,9 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         const result: JexValue[] = [];
 
         // Get all array elements
-        for (let i = 0; i < ctx.getChildCount(); i++) {
-            const child = ctx.getChild(i);
-            // Skip commas and brackets
-            if (child.getText() !== ',' && child.getText() !== '[' && child.getText() !== ']') {
-                result.push(this.visit(child));
-            }
+        for (let i = 0; i < ctx.expression_list().length; i++) {
+            const child = ctx.expression(i);
+            result.push(this.visit(child));
         }
 
         return result;

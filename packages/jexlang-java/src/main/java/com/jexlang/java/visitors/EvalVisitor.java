@@ -335,7 +335,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
 
         try {
-            return this.funcRegistry.call(functionName, args);
+            return this.funcRegistry.call(functionName, args.toArray(new JexValue[0]));
         } catch (Exception e) {
             throw new JexLangRuntimeError("Error calling function '" + functionName + "': " + e.getMessage());
         }
@@ -659,16 +659,10 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitArrayLiteral(JexLangParser.ArrayLiteralContext ctx) {
         ArrayList<JexValue> elements = new ArrayList<>();
 
-        for (int i = 0; i < ctx.getChildCount(); i++) {
-            ParseTree child = ctx.getChild(i);
-            // Skip commas and brackets
-            if (!Objects.equals(child.getText(), ",") && !Objects.equals(child.getText(), "[") && !Objects.equals(child.getText(), "]")) {
-                JexValue element = this.visit(child);
-                if (element != null) {
-                    elements.add(element);
-                }
-
-            }
+        for (int i = 0; i < ctx.expression().size(); i++) {
+            ParseTree child = ctx.expression(i);
+            JexValue element = this.visit(child);
+            elements.add(element);
         }
 
         return new JexArray(elements);
@@ -692,7 +686,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             ArrayList<JexValue> args = new ArrayList<>();
             args.add(input);
             try {
-                return this.funcRegistry.call(transformName, args);
+                return this.funcRegistry.call(transformName, args.toArray(new JexValue[0]));
             } catch (Exception e) {
                 throw new JexLangRuntimeError("Error calling function '" + transformName + "': " + e.getMessage());
             }

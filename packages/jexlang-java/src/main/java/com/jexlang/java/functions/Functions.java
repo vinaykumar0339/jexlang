@@ -76,20 +76,20 @@ public class Functions {
 
                 // Utilities (variadic or mixed)
                 Map.entry("min", (args) -> {
-                    if (args.isEmpty()) throw new RuntimeException("min requires at least one argument");
+                    if (args.length == 0) throw new RuntimeException("min requires at least one argument");
                     double best = Double.POSITIVE_INFINITY;
-                    for (int i = 0; i < args.size(); i++) {
-                        double v = Utils.toNumber(args.get(i), "min arg " + (i + 1)).doubleValue();
+                    for (int i = 0; i < args.length; i++) {
+                        double v = Utils.toNumber(args[i], "min arg " + (i + 1)).doubleValue();
                         if (v < best) best = v;
                     }
                     Utils.assertFinite("min", best);
                     return Utils.num(best);
                 }),
                 Map.entry("max", (args) -> {
-                    if (args.isEmpty()) throw new RuntimeException("max requires at least one argument");
+                    if (args.length == 0) throw new RuntimeException("max requires at least one argument");
                     double best = Double.NEGATIVE_INFINITY;
-                    for (int i = 0; i < args.size(); i++) {
-                        double v = Utils.toNumber(args.get(i), "max arg " + (i + 1)).doubleValue();
+                    for (int i = 0; i < args.length; i++) {
+                        double v = Utils.toNumber(args[i], "max arg " + (i + 1)).doubleValue();
                         if (v > best) best = v;
                     }
                     Utils.assertFinite("max", best);
@@ -111,38 +111,38 @@ public class Functions {
 
                 // Conversions
                 Map.entry("number", Utils.n1(x -> x, "number")), // wrapper ensures toNumber semantics
-                Map.entry("string", (args) -> Utils.str(Utils.toString(args.get(0), "string method"))),
-                Map.entry("boolean", (args) -> Utils.bool(Utils.toBoolean(args.get(0), "boolean method"))),
+                Map.entry("string", (args) -> Utils.str(Utils.toString(args[0], "string method"))),
+                Map.entry("boolean", (args) -> Utils.bool(Utils.toBoolean(args[0], "boolean method"))),
 
                 // String functions
                 Map.entry("length", (args) -> {
-                    JexValue x = args.get(0);
+                    JexValue x = args[0];
                     if (x instanceof JexString) return Utils.num(x.asString("length method").length());
                     if (x instanceof JexArray) return Utils.num(x.asArray("length method").size());
                     throw new TypeMismatchError("length", "string or array", Utils.getJexValueType(x));
                 }),
-                Map.entry("upper", (args) -> Utils.str(Utils.toString(args.get(0), "upper method").toUpperCase())),
-                Map.entry("lower", (args) -> Utils.str(Utils.toString(args.get(0), "lower method").toLowerCase())),
-                Map.entry("trim", (args) -> Utils.str(Utils.toString(args.get(0), "trim method").trim())),
+                Map.entry("upper", (args) -> Utils.str(Utils.toString(args[0], "upper method").toUpperCase())),
+                Map.entry("lower", (args) -> Utils.str(Utils.toString(args[0], "lower method").toLowerCase())),
+                Map.entry("trim", (args) -> Utils.str(Utils.toString(args[0], "trim method").trim())),
 
                 // Array functions
-                Map.entry("array", (args) -> new JexArray(new ArrayList<>(args))),
+                Map.entry("array", (args) -> new JexArray(new ArrayList<>(List.of(args)))),
                 Map.entry("first", (args) -> {
-                    JexValue arr = args.get(0);
+                    JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("first", "array", Utils.getJexValueType(arr));
                     List<JexValue> vs = ((JexArray) arr).asArray("first method");
                     return vs.isEmpty() ? new JexNull() : vs.get(0);
                 }),
                 Map.entry("last", (args) -> {
-                    JexValue arr = args.get(0);
+                    JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("last", "array", Utils.getJexValueType(arr));
                     List<JexValue> vs = ((JexArray) arr).asArray("last method");
                     return vs.isEmpty() ? new JexNull() : vs.get(vs.size() - 1);
                 }),
                 Map.entry("sum", (args) -> {
-                    JexValue arr = args.get(0);
+                    JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("sum", "array", Utils.getJexValueType(arr));
                     List<JexValue> vs = ((JexArray) arr).asArray("sum method");
@@ -153,7 +153,7 @@ public class Functions {
                     return Utils.num(s);
                 }),
                 Map.entry("avg", (args) -> {
-                    JexValue arr = args.get(0);
+                    JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("avg", "array", Utils.getJexValueType(arr));
                     List<JexValue> vs = ((JexArray) arr).asArray("avg method");
