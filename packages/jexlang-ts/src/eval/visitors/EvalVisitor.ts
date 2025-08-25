@@ -329,25 +329,23 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             !Array.isArray(obj) &&
             prop in obj
         ) {
-            return (obj as { [k: string]: JexValue })[prop];
+            return obj[prop];
         }
         return null;
     }
 
     visitDotPropertyAssignment = (ctx: JexLangParser.DotPropertyAssignmentContext): JexValue => {
-        const obj = this.visit(ctx.expression(0));
+        const obj = this.visit(ctx.expression(0)) as { [k: string]: JexValue }
         const prop = ctx.IDENTIFIER().getText();
         const value = this.visit(ctx.expression(1));
 
-        if (
-            obj &&
-            typeof obj === "object" &&
-            !Array.isArray(obj) &&
-            prop in obj
-        ) {
-            (obj as { [k: string]: JexValue })[prop] = value;
+        const isObject = obj && typeof obj === "object" && !Array.isArray(obj);
+
+        if (isObject) {
+            obj[prop] = value;
             return value;
         }
+
         return null;
     }
 
@@ -370,7 +368,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
                 }
             } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
                 if (prop in obj) {
-                    return (obj as { [k: string]: JexValue })[prop as string | number];
+                    return obj[prop];
                 }
             }
         }
@@ -397,10 +395,8 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
                     return value;
                 }
             } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
-                if (prop in obj) {
-                    (obj as { [k: string]: JexValue })[prop as string | number] = value;
-                    return value;
-                }
+                obj[prop] = value;
+                return value;
             }
         }
         return null;
