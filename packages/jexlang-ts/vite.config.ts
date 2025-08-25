@@ -15,22 +15,9 @@ export default defineConfig({
             formats: ["es", "umd"],
             fileName: (format) => `jexlang-ts.${format}.js`
         },
-        rollupOptions: {
-            external: ["antlr4"],
-            output: {
-                globals: {
-                    antlr4: "antlr4"
-                }
-            }
-        },
+        rollupOptions: {},
         sourcemap: true,
         // Ensure declaration files are included
         emptyOutDir: false,
-    },
-    resolve: {
-        alias: {
-            // Add an alias for the antlr4 module
-            antlr4: resolve(__dirname, "node_modules/antlr4")
-        }
     },
 })
