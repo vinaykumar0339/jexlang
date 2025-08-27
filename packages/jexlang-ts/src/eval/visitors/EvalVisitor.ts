@@ -7,7 +7,6 @@ import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { ScopeStack } from "../scopes";
-import { channel } from "diagnostics_channel";
 
 export class EvalVisitor extends JexLangVisitor<JexValue> {
     private context: Context = {};

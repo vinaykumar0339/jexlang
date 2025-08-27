@@ -4,6 +4,7 @@ import com.jexlang.java.evaluator.JexEvaluator;
 import com.jexlang.java.transforms.TransformImpl;
 import com.jexlang.java.types.JexValue;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class Main {
@@ -12,7 +13,8 @@ public class Main {
             Map.entry("y", 4),
             Map.entry("user", Map.ofEntries(
                     Map.entry("name", "Alice"),
-                    Map.entry("age", 30)
+                    Map.entry("age", 30),
+                    Map.entry("skills", new ArrayList<>(java.util.List.of("Java", "Python", "C++")))
             ))
     );
     private static final Map<String, TransformImpl> transforms = Map.ofEntries(
@@ -25,7 +27,9 @@ public class Main {
             evaluator.setCacheExpressions(true);
 
             System.out.println(
-                    evaluator.evaluate("user.agee | number")
+                    evaluator.evaluate("""
+                            user.skills[1]
+                            """)
             );
         } catch (Exception e) {
             e.printStackTrace();
