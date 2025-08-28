@@ -120,16 +120,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
         JexValue result = null;
 
-        int childCount = ctx.getChildCount();
-
         try {
-            for (int i = 0; i < childCount; i++) {
-                ParseTree child = ctx.getChild(i);
-                if (i == childCount - 1) {
-                    // Last statement, return null so skip last item
-                    continue;
-                }
-                result = this.visit(child);
+            for (int i = 0; i < ctx.statement().size(); i++) {
+                result = this.visit(ctx.statement(i));
             }
         } finally {
             popScope();

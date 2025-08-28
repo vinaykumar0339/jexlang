@@ -1,14 +1,15 @@
 import JexLangVisitor from "../../grammar/JexLangVisitor";
 import * as JexLangParser from "../../grammar/JexLangParser";
 import { ErrorNode, ParseTree } from "antlr4";
-import { type Context, type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry } from "../../types";
+import { type Context, type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { ScopeStack } from "../scopes";
 
-export class EvalVisitor extends JexLangVisitor<JexValue> {
+export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
+
     private context: Context = {};
     private funcRegistry: FuncRegistry;
     private transformRegistry: TransformRegistry;
@@ -16,22 +17,19 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
     constructor(context?: Context, funcsMap?: Record<string, FuncImpl>, transformsMap?: Record<string, TransformImpl>) {
         super();
-        
-        // Initialize context with provided values or defaults
+
         this.context = context ? { ...context } : {};
-        
-        // Add mathematical constants
+
         this.context = {
             ...this.context,
             ...this.mathConstants(),
         };
 
-        // Initialize registries
         this.funcRegistry = new MapFuncRegistry({
           ...BUILT_IN_FUNCTIONS,
           ...funcsMap
         });
-        
+
         this.transformRegistry = new MapTransformRegistry({
           ...BUILT_IN_TRANSFORMS,
           ...transformsMap
@@ -55,7 +53,6 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         this.context = context;
     }
 
-    // Public methods for external variable/function management
     public setVariable(name: string, value: JexValue): void {
         this.context[name] = value;
     }
@@ -69,7 +66,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
             this.funcRegistry.set(name, func);
         }
     }
-    
+
     public addTransform(name: string, transform: TransformImpl): void {
         if (this.transformRegistry instanceof MapTransformRegistry) {
             this.transformRegistry.set(name, transform);
@@ -84,35 +81,141 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         this.context = this.mathConstants();
     }
 
-    visitProgram = (ctx: JexLangParser.ProgramContext): JexValue => {
-        // Create a new scope for this program execution
-        this.pushScope();
-        
-        let result!: JexValue;
-        const childCount = ctx.getChildCount();
-        
-        try {
-            for (let i = 0; i < childCount; i++) {
-                const statement = ctx.getChild(i);
-                if (i == childCount - 1) {
-                    // Last statement, return null so skip last item
-                    continue;
-                    
+    private handlePromise<T>(value: MaybePromise<T>, handler: (resolved: T) => MaybePromise<T>): MaybePromise<T> {
+        if (value instanceof Promise) {
+            return value.then(resolved => {
+                try {
+                    return handler(resolved);
+                } catch (error) {
+                    if (error instanceof JexLangRuntimeError) {
+                        throw error;
+                    }
+                    throw new JexLangRuntimeError(`Error in operation: ${error instanceof Error ? error.message : String(error)}`);
                 }
-                result = this.visit(statement);
+            }).catch(error => {
+                if (error instanceof JexLangRuntimeError) {
+                    throw error;
+                }
+                throw new JexLangRuntimeError(`Promise rejected: ${error instanceof Error ? error.message : String(error)}`);
+            });
+        }
+
+        try {
+            return handler(value);
+        } catch (error) {
+            if (error instanceof JexLangRuntimeError) {
+                throw error;
             }
-        } finally {
-            // Ensure we pop the scope when done
-            this.popScope();
+            throw new JexLangRuntimeError(`Error in operation: ${error instanceof Error ? error.message : String(error)}`);
         }
-        
-        if (result === undefined || result === null) {
-            return null // JexLang Won't support undefined type so return null instead of undefined
-        }
-        return result;
     }
 
-    visitStatement = (ctx: JexLangParser.StatementContext): JexValue => {
+    private handlePromises<T, K extends T[]>(values: MaybePromise<T>[],
+                                            handler: (...resolved: K) => MaybePromise<T>): MaybePromise<T | T[]> {
+        if (values.some(val => val instanceof Promise)) {
+            return Promise.all(values.map(val => val instanceof Promise ? val : Promise.resolve(val)))
+                .then(resolved => {
+                    try {
+                        return handler(...resolved as K);
+                    } catch (error) {
+                        if (error instanceof JexLangRuntimeError) {
+                            throw error;
+                        }
+                        throw new JexLangRuntimeError(`Error in operation: ${error instanceof Error ? error.message : String(error)}`);
+                    }
+                })
+                .catch(error => {
+                    if (error instanceof JexLangRuntimeError) {
+                        throw error;
+                    }
+                    throw new JexLangRuntimeError(`Promise rejected: ${error instanceof Error ? error.message : String(error)}`);
+                });
+        }
+
+        try {
+            return handler(...values as K);
+        } catch (error) {
+            if (error instanceof JexLangRuntimeError) {
+                throw error;
+            }
+            throw new JexLangRuntimeError(`Error in operation: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    private handleBinaryOp(left: MaybePromise<JexValue>,
+                          right: MaybePromise<JexValue>,
+                          operation: (l: JexValue, r: JexValue) => JexValue): MaybePromise<JexValue> {
+        return this.handlePromises([left, right], (l, r) => operation(l, r));
+    }
+
+    private handleVarModification(
+        variableName: string,
+        modifyFn: (currentValue: JexValue) => { newValue: JexValue, result: JexValue }
+    ): MaybePromise<JexValue> {
+        let currentValue: MaybePromise<JexValue>;
+
+        if (this.scopeStack.has(variableName)) {
+            currentValue = this.scopeStack.get(variableName)!;
+        } else if (variableName in this.context) {
+            currentValue = this.context[variableName];
+        } else {
+            throw new UndefinedVariableError(variableName);
+        }
+
+        return this.handlePromise(currentValue, (resolvedValue) => {
+            const { newValue, result } = modifyFn(resolvedValue);
+
+            if (this.scopeStack.has(variableName)) {
+                this.scopeStack.set(variableName, newValue);
+            } else {
+                this.context[variableName] = newValue;
+            }
+
+            return result;
+        });
+    }
+
+    visitProgram = (ctx: JexLangParser.ProgramContext): MaybePromise<JexValue> => {
+        this.pushScope();
+
+        try {
+            const statements: ParseTree[] = [];
+
+            // Collect all non-EOF statements
+            for (let i = 0; i < ctx.statement_list().length; i++) {
+                statements.push(ctx.statement(i));
+            }
+            
+            if (statements.length === 0) {
+                return null;
+            }
+
+            // Process statements sequentially, chaining Promises only if needed
+            let hasPromise = false;
+            let lastResult: MaybePromise<JexValue> = null;
+
+            for (let i = 0; i < statements.length; i++) {
+                const statementResult = this.visit(statements[i]);
+                if (hasPromise) {
+                    lastResult = (lastResult as Promise<JexValue>).then(() => statementResult);
+                } else if (statementResult instanceof Promise) {
+                    hasPromise = true;
+                    lastResult = Promise.resolve(lastResult).then(() => statementResult);
+                } else {
+                    lastResult = statementResult;
+                }
+            }
+
+            if (hasPromise) {
+                return (lastResult as Promise<JexValue>).then(result => result ?? null);
+            }
+            return lastResult ?? null;
+        } finally {
+            this.popScope();
+        }
+    }
+
+    visitStatement = (ctx: JexLangParser.StatementContext): MaybePromise<JexValue> => {
         if (ctx.assignment()) {
             return this.visit(ctx.assignment()!);
         } else if (ctx.expression()) {
@@ -125,176 +228,204 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         return null;
     }
 
-    visitLocalDeclaration = (ctx: JexLangParser.LocalDeclarationContext): JexValue => {
+    visitLocalDeclaration = (ctx: JexLangParser.LocalDeclarationContext): MaybePromise<JexValue> => {
         const variableName = ctx.IDENTIFIER().getText();
         const value = this.visit(ctx.expression());
-        
-        // Set in current scope, not in the global context
-        this.scopeStack.set(variableName, value);
-        return value;
+
+        return this.handlePromise(value, resolvedValue => {
+            this.scopeStack.set(variableName, resolvedValue);
+            return resolvedValue;
+        });
     }
 
-    visitAssignment = (ctx: JexLangParser.AssignmentContext): JexValue => {
+    visitAssignment = (ctx: JexLangParser.AssignmentContext): MaybePromise<JexValue> => {
         const variableName = ctx.IDENTIFIER().getText();
         const value = this.visit(ctx.expression());
-        this.context[variableName] = value;
-        return value;
+
+        return this.handlePromise(value, resolvedValue => {
+            this.context[variableName] = resolvedValue;
+            return resolvedValue;
+        });
     }
 
-    visitPowerExpression = (ctx: JexLangParser.PowerExpressionContext): JexValue => {
+    visitPowerExpression = (ctx: JexLangParser.PowerExpressionContext): MaybePromise<JexValue> => {
         const left = this.visit(ctx.expression(0));
         const right = this.visit(ctx.expression(1));
-        return Math.pow(toNumber(left), toNumber(right));
+
+        return this.handleBinaryOp(left, right, (resolvedLeft, resolvedRight) => {
+            return Math.pow(toNumber(resolvedLeft), toNumber(resolvedRight));
+        });
     }
 
-    visitSquareRootExpression = (ctx: JexLangParser.SquareRootExpressionContext): JexValue => {
+    visitSquareRootExpression = (ctx: JexLangParser.SquareRootExpressionContext): MaybePromise<JexValue> => {
         const value = this.visit(ctx.expression());
 
-        // Ensure the value is a number
-        const numValue = Number(value);
+        return this.handlePromise(value, resolvedValue => {
+            const numValue = Number(resolvedValue);
 
-        if (isNaN(numValue)) {
-            throw new JexLangRuntimeError(`Cannot calculate square root of non-numeric value: ${value}`);
-        }
+            if (isNaN(numValue)) {
+                throw new JexLangRuntimeError(`Cannot calculate square root of non-numeric value: ${resolvedValue}`);
+            }
 
-        if (numValue < 0) {
-            throw new JexLangRuntimeError(`Cannot calculate square root of negative number: ${numValue}`);
-        }
+            if (numValue < 0) {
+                throw new JexLangRuntimeError(`Cannot calculate square root of negative number: ${numValue}`);
+            }
 
-        return Math.sqrt(numValue);
+            return Math.sqrt(numValue);
+        });
     }
 
-    visitUnaryMinusExpression = (ctx: JexLangParser.UnaryMinusExpressionContext): JexValue => {
-        return -toNumber(this.visit(ctx.expression()));
+    visitUnaryMinusExpression = (ctx: JexLangParser.UnaryMinusExpressionContext): MaybePromise<JexValue> => {
+        const value = this.visit(ctx.expression());
+        return this.handlePromise(value, resolvedValue => -toNumber(resolvedValue));
     }
 
-    visitUnaryPlusExpression = (ctx: JexLangParser.UnaryPlusExpressionContext): JexValue => {
-        return toNumber(this.visit(ctx.expression()));
+    visitUnaryPlusExpression = (ctx: JexLangParser.UnaryPlusExpressionContext): MaybePromise<JexValue> => {
+        const value = this.visit(ctx.expression());
+        return this.handlePromise(value, resolvedValue => toNumber(resolvedValue));
     }
 
-    visitMulDivModExpression = (ctx: JexLangParser.MulDivModExpressionContext): JexValue => {
-        const left = this.visit(ctx.expression(0));
-        const right = this.visit(ctx.expression(1));
-        const operator = ctx.getChild(1).getText();
-        
-        const leftNum = toNumber(left);
-        const rightNum = toNumber(right);
-
-        switch (operator) {
-            case '*':
-                return leftNum * rightNum;
-            case '/':
-                if (rightNum === 0) {
-                    throw new DivisionByZeroError();
-                }
-                return leftNum / rightNum;
-            case '%':
-                if (rightNum === 0) {
-                    throw new DivisionByZeroError();
-                }
-                return leftNum % rightNum;
-            default:
-                throw new JexLangRuntimeError(`Unknown operator: ${operator}`);
-        }
-    }
-
-    visitAddSubExpression = (ctx: JexLangParser.AddSubExpressionContext): JexValue => {
+    visitMulDivModExpression = (ctx: JexLangParser.MulDivModExpressionContext): MaybePromise<JexValue> => {
         const left = this.visit(ctx.expression(0));
         const right = this.visit(ctx.expression(1));
         const operator = ctx.getChild(1).getText();
 
-        // Handle string concatenation for +
-        if (operator === '+' && (typeof left === 'string' || typeof right === 'string')) {
-            return toString(left) + toString(right);
-        }
+        return this.handleBinaryOp(left, right, (leftVal, rightVal) => {
+            const leftNum = toNumber(leftVal);
+            const rightNum = toNumber(rightVal);
 
-        const leftNum = toNumber(left);
-        const rightNum = toNumber(right);
-
-        switch (operator) {
-            case '+':
-                return leftNum + rightNum;
-            case '-':
-                return leftNum - rightNum;
-            default:
-                throw new JexLangRuntimeError(`Unknown operator: ${operator}`);
-        }
+            switch (operator) {
+                case '*':
+                    return leftNum * rightNum;
+                case '/':
+                    if (rightNum === 0) {
+                        throw new DivisionByZeroError();
+                    }
+                    return leftNum / rightNum;
+                case '%':
+                    if (rightNum === 0) {
+                        throw new DivisionByZeroError();
+                    }
+                    return leftNum % rightNum;
+                default:
+                    throw new JexLangRuntimeError(`Unknown operator: ${operator}`);
+            }
+        });
     }
 
-    visitComparatorExpression = (ctx: JexLangParser.ComparatorExpressionContext): JexValue => {
+    visitAddSubExpression = (ctx: JexLangParser.AddSubExpressionContext): MaybePromise<JexValue> => {
         const left = this.visit(ctx.expression(0));
         const right = this.visit(ctx.expression(1));
         const operator = ctx.getChild(1).getText();
 
-        switch (operator) {
-            case '==':
-                return left === right;
-            case '!=':
-                return left !== right;
-            case '<':
-                // JS: null < number => true if number > 0, null < null => false
-                return (left == null ? 0 : left) < (right == null ? 0 : right);
-            case '>':
-                // JS: null > number => false, null > null => false
-                return (left == null ? 0 : left) > (right == null ? 0 : right);
-            case '<=':
-                return (left == null ? 0 : left) <= (right == null ? 0 : right);
-            case '>=':
-                return (left == null ? 0 : left) >= (right == null ? 0 : right);
-            default:
-                throw new JexLangRuntimeError(`Unknown comparator operator: ${operator}`);
-        }
+        return this.handleBinaryOp(left, right, (leftVal, rightVal) => {
+            if (operator === '+' && (typeof leftVal === 'string' || typeof rightVal === 'string')) {
+                return toString(leftVal) + toString(rightVal);
+            }
+
+            const leftNum = toNumber(leftVal);
+            const rightNum = toNumber(rightVal);
+
+            switch (operator) {
+                case '+':
+                    return leftNum + rightNum;
+                case '-':
+                    return leftNum - rightNum;
+                default:
+                    throw new JexLangRuntimeError(`Unknown operator: ${operator}`);
+            }
+        });
     }
 
-    visit(tree: ParseTree): JexValue {
+    visitComparatorExpression = (ctx: JexLangParser.ComparatorExpressionContext): MaybePromise<JexValue> => {
+        const left = this.visit(ctx.expression(0));
+        const right = this.visit(ctx.expression(1));
+        const operator = ctx.getChild(1).getText();
+
+        return this.handleBinaryOp(left, right, (leftVal, rightVal) => {
+            switch (operator) {
+                case '==':
+                    return leftVal === rightVal;
+                case '!=':
+                    return leftVal !== rightVal;
+                case '<':
+                    return (leftVal == null ? 0 : leftVal) < (rightVal == null ? 0 : rightVal);
+                case '>':
+                    return (leftVal == null ? 0 : leftVal) > (rightVal == null ? 0 : rightVal);
+                case '<=':
+                    return (leftVal == null ? 0 : leftVal) <= (rightVal == null ? 0 : rightVal);
+                case '>=':
+                    return (leftVal == null ? 0 : leftVal) >= (rightVal == null ? 0 : rightVal);
+                default:
+                    throw new JexLangRuntimeError(`Unknown comparator operator: ${operator}`);
+            }
+        });
+    }
+
+    visit(tree: ParseTree): MaybePromise<JexValue> {
         return super.visit(tree);
     }
 
-    visitParenthesizedExpression = (ctx: JexLangParser.ParenthesizedExpressionContext): JexValue => {
+    visitParenthesizedExpression = (ctx: JexLangParser.ParenthesizedExpressionContext): MaybePromise<JexValue> => {
         return this.visit(ctx.expression());
     }
 
-    visitFunctionCallExpression = (ctx: JexLangParser.FunctionCallExpressionContext): JexValue => {
+    visitFunctionCallExpression = (ctx: JexLangParser.FunctionCallExpressionContext): MaybePromise<JexValue> => {
         return this.visit(ctx.functionCall());
     }
 
-    // Override to check local variables before context
-    visitVariableExpression = (ctx: JexLangParser.VariableExpressionContext): JexValue => {
+    visitVariableExpression = (ctx: JexLangParser.VariableExpressionContext): MaybePromise<JexValue> => {
         const variableName = ctx.IDENTIFIER().getText();
-        
-        // Check if variable exists in local scope
+
         if (this.scopeStack.has(variableName)) {
-            return this.scopeStack.get(variableName)!;
+            const value = this.scopeStack.get(variableName)!;
+            return value;
         }
-        
-        // Fall back to global context
+
         if (variableName in this.context) {
-            return this.context[variableName];
+            const value = this.context[variableName];
+            return value;
         }
-        
+
         throw new UndefinedVariableError(variableName);
     }
 
-    visitNumberExpression = (ctx: JexLangParser.NumberExpressionContext): JexValue => {
+    visitNumberExpression = (ctx: JexLangParser.NumberExpressionContext): MaybePromise<JexValue> => {
         return parseFloat(ctx.NUMBER().getText());
     }
 
-    visitFunctionCall = (ctx: JexLangParser.FunctionCallContext): JexValue => {
+    visitBooleanExpression = (ctx: JexLangParser.BooleanExpressionContext): MaybePromise<JexValue> => {
+        return ctx.BOOLEAN().getText() === "true";
+    }
+
+    visitFunctionCall = (ctx: JexLangParser.FunctionCallContext): MaybePromise<JexValue> => {
         const functionName = ctx.IDENTIFIER().getText();
 
         if (!this.funcRegistry.has(functionName)) {
             throw new UndefinedFunctionError(functionName);
         }
 
-        const args: JexValue[] = [];
-
-        if (ctx.argumentList()) {
-            const argList = this.visit(ctx.argumentList()!) as JexValue[];
-            args.push(...argList);
-        }
+        // args won't be async those are plain values or object reference values.
+        const args: MaybePromise<JexValue[]> = this.visit(ctx.argumentList()) as MaybePromise<JexValue[]>;
 
         try {
-            return this.funcRegistry.call(functionName, args);
+            if (args instanceof Promise) {
+                return args.then(resolvedArgs => {
+                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs), res => res);
+                }).catch(error => {
+                    if (error instanceof JexLangRuntimeError) {
+                        throw error;
+                    } else {
+                        throw new JexLangRuntimeError(
+                            `Error calling function '${functionName}': ${error instanceof Error ? error.message : String(error)}`
+                        );
+                    }
+                });
+            } else {
+                return this.handlePromises(args, (...resolvedArgs) => {
+                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs), res => res);
+                });
+            }
         } catch (error) {
             throw new JexLangRuntimeError(
                 `Error calling function '${functionName}': ${error instanceof Error ? error.message : String(error)}`
@@ -302,135 +433,331 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
         }
     }
 
-    visitArgumentList = (ctx: JexLangParser.ArgumentListContext): JexValue[] => {
-        const args: JexValue[] = [];
+    visitArgumentList = (ctx: JexLangParser.ArgumentListContext): MaybePromise<JexValue[]> => {
+        const argPromises: MaybePromise<JexValue>[] = [];
         for (let i = 0; i < ctx.expression_list().length; i++) {
-            const arg = this.visit(ctx.expression(i));
-            args.push(arg);
+            argPromises.push(this.visit(ctx.expression(i)));
         }
-        return args;
+
+        return this.handlePromises(argPromises, (...resolvedArgs) => resolvedArgs) as MaybePromise<JexValue[]>;
     }
 
-    visitStringExpression = (ctx: JexLangParser.StringExpressionContext): JexValue => {
-        // Remove surrounding quotes by using slice
+    visitStringExpression = (ctx: JexLangParser.StringExpressionContext): MaybePromise<JexValue> => {
         return ctx.STRING().getText().slice(1, -1);
     };
 
-    visitDotPropertyAccessExpression = (ctx: JexLangParser.DotPropertyAccessExpressionContext): JexValue => {
-        const obj = this.visit(ctx.expression());
+    visitDotPropertyAccessExpression = (ctx: JexLangParser.DotPropertyAccessExpressionContext): MaybePromise<JexValue> => {
+        const objPromise = this.visit(ctx.expression());
         const prop = ctx.IDENTIFIER().getText();
-        if (
-            obj &&
-            typeof obj === "object" &&
-            !Array.isArray(obj) &&
-            prop in obj
-        ) {
-            return obj[prop];
-        }
-        return null;
-    }
 
-    visitDotPropertyAssignment = (ctx: JexLangParser.DotPropertyAssignmentContext): JexValue => {
-        const obj = this.visit(ctx.expression(0)) as { [k: string]: JexValue }
-        const prop = ctx.IDENTIFIER().getText();
-        const value = this.visit(ctx.expression(1));
-
-        const isObject = obj && typeof obj === "object" && !Array.isArray(obj);
-
-        if (isObject) {
-            obj[prop] = value;
-            return value;
-        }
-
-        return null;
-    }
-
-    visitBracketPropertyAccessExpression = (ctx: JexLangParser.BracketPropertyAccessExpressionContext): JexValue => {
-        const obj = this.visit(ctx.expression(0));
-        const prop = this.visit(ctx.expression(1));
-        if (
-            obj &&
-            typeof obj === "object" &&
-            prop !== null &&
-            prop !== undefined
-        ) {
-            // If obj is array and prop is a valid index
-            if (Array.isArray(obj)) {
-                const index = typeof prop === "number" ? prop : Number(prop);
-                // Support negative indices: -1 is last element, -2 is second last, etc.
-                const normalizedIndex = index < 0 ? obj.length + index : index;
-                if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
-                    return obj[normalizedIndex];
-                }
-            } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
-                if (prop in obj) {
-                    return obj[prop];
-                }
+        return this.handlePromise(objPromise, obj => {
+            if (
+                obj &&
+                typeof obj === "object" &&
+                !Array.isArray(obj) &&
+                prop in obj
+            ) {
+                return obj[prop];
             }
-        }
-        return null;
+            return null;
+        });
     }
 
-    visitBracketPropertyAssignment = (ctx: JexLangParser.BracketPropertyAssignmentContext): JexValue => {
-        const obj = this.visit(ctx.expression(0));
-        const prop = this.visit(ctx.expression(1));
-        const value = this.visit(ctx.expression(2));
-        if (
-            obj &&
-            typeof obj === "object" &&
-            prop !== null &&
-            prop !== undefined
-        ) {
-            // If obj is array and prop is a valid index
-            if (Array.isArray(obj)) {
-                const index = typeof prop === "number" ? prop : Number(prop);
-                // Support negative indices: -1 is last element, -2 is second last, etc.
-                const normalizedIndex = index < 0 ? obj.length + index : index;
-                if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
-                    obj[normalizedIndex] = value;
-                    return value;
-                }
-            } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
-                obj[prop] = value;
+    visitDotPropertyAssignment = (ctx: JexLangParser.DotPropertyAssignmentContext): MaybePromise<JexValue> => {
+        const objPromise = this.visit(ctx.expression(0));
+        const prop = ctx.IDENTIFIER().getText();
+        const valuePromise = this.visit(ctx.expression(1));
+
+        return this.handlePromises([objPromise, valuePromise], (obj, value) => {
+            const isObject = obj && typeof obj === "object" && !Array.isArray(obj);
+
+            if (isObject) {
+                (obj as { [k: string]: JexValue })[prop] = value;
                 return value;
             }
+
+            return null;
+        });
+    }
+
+    visitBracketPropertyAccessExpression = (ctx: JexLangParser.BracketPropertyAccessExpressionContext): MaybePromise<JexValue> => {
+        const objPromise = this.visit(ctx.expression(0));
+        const propPromise = this.visit(ctx.expression(1));
+
+        return this.handlePromises([objPromise, propPromise], (obj, prop) => {
+            if (
+                obj &&
+                typeof obj === "object" &&
+                prop !== null &&
+                prop !== undefined
+            ) {
+                if (Array.isArray(obj)) {
+                    const index = typeof prop === "number" ? prop : Number(prop);
+                    const normalizedIndex = index < 0 ? obj.length + index : index;
+                    if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                        return obj[normalizedIndex];
+                    }
+                } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
+                    if (prop in obj) {
+                        return obj[prop];
+                    }
+                }
+            }
+            return null;
+        });
+    }
+
+    visitBracketPropertyAssignment = (ctx: JexLangParser.BracketPropertyAssignmentContext): MaybePromise<JexValue> => {
+        const objPromise = this.visit(ctx.expression(0));
+        const propPromise = this.visit(ctx.expression(1));
+        const valuePromise = this.visit(ctx.expression(2));
+
+        return this.handlePromises(
+            [objPromise, propPromise, valuePromise],
+            (obj, prop, value) => {
+                if (
+                    obj &&
+                    typeof obj === "object" &&
+                    prop !== null &&
+                    prop !== undefined
+                ) {
+                    if (Array.isArray(obj)) {
+                        const index = typeof prop === "number" ? prop : Number(prop);
+                        const normalizedIndex = index < 0 ? obj.length + index : index;
+                        if (!isNaN(normalizedIndex) && normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                            obj[normalizedIndex] = value;
+                            return value;
+                        }
+                    } else if (typeof prop === "string" || typeof prop === "number" || typeof prop === "symbol") {
+                        obj[prop] = value;
+                        return value;
+                    }
+                }
+                return null;
+            }
+        );
+    }
+
+    visitTransformExpression = (ctx: JexLangParser.TransformExpressionContext): MaybePromise<JexValue> => {
+        const input = this.visit(ctx.expression());
+        const transformName = ctx.IDENTIFIER().getText();
+
+        return this.handlePromise(input, (resolvedInput) => {
+            if (this.transformRegistry.has(transformName)) {
+                try {
+                    return this.transformRegistry.transform(transformName, resolvedInput);
+                } catch (error) {
+                    throw new JexLangRuntimeError(
+                        `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
+                    );
+                }
+            }
+
+            if (this.funcRegistry.has(transformName)) {
+                try {
+                    return this.funcRegistry.call(transformName, [resolvedInput]);
+                } catch (error) {
+                    throw new JexLangRuntimeError(
+                        `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
+                    );
+                }
+            }
+
+            throw new UndefinedTransformError(transformName);
+        });
+    }
+
+    visitLogicalAndExpression = (ctx: JexLangParser.LogicalAndExpressionContext): MaybePromise<JexValue> => {
+        const left = this.visit(ctx.expression(0));
+        
+        return this.handlePromise(left, resolvedLeft => {
+            if (!resolvedLeft) {
+                return resolvedLeft;
+            }
+
+            return this.visit(ctx.expression(1));
+        });
+    }
+
+    visitLogicalOrExpression = (ctx: JexLangParser.LogicalOrExpressionContext): MaybePromise<JexValue> => {
+        const left = this.visit(ctx.expression(0));
+
+        return this.handlePromise(left, (resolvedLeft) => {
+            if (resolvedLeft) {
+                return resolvedLeft; // no need to evaluate the right if left is already true.
+            }
+
+            return this.visit(ctx.expression(1));
+        });
+    }
+
+    visitTernaryExpression = (ctx: JexLangParser.TernaryExpressionContext): MaybePromise<JexValue> => {
+        const condition = this.visit(ctx.expression(0));
+
+        return this.handlePromise(condition, (resolvedCondition) => {
+            if (resolvedCondition != null && resolvedCondition != undefined) {
+                return this.visit(ctx.expression(1));
+            } else {
+                return this.visit(ctx.expression(2));
+            }
+        });
+    }
+
+    visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): MaybePromise<JexValue> => {
+        const condition = this.visit(ctx.expression(0));
+
+        return this.handlePromise(condition, (resolvedCondition) => {
+            if (resolvedCondition != null && resolvedCondition != undefined) {
+                return resolvedCondition;
+            } else 
+                return this.visit(ctx.expression(1));
+
+        });
+    }
+
+    visitErrorNode(node: ErrorNode): JexValue {
+        const location = {
+            line: node.symbol?.line || 0,
+            column: node.symbol?.column || 0,
+            offendingSymbol: node.getText() || null
+        };
+
+        let errorMessage = "Syntax error";
+
+        if (node.symbol) {
+            const tokenType = node.symbol.type;
+            const tokenText = this.escapeTokenText(node.symbol.text || '');
+
+            if (tokenType >= 0) {
+                errorMessage = `Unexpected token '${tokenText}'`;
+            } else {
+                errorMessage = `Invalid syntax near '${tokenText}'`;
+            }
+
+            if (node.symbol.line > 0) {
+                errorMessage += ` at line ${node.symbol.line}:${node.symbol.column + 1}`;
+            }
+        } else {
+            errorMessage = `Syntax error encountered: ${node.getText()}`;
         }
+
+        throw new JexLangSyntaxError(errorMessage, location);
+    }
+
+    private escapeTokenText(text: string): string {
+        return text
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    }
+
+    protected defaultResult(): JexValue {
         return null;
     }
 
-    visitTernaryExpression = (ctx: JexLangParser.TernaryExpressionContext): JexValue => {
-        const condition = this.visit(ctx.expression(0));
-        const trueExpr = this.visit(ctx.expression(1));
-        const falseExpr = this.visit(ctx.expression(2));
-        return condition != null && condition != undefined ? trueExpr : falseExpr;
+    private pushScope(): void {
+        this.scopeStack.pushScope();
     }
 
-    visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): JexValue => {
-        const condition = this.visit(ctx.expression(0));
-        const falseExpr = this.visit(ctx.expression(1));
-        return condition != null && condition != undefined ? condition : falseExpr;
+    private popScope(): void {
+        this.scopeStack.popScope();
     }
 
-    visitBooleanExpression = (ctx: JexLangParser.BooleanExpressionContext): JexValue => {
-        return ctx.BOOLEAN().getText() === "true";
-    }
-
-    visitObjectLiteral = (ctx: JexLangParser.ObjectLiteralContext): JexValue => {
-        const obj: Record<string, JexValue> = {};
-        for (let i = 0; i < ctx.objectProperty_list().length; i++) {
-            const value = this.visit(ctx.objectProperty(i));
-            if (value && typeof value === 'object' && !Array.isArray(value)) {
-                Object.assign(obj, value);
-            }
+    visitPrefixIncrementExpression = (ctx: JexLangParser.PrefixIncrementExpressionContext): MaybePromise<JexValue> => {
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
         }
-        return obj;
+
+        const variableName = expr.IDENTIFIER().getText();
+
+        return this.handleVarModification(
+            variableName,
+            (currentValue) => {
+                const numValue = toNumber(currentValue);
+                const newValue = numValue + 1;
+                return { newValue, result: newValue };
+            }
+        );
     }
 
-    visitObjectProperty = (ctx: JexLangParser.ObjectPropertyContext): JexValue => {
+    visitPrefixDecrementExpression = (ctx: JexLangParser.PrefixDecrementExpressionContext): MaybePromise<JexValue> => {
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+
+        return this.handleVarModification(
+            variableName,
+            (currentValue) => {
+                const numValue = toNumber(currentValue);
+                const newValue = numValue - 1;
+                return { newValue, result: newValue };
+            }
+        );
+    }
+
+    visitPostfixIncrementExpression = (ctx: JexLangParser.PostfixIncrementExpressionContext): MaybePromise<JexValue> => {
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+
+        return this.handleVarModification(
+            variableName,
+            (currentValue) => {
+                const numValue = toNumber(currentValue);
+                const newValue = numValue + 1;
+                return { newValue, result: numValue };
+            }
+        );
+    }
+
+    visitPostfixDecrementExpression = (ctx: JexLangParser.PostfixDecrementExpressionContext): MaybePromise<JexValue> => {
+        const expr = ctx.expression();
+        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
+            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
+        }
+
+        const variableName = expr.IDENTIFIER().getText();
+
+        return this.handleVarModification(
+            variableName,
+            (currentValue) => {
+                const numValue = toNumber(currentValue);
+                const newValue = numValue - 1;
+                return { newValue, result: numValue };
+            }
+        );
+    }
+
+    visitObjectLiteral = (ctx: JexLangParser.ObjectLiteralContext): MaybePromise<JexValue> => {
+        const obj: Record<string, JexValue> = {};
+        const propertyPromises: MaybePromise<JexValue>[] = [];
+
+        for (let i = 0; i < ctx.objectProperty_list().length; i++) {
+            propertyPromises.push(this.visit(ctx.objectProperty(i)));
+        }
+
+        return this.handlePromises(propertyPromises, (...resolvedProps) => {
+            for (const prop of resolvedProps) {
+                if (prop && typeof prop === 'object' && !Array.isArray(prop)) {
+                    Object.assign(obj, prop);
+                }
+            }
+            return obj;
+        });
+    }
+
+    visitObjectProperty = (ctx: JexLangParser.ObjectPropertyContext): MaybePromise<JexValue> => {
         const obj: Record<string, JexValue> = {};
         let key: string | null = null;
+
         if (ctx.IDENTIFIER()) {
-            // If the identifier is a variable in local scope, use its value as key
             const idText = ctx.IDENTIFIER().getText();
             if (this.scopeStack.has(idText)) {
                 const keyValue = this.scopeStack.get(idText);
@@ -442,300 +769,38 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
                 if (keyValue !== null && keyValue !== undefined) {
                     key = toString(keyValue);
                 }
-            } else {
-                key = idText; // Use the identifier as the key if not found in context or scope
             }
         } else if (ctx.STRING()) {
-            // Use the string literal as the key
             key = ctx.STRING().getText().slice(1, -1);
         }
 
-        // lets not consider the empty strings and undefined keys
-        if (key !== null && key !== undefined && key.length > 0) {
-            obj[toString(key)] = this.visit(ctx.expression());
+        return this.handlePromise(this.visit(ctx.expression()), resolvedValue => {
+            if (key !== null && key !== undefined && key.length > 0) {
+                obj[toString(key)] = resolvedValue;
+            }
+            return obj;
+        });
+    }
+
+    visitArrayLiteral = (ctx: JexLangParser.ArrayLiteralContext): MaybePromise<JexValue> => {
+        const argPromises: MaybePromise<JexValue>[] = [];
+
+        for (let i = 0; i < ctx.expression_list().length; i++) {
+            argPromises.push(this.visit(ctx.expression(i)));
         }
-        return obj;
+
+        return this.handlePromises(argPromises, (...resolvedArgs) => resolvedArgs);
     }
 
-    visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): JexValue => {
-        return this.visit(ctx.objectLiteral());
-    }
-
-
-    visitArrayLiteralExpression = (ctx: JexLangParser.ArrayLiteralExpressionContext): JexValue => {
+    visitArrayLiteralExpression = (ctx: JexLangParser.ArrayLiteralExpressionContext): MaybePromise<JexValue> => {
         return this.visit(ctx.arrayLiteral());
     }
 
-    visitArrayLiteral = (ctx: JexLangParser.ArrayLiteralContext): JexValue => {
-        const result: JexValue[] = [];
-
-        // Get all array elements
-        for (let i = 0; i < ctx.expression_list().length; i++) {
-            const child = ctx.expression(i);
-            result.push(this.visit(child));
-        }
-
-        return result;
-    }
-
-    visitTransformExpression = (ctx: JexLangParser.TransformExpressionContext): JexValue => {
-        const input = this.visit(ctx.expression());
-        const transformName = ctx.IDENTIFIER().getText();
-        
-        // First check transform registry
-        if (this.transformRegistry.has(transformName)) {
-            try {
-                return this.transformRegistry.transform(transformName, input);
-            } catch (error) {
-                throw new JexLangRuntimeError(
-                    `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
-                );
-            }
-        }
-        
-        // Fall back to function registry
-        if (this.funcRegistry.has(transformName)) {
-            try {
-                return this.funcRegistry.call(transformName, [input]);
-            } catch (error) {
-                throw new JexLangRuntimeError(
-                    `Error in transform '${transformName}': ${error instanceof Error ? error.message : String(error)}`
-                );
-            }
-        }
-
-        throw new UndefinedTransformError(transformName);
-    }
-
-    visitLogicalAndExpression = (ctx: JexLangParser.LogicalAndExpressionContext): JexValue => {
-        // Implement short-circuit evaluation for AND
-        const left = this.visit(ctx.expression(0));
-        
-        // If left is falsy, return it immediately without evaluating right
-        if (!left) {
-            return left;
-        }
-        
-        // Otherwise, return the right expression value
-        return this.visit(ctx.expression(1));
-    }
-    
-    visitLogicalOrExpression = (ctx: JexLangParser.LogicalOrExpressionContext): JexValue => {
-        // Implement short-circuit evaluation for OR
-        const left = this.visit(ctx.expression(0));
-        
-        // If left is truthy, return it immediately without evaluating right
-        if (left) {
-            return left;
-        }
-        
-        // Otherwise, return the right expression value
-        return this.visit(ctx.expression(1));
-    }
-
-    visitErrorNode(node: ErrorNode): JexValue {
-        // Extract location information if available
-        const location = {
-            line: node.symbol?.line || 0,
-            column: node.symbol?.column || 0,
-            offendingSymbol: node.getText() || null
-        };
-        
-        // Create a more descriptive error message
-        let errorMessage = "Syntax error";
-        
-        if (node.symbol) {
-            // Try to provide more context
-            const tokenType = node.symbol.type;
-            const tokenText = this.escapeTokenText(node.symbol.text || '');
-            
-            if (tokenType >= 0) {
-                errorMessage = `Unexpected token '${tokenText}'`;
-            } else {
-                errorMessage = `Invalid syntax near '${tokenText}'`;
-            }
-            
-            // Add location if available
-            if (node.symbol.line > 0) {
-                errorMessage += ` at line ${node.symbol.line}:${node.symbol.column + 1}`;
-            }
-        } else {
-            errorMessage = `Syntax error encountered: ${node.getText()}`;
-        }
-        
-        throw new JexLangSyntaxError(errorMessage, location);
-    }
-
-    // Helper to escape special characters in error messages
-    private escapeTokenText(text: string): string {
-        return text
-            .replace(/\n/g, '\\n')
-            .replace(/\r/g, '\\r')
-            .replace(/\t/g, '\\t');
-    }
-
-    // Default visit method for unhandled nodes
-    protected defaultResult(): JexValue {
-        return null;
-    }
-
-    // Add methods to manage the scope stack
-    private pushScope(): void {
-        this.scopeStack.pushScope();
-    }
-
-    private popScope(): void {
-        this.scopeStack.popScope();
-    }
-
-    visitPrefixIncrementExpression = (ctx: JexLangParser.PrefixIncrementExpressionContext): JexValue => {
-        // For prefix increment (++x), we need to:
-        // 1. Ensure the expression is a variable
-        // 2. Get its current value
-        // 3. Increment it
-        // 4. Store the new value
-        // 5. Return the new value
-
-        const expr = ctx.expression();
-        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
-        }
-
-        const variableName = expr.IDENTIFIER().getText();
-        let currentValue: number;
-
-        // Check if variable exists in local scope
-        if (this.scopeStack.has(variableName)) {
-            const value = this.scopeStack.get(variableName)!;
-            currentValue = toNumber(value);
-            const newValue = currentValue + 1;
-            this.scopeStack.set(variableName, newValue);
-            return newValue;
-        }
-        
-        // Fall back to global context
-        if (variableName in this.context) {
-            currentValue = toNumber(this.context[variableName]);
-            const newValue = currentValue + 1;
-            this.context[variableName] = newValue;
-            return newValue;
-        }
-        
-        throw new UndefinedVariableError(variableName);
-    }
-
-    visitPrefixDecrementExpression = (ctx: JexLangParser.PrefixDecrementExpressionContext): JexValue => {
-        // For prefix decrement (--x), we need to:
-        // 1. Ensure the expression is a variable
-        // 2. Get its current value
-        // 3. Decrement it
-        // 4. Store the new value
-        // 5. Return the new value
-
-        const expr = ctx.expression();
-        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
-        }
-
-        const variableName = expr.IDENTIFIER().getText();
-        let currentValue: number;
-
-        // Check if variable exists in local scope
-        if (this.scopeStack.has(variableName)) {
-            const value = this.scopeStack.get(variableName)!;
-            currentValue = toNumber(value);
-            const newValue = currentValue - 1;
-            this.scopeStack.set(variableName, newValue);
-            return newValue;
-        }
-        
-        // Fall back to global context
-        if (variableName in this.context) {
-            currentValue = toNumber(this.context[variableName]);
-            const newValue = currentValue - 1;
-            this.context[variableName] = newValue;
-            return newValue;
-        }
-        
-        throw new UndefinedVariableError(variableName);
-    }
-
-    visitPostfixIncrementExpression = (ctx: JexLangParser.PostfixIncrementExpressionContext): JexValue => {
-        // For postfix increment (x++), we need to:
-        // 1. Ensure the expression is a variable
-        // 2. Get its current value
-        // 3. Store the current value to return it
-        // 4. Increment the value
-        // 5. Update the stored value
-        // 6. Return the original value
-
-        const expr = ctx.expression();
-        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
-        }
-
-        const variableName = expr.IDENTIFIER().getText();
-        let currentValue: number;
-
-        // Check if variable exists in local scope
-        if (this.scopeStack.has(variableName)) {
-            const value = this.scopeStack.get(variableName)!;
-            currentValue = toNumber(value);
-            const newValue = currentValue + 1;
-            this.scopeStack.set(variableName, newValue);
-            return currentValue; // Return the original value for postfix
-        }
-        
-        // Fall back to global context
-        if (variableName in this.context) {
-            currentValue = toNumber(this.context[variableName]);
-            const newValue = currentValue + 1;
-            this.context[variableName] = newValue;
-            return currentValue; // Return the original value for postfix
-        }
-        
-        throw new UndefinedVariableError(variableName);
-    }
-
-    visitPostfixDecrementExpression = (ctx: JexLangParser.PostfixDecrementExpressionContext): JexValue => {
-        // For postfix decrement (x--), we need to:
-        // 1. Ensure the expression is a variable
-        // 2. Get its current value
-        // 3. Store the current value to return it
-        // 4. Decrement the value
-        // 5. Update the stored value
-        // 6. Return the original value
-
-        const expr = ctx.expression();
-        if (!(expr instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
-        }
-
-        const variableName = expr.IDENTIFIER().getText();
-        let currentValue: number;
-
-        // Check if variable exists in local scope
-        if (this.scopeStack.has(variableName)) {
-            const value = this.scopeStack.get(variableName)!;
-            currentValue = toNumber(value);
-            const newValue = currentValue - 1;
-            this.scopeStack.set(variableName, newValue);
-            return currentValue; // Return the original value for postfix
-        }
-        
-        // Fall back to global context
-        if (variableName in this.context) {
-            currentValue = toNumber(this.context[variableName]);
-            const newValue = currentValue - 1;
-            this.context[variableName] = newValue;
-            return currentValue; // Return the original value for postfix
-        }
-        
-        throw new UndefinedVariableError(variableName);
+    visitObjectLiteralExpression = (ctx: JexLangParser.ObjectLiteralExpressionContext): MaybePromise<JexValue> => {
+        return this.visit(ctx.objectLiteral());
     }
 }
 
-// Factory functions for registries
 export function createDefaultFuncRegistry(): MapFuncRegistry {
     return new MapFuncRegistry(BUILT_IN_FUNCTIONS);
 }

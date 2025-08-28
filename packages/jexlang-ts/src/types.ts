@@ -1,19 +1,21 @@
 export type JexValue = number | boolean | string | null | JexValue[] | { [k: string]: JexValue }
 
+export type MaybePromise<T> = T | Promise<T>;
+
 export type Context = Record<string, JexValue>;
 
-export type FuncImpl = (...args: JexValue[]) => JexValue;
+export type FuncImpl = (...args: JexValue[]) => MaybePromise<JexValue>;
 
-export type TransformImpl = (input: JexValue) => JexValue;
+export type TransformImpl = (input: JexValue) => MaybePromise<JexValue>;
 
 export interface FuncRegistry {
   has(name: string): boolean;
-  call(name: string, args: JexValue[]): JexValue;
+  call(name: string, args: JexValue[]): MaybePromise<JexValue>;
 }
 
 export interface TransformRegistry {
   has(name: string): boolean;
-  transform(name: string, input: JexValue): JexValue;
+  transform(name: string, input: JexValue): MaybePromise<JexValue>;
 }
 
 export class MapFuncRegistry implements FuncRegistry {

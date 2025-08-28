@@ -1,10 +1,13 @@
 package com.jexlang.java;
 
 import com.jexlang.java.evaluator.JexEvaluator;
+import com.jexlang.java.functions.FuncImpl;
 import com.jexlang.java.transforms.TransformImpl;
+import com.jexlang.java.types.JexNull;
 import com.jexlang.java.types.JexValue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 public class Main {
@@ -20,15 +23,23 @@ public class Main {
     private static final Map<String, TransformImpl> transforms = Map.ofEntries(
             Map.entry("greet", (name) -> JexValue.fromString("Hello, " + name.asString("greet transform") + "!"))
     );
+
+    private static final Map<String, FuncImpl> funcs = Map.ofEntries(
+            Map.entry("test", (args -> {
+                System.out.println(Arrays.toString(args));
+                return new JexNull();
+            }))
+    );
     public static void main(String[] args) {
         try {
-            JexEvaluator evaluator = new JexEvaluator(context, null, transforms);
+            JexEvaluator evaluator = new JexEvaluator(context, funcs, transforms);
 
             evaluator.setCacheExpressions(true);
 
             System.out.println(
                     evaluator.evaluate("""
-                            user.skills[1]
+//                            user.skills[1]
+test(1, 2, 3)
                             """)
             );
         } catch (Exception e) {

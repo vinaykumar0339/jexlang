@@ -75,7 +75,7 @@ export class JexEvaluator {
     return this.cacheExpressions;
   }
 
-  evaluate(expr: string): JexValue {
+  evaluate(expr: string): Promise<JexValue> | JexValue {
     const tree = this.parseExpression(expr);
     return this.visitor.visit(tree);
   }
