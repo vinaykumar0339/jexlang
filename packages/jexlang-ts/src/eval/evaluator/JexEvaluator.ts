@@ -4,6 +4,8 @@ import { EvalVisitor } from "../visitors/EvalVisitor";
 import type { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
 import JexLangLexer from "../../grammar/JexLangLexer";
 import JexLangParser, { ProgramContext } from "../../grammar/JexLangParser";
+import { createGlobalScope } from "../../utils";
+import type { Scope } from "../scopes";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
@@ -11,9 +13,16 @@ export class JexEvaluator {
   private cacheParsedTrees: Map<string, ProgramContext> = new Map();
   private cacheExpressions: boolean = false;
 
-  private context: Context;
   private funcs: Record<string, FuncImpl>;
   private transformsMap: Record<string, TransformImpl>;
+  private globalScope: Scope = createGlobalScope();
+  private context: Context = {};
+
+  private addAllContextValuesIntoGlobalScope(context: Context): void {
+    for (const [key, value] of Object.entries(context)) {
+      this.globalScope.declareVariable(key, value);
+    }
+  }
 
   constructor(
     context: Context = {},
@@ -21,9 +30,10 @@ export class JexEvaluator {
     transformsMap: Record<string, TransformImpl> = {}
   ) {
     this.context = context;
+    this.addAllContextValuesIntoGlobalScope(this.context);
     this.funcs = funcs;
     this.transformsMap = transformsMap;
-    this.visitor = new EvalVisitor(this.context, this.funcs, this.transformsMap);
+    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
     this.errorListener = new JexLangErrorListener();
   }
 
@@ -80,13 +90,9 @@ export class JexEvaluator {
     return this.visitor.visit(tree);
   }
 
-  setContext(context: Context): void {
-    this.context = context;
-    this.visitor.setContext(context);
-  }
-
-  getContext(): Context {
-    return this.context;
+  addContextValue(key: string, value: JexValue): void {
+    this.context[key] = value;
+    this.globalScope.declareVariable(key, value);
   }
 
   addFunction(name: string, func: FuncImpl): void {

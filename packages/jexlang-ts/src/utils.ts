@@ -1,3 +1,4 @@
+import { Scope } from "./eval";
 import { TypeMismatchError } from "./eval/errors/errors";
 import type { JexValue } from "./types";
 
@@ -41,4 +42,22 @@ export function toString(value: JexValue): string {
     if (Array.isArray(value)) return `[${value.map(toString).join(', ')}]`;
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value);
+}
+
+export function createGlobalScope(): Scope {
+    const scope = new Scope();
+    // Add built-in functions and variables to the global scope
+    scope.declareVariable("true", true, true);
+    scope.declareVariable("false", false, true);
+    scope.declareVariable("null", null, true);
+
+    scope.declareVariable("PI", Math.PI, true);
+    scope.declareVariable("E", Math.E, true);
+    scope.declareVariable("LN2", Math.LN2, true);
+    scope.declareVariable("LN10", Math.LN10, true);
+    scope.declareVariable("LOG2E", Math.LOG2E, true);
+    scope.declareVariable("LOG10E", Math.LOG10E, true);
+    scope.declareVariable("SQRT1_2", Math.SQRT1_2, true);
+    scope.declareVariable("SQRT2", Math.SQRT2, true);
+    return scope;
 }

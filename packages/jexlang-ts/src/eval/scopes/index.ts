@@ -1,1 +1,1 @@
-export * from './ScopeStack';
+export * from './Scope';
