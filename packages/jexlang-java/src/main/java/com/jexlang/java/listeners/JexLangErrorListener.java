@@ -48,7 +48,7 @@ public class JexLangErrorListener extends BaseErrorListener {
         }
 
 
-        return "Syntax error at line " + line + ":" + (charPositionInLine + 1) + ":" + cleanMessage;
+        return "Syntax error at line " + line + ":" + (charPositionInLine) + ":" + cleanMessage;
     }
 
 

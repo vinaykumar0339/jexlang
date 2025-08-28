@@ -47,7 +47,7 @@ export class JexLangErrorListener extends ErrorListener<any> {
       cleanMessage = cleanMessage.replace(`'${offendingSymbol.text}'`, `'${this.escapeString(offendingSymbol.text)}'`);
     }
     
-    return `Syntax error at line ${line}:${charPositionInLine + 1}: ${cleanMessage}`;
+    return `Syntax error at line ${line}:${charPositionInLine}: ${cleanMessage}`;
   }
 
   private escapeString(str: string): string {
