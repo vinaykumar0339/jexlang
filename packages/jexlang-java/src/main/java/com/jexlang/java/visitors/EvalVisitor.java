@@ -259,16 +259,14 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         JexValue right = this.visit(ctx.expression(1));
         String operator = ctx.getChild(1).getText();
 
-        double leftValue = Utils.toNumber(left, "ComparatorExpression").doubleValue();
-        double rightValue = Utils.toNumber(right, "ComparatorExpression").doubleValue();
 
         return switch (operator) {
-            case "<" -> new JexBoolean(leftValue < rightValue);
-            case "<=" -> new JexBoolean(leftValue <= rightValue);
-            case ">" -> new JexBoolean(leftValue > rightValue);
-            case ">=" -> new JexBoolean(leftValue >= rightValue);
-            case "==" -> new JexBoolean(leftValue == rightValue);
-            case "!=" -> new JexBoolean(leftValue != rightValue);
+            case "<" -> new JexBoolean(Utils.isLessThan(left, right, false));
+            case "<=" -> new JexBoolean(Utils.isLessThan(left, right, true));
+            case ">" -> new JexBoolean(Utils.isGreaterThan(left, right, false));
+            case ">=" -> new JexBoolean(Utils.isGreaterThan(left, right, true));
+            case "==" -> new JexBoolean(Utils.isEqual(left, right));
+            case "!=" -> new JexBoolean(!Utils.isEqual(left, right));
             default -> throw new JexLangRuntimeError("Unknown operator: " + operator);
         };
     }

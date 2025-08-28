@@ -5,6 +5,8 @@ import com.jexlang.java.eval.errors.TypeMismatchError;
 import com.jexlang.java.functions.FuncImpl;
 import com.jexlang.java.types.*;
 
+import java.util.Objects;
+
 public class Utils {
 
     /* ========= Helpers: adapters for arities ========= */
@@ -136,5 +138,154 @@ public class Utils {
                     .collect(java.util.stream.Collectors.joining(", ")) + "}";
         }
         return value.asString(ctx);
+    }
+
+    public static boolean isEqual(JexValue value1, JexValue value2) {
+        if (value1 == null && value2 == null) return true;
+        if (value1 == null || value2 == null) return false;
+
+        if (value1.isNull() && value2.isNull()) {
+            return true;
+        } else if (value1.isBoolean() && value2.isBoolean()) {
+            return  value1.asBoolean("equality") == value2.asBoolean("equality");
+        } else if (value1.isNumber() && value2.isNumber()) {
+            return Double.compare(value1.asNumber("equality").doubleValue(), value2.asNumber("equality").doubleValue()) == 0;
+        } else if (value1.isString() && value2.isString()) {
+            return value1.asString("equality").equals(value2.asString("equality"));
+        } else if (value1.isArray() && value2.isArray()) {
+//            java.util.List<JexValue> list1 = value1.asArray("equality");
+//            java.util.List<JexValue> list2 = value2.asArray("equality");
+//            if (list1.size() != list2.size()) return false;
+//            for (int i = 0; i < list1.size(); i++) {
+//                if (!isEqual(list1.get(i), list2.get(i))) return false;
+//            }
+//            return true;
+            return value1 == value2; // Check for reference type equality for arrays
+        } else if (value1.isObject() && value2.isObject()) {
+//            java.util.Map<String, JexValue> map1 = value1.asObject("equality");
+//            java.util.Map<String, JexValue> map2 = value2.asObject("equality");
+//            if (map1.size() != map2.size()) return false;
+//            for (String key : map1.keySet()) {
+//                if (!map2.containsKey(key) || !isEqual(map1.get(key), map2.get(key))) return false;
+//            }
+//            return true;
+            return value1 == value2; // Check for reference type equality for objects
+        } else if (value1.isNumber() || value2.isNumber()) {
+            try {
+                return toNumber(value1, "equality").equals(toNumber(value2, "equality"));
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isLessThan(JexValue value1, JexValue value2, boolean alsoEqual) {
+        if (value1 == null) {
+            value1 = new JexNumber(0);
+        }
+
+        if (value2 == null) {
+            value2 = new JexNumber(0);
+        }
+
+        boolean isLess;
+        if (!Objects.equals(value1.getType(), value2.getType())) {
+            // check any one is number then try to convert other to number and then compare
+            if (value1.isNumber() || value2.isNumber()) {
+                try {
+                    Number num1 = toNumber(value1, "comparison");
+                    Number num2 = toNumber(value2, "comparison");
+                    if (alsoEqual) {
+                        isLess = Double.compare(num1.doubleValue(), num2.doubleValue()) <= 0;
+                    } else {
+                        isLess = Double.compare(num1.doubleValue(), num2.doubleValue()) < 0;
+                    }
+                } catch (Exception e) {
+                    isLess = false;
+                }
+            } else {
+                isLess = false;
+            }
+        } else {
+            if (value1.isNumber() && value2.isNumber()) {
+                if (alsoEqual) {
+                    isLess = Double.compare(value1.asNumber("comparison").doubleValue(), value2.asNumber("comparison").doubleValue()) <= 0;
+                } else {
+                    isLess = Double.compare(value1.asNumber("comparison").doubleValue(), value2.asNumber("comparison").doubleValue()) < 0;
+                }
+            } else if (value1.isString() && value2.isString()) {
+                if (alsoEqual) {
+                    isLess = value1.asString("comparison").compareTo(value2.asString("comparison")) <= 0;
+                } else {
+                    isLess = value1.asString("comparison").compareTo(value2.asString("comparison")) < 0;
+                }
+            } else if (value1.isBoolean() && value2.isBoolean()) {
+                if (alsoEqual) {
+                    isLess = Boolean.compare(value1.asBoolean("comparison"), value2.asBoolean("comparison")) <= 0;
+                } else {
+                    isLess = Boolean.compare(value1.asBoolean("comparison"), value2.asBoolean("comparison")) < 0;
+                }
+            } else {
+                isLess = false;
+            }
+        }
+
+        return isLess;
+    }
+
+    public static boolean isGreaterThan(JexValue value1, JexValue value2, boolean alsoEqual) {
+        if (value1 == null) {
+            value1 = new JexNumber(0);
+        }
+
+        if (value2 == null) {
+            value2 = new JexNumber(0);
+        }
+
+        boolean isGreater;
+        if (!Objects.equals(value1.getType(), value2.getType())) {
+            // check any one is number then try to convert other to number and then compare
+            if (value1.isNumber() || value2.isNumber()) {
+                try {
+                    Number num1 = toNumber(value1, "comparison");
+                    Number num2 = toNumber(value2, "comparison");
+                    if (alsoEqual) {
+                        isGreater = Double.compare(num1.doubleValue(), num2.doubleValue()) >= 0;
+                    } else {
+                        isGreater = Double.compare(num1.doubleValue(), num2.doubleValue()) > 0;
+                    }
+                } catch (Exception e) {
+                    isGreater = false;
+                }
+            } else {
+                isGreater = false;
+            }
+        } else {
+            if (value1.isNumber() && value2.isNumber()) {
+                if (alsoEqual) {
+                    isGreater = Double.compare(value1.asNumber("comparison").doubleValue(), value2.asNumber("comparison").doubleValue()) >= 0;
+                } else {
+                    isGreater = Double.compare(value1.asNumber("comparison").doubleValue(), value2.asNumber("comparison").doubleValue()) > 0;
+                }
+            } else if (value1.isString() && value2.isString()) {
+                if (alsoEqual) {
+                    isGreater = value1.asString("comparison").compareTo(value2.asString("comparison")) >= 0;
+                } else {
+                    isGreater = value1.asString("comparison").compareTo(value2.asString("comparison")) > 0;
+                }
+            } else if (value1.isBoolean() && value2.isBoolean()) {
+                if (alsoEqual) {
+                    isGreater = Boolean.compare(value1.asBoolean("comparison"), value2.asBoolean("comparison")) >= 0;
+                } else {
+                    isGreater = Boolean.compare(value1.asBoolean("comparison"), value2.asBoolean("comparison")) > 0;
+                }
+            } else {
+                isGreater = false;
+            }
+        }
+
+        return isGreater;
     }
 }

@@ -345,9 +345,9 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         return this.handleBinaryOp(left, right, (leftVal, rightVal) => {
             switch (operator) {
                 case '==':
-                    return leftVal === rightVal;
+                    return leftVal == rightVal;
                 case '!=':
-                    return leftVal !== rightVal;
+                    return leftVal != rightVal;
                 case '<':
                     return (leftVal == null ? 0 : leftVal) < (rightVal == null ? 0 : rightVal);
                 case '>':
