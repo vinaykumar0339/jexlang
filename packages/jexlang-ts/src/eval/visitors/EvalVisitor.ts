@@ -405,8 +405,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             throw new UndefinedFunctionError(functionName);
         }
 
-        // args won't be async those are plain values or object reference values.
-        const args: MaybePromise<JexValue[]> = this.visit(ctx.argumentList()) as MaybePromise<JexValue[]>;
+        const args: MaybePromise<JexValue[]> = ctx.argumentList() ? this.visit(ctx.argumentList()) as MaybePromise<JexValue[]> : [];
 
         try {
             if (args instanceof Promise) {

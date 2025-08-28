@@ -321,7 +321,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         if (ctx.argumentList() != null) {
             JexValue argList = this.visit(ctx.argumentList());
             if (argList instanceof JexArray) {
-                args.addAll(((JexArray) argList).asArray("FunctionCall"));
+                args.addAll(argList.asArray("FunctionCall"));
             } else {
                 throw new JexLangRuntimeError("Expected argument list to be an array, got: " + Utils.getJexValueType(argList));
             }
