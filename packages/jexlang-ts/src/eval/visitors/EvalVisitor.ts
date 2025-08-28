@@ -133,35 +133,37 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     }
 
     visitProgram = (ctx: JexLangParser.ProgramContext): MaybePromise<JexValue> => {
-        // Create a new scope for this program execution
-        const programScope = new Scope(this.scope);
-        const prevScope = this.scope;
-        this.scope = programScope;
+        const statements: ParseTree[] = [];
 
-        try {
-            const statements: ParseTree[] = [];
-
-            // Collect all non-EOF statements
-            for (let i = 0; i < ctx.statement_list().length; i++) {
-                statements.push(ctx.statement(i));
-            }
-            
-            if (statements.length === 0) {
-                return null;
-            }
-
-            // Process statements sequentially, chaining Promises only if needed
-            let resultPromise = Promise.resolve(null as JexValue);
-            
-            for (let i = 0; i < statements.length; i++) {
-                resultPromise = resultPromise.then(() => this.visit(statements[i]));
-            }
-
-            return resultPromise.then(result => result ?? null);
-        } finally {
-            // Restore original scope
-            this.scope = prevScope;
+        // Collect all non-EOF statements
+        for (let i = 0; i < ctx.statement_list().length; i++) {
+            statements.push(ctx.statement(i));
         }
+        
+        if (statements.length === 0) {
+            return null;
+        }
+
+        // Process statements sequentially, chaining Promises only if needed
+        let hasPromise = false;
+        let lastResult: MaybePromise<JexValue> = null;
+
+        for (let i = 0; i < statements.length; i++) {
+            const statementResult = this.visit(statements[i]);
+            if (hasPromise) {
+                lastResult = (lastResult as Promise<JexValue>).then(() => statementResult);
+            } else if (statementResult instanceof Promise) {
+                hasPromise = true;
+                lastResult = Promise.resolve(lastResult).then(() => statementResult);
+            } else {
+                lastResult = statementResult;
+            }
+        }
+
+        if (hasPromise) {
+            return (lastResult as Promise<JexValue>).then(result => result ?? null);
+        }
+        return lastResult ?? null;
     }
 
     visitStatement = (ctx: JexLangParser.StatementContext): MaybePromise<JexValue> => {

@@ -3,7 +3,9 @@ package com.jexlang.java;
 import com.jexlang.java.eval.errors.JexLangRuntimeError;
 import com.jexlang.java.eval.errors.TypeMismatchError;
 import com.jexlang.java.functions.FuncImpl;
+import com.jexlang.java.scopes.Scope;
 import com.jexlang.java.types.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Objects;
 
@@ -153,22 +155,8 @@ public class Utils {
         } else if (value1.isString() && value2.isString()) {
             return value1.asString("equality").equals(value2.asString("equality"));
         } else if (value1.isArray() && value2.isArray()) {
-//            java.util.List<JexValue> list1 = value1.asArray("equality");
-//            java.util.List<JexValue> list2 = value2.asArray("equality");
-//            if (list1.size() != list2.size()) return false;
-//            for (int i = 0; i < list1.size(); i++) {
-//                if (!isEqual(list1.get(i), list2.get(i))) return false;
-//            }
-//            return true;
             return value1 == value2; // Check for reference type equality for arrays
         } else if (value1.isObject() && value2.isObject()) {
-//            java.util.Map<String, JexValue> map1 = value1.asObject("equality");
-//            java.util.Map<String, JexValue> map2 = value2.asObject("equality");
-//            if (map1.size() != map2.size()) return false;
-//            for (String key : map1.keySet()) {
-//                if (!map2.containsKey(key) || !isEqual(map1.get(key), map2.get(key))) return false;
-//            }
-//            return true;
             return value1 == value2; // Check for reference type equality for objects
         } else if (value1.isNumber() || value2.isNumber()) {
             try {
@@ -287,5 +275,23 @@ public class Utils {
         }
 
         return isGreater;
+    }
+
+    public static Scope createGlobalScope() {
+        Scope scope = new Scope(null);
+        // Add built-in functions and variables to the global scope
+        scope.declareVariable("true", new JexBoolean(true), true);
+        scope.declareVariable("false", new JexBoolean(false), true);
+        scope.declareVariable("null", new JexNull(), true);
+
+        scope.declareVariable("PI", new JexNumber(FastMath.PI), true);
+        scope.declareVariable("E", new JexNumber(FastMath.E), true);
+        scope.declareVariable("LN2", new JexNumber(FastMath.log(2)), true);
+        scope.declareVariable("LN10", new JexNumber(FastMath.log(10)), true);
+        scope.declareVariable("LOG2E", new JexNumber(1 / FastMath.log(2)), true);
+        scope.declareVariable("LOG10E", new JexNumber(1 / FastMath.log(10)), true);
+        scope.declareVariable("SQRT1_2", new JexNumber(FastMath.sqrt(0.5)), true);
+        scope.declareVariable("SQRT2", new JexNumber(FastMath.sqrt(2)), true);
+        return scope;
     }
 }

@@ -1,21 +1,20 @@
 import type { JexValue } from "../../types";
+import { JexLangRuntimeError } from "../errors";
 
 export class Scope {
     private parentScope?: Scope;
     private variables: Map<string, JexValue>;
-    private constants: Set<string> = new Set<string>();
+    private constants: Set<string>;
 
     constructor(parentScope?: Scope) {
         this.parentScope = parentScope;
         this.variables = new Map<string, JexValue>();
+        this.constants = new Set<string>();
     }
 
     declareVariable(name: string, value: JexValue, isConst = false): void {
         if (this.variables.has(name)) {
-            throw new Error(`Variable '${name}' is already declared.`);
-        }
-        if (this.constants.has(name)) {
-            throw new Error(`Variable '${name}' is a constant and cannot be re-declared or modified.`);
+            throw new JexLangRuntimeError(`Variable '${name}' is already declared.`);
         }
         this.variables.set(name, value);
         if (isConst) {
@@ -27,11 +26,11 @@ export class Scope {
         const scope = this.resolveScope(name);
         if (scope) {
             if (scope.constants.has(name)) {
-                throw new Error(`Cannot reassign constant variable '${name}'.`);
+                throw new JexLangRuntimeError(`Variable '${name}' is a constant and cannot be re-declared or modified.`);
             }
             scope.variables.set(name, value);
         } else {
-            throw new Error(`Variable '${name}' is not declared.`);
+            throw new JexLangRuntimeError(`Variable '${name}' is not declared.`);
         }
     }
 

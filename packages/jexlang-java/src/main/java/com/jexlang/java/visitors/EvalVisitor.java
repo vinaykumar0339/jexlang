@@ -7,7 +7,7 @@ import com.jexlang.java.functions.Functions;
 import com.jexlang.java.functions.MapFuncRegistry;
 import com.jexlang.java.grammar.JexLangBaseVisitor;
 import com.jexlang.java.grammar.JexLangParser;
-import com.jexlang.java.scopes.ScopeStack;
+import com.jexlang.java.scopes.Scope;
 import com.jexlang.java.transforms.MapTransformRegistry;
 import com.jexlang.java.transforms.TransformImpl;
 import com.jexlang.java.transforms.Transforms;
@@ -19,24 +19,19 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
-    private Map<String, JexValue> context = new HashMap<>();
     private final MapFuncRegistry funcRegistry;
     private final MapTransformRegistry transformRegistry;
+    private final Scope scope;
 
-    private final ScopeStack scopeStack = new ScopeStack();
 
     public EvalVisitor(
-            Map<String, JexValue> context,
+            Scope scope,
             Map<String, FuncImpl> funcsMap,
             Map<String, TransformImpl> transformsMap
     ) {
         super();
 
-        if (context != null) {
-            this.context = context;
-        }
-
-        this.context.putAll(mathConstants());
+        this.scope = scope;
 
         Map<String, FuncImpl> funcHashMap = new HashMap<>(Functions.makeBuiltins());
         if (funcsMap != null) {
@@ -51,36 +46,6 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         this.transformRegistry = new MapTransformRegistry(transformHashMap);
     }
 
-    private Map<String, JexValue> mathConstants() {
-        Map<String, JexValue> constants = new HashMap<>();
-        constants.put("PI", new JexNumber(FastMath.PI));
-        constants.put("E", new JexNumber(FastMath.E));
-        constants.put("LN2", new JexNumber(FastMath.log(2)));
-        constants.put("LN10", new JexNumber(FastMath.log(10)));
-        constants.put("LOG2E", new JexNumber(1 / FastMath.log(2)));
-        constants.put("LOG10E", new JexNumber(1 / FastMath.log(10)));
-        constants.put("SQRT1_2", new JexNumber(FastMath.sqrt(0.5)));
-        constants.put("SQRT2", new JexNumber(FastMath.sqrt(2)));
-        return constants;
-    }
-
-    public void setContext(Map<String, JexValue> context) {
-        if (context != null) {
-            this.context = context;
-        }
-    }
-
-    public void setVariable(String name, JexValue value) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Variable name cannot be null or empty");
-        }
-        if (value == null) {
-            // If the value is null, we set it to JexNull
-            value = new JexNull();
-        }
-        context.put(name, value);
-    }
-
     public void addFunction(String name, FuncImpl fn) {
         if (this.funcRegistry != null) {
             this.funcRegistry.set(name, fn);
@@ -93,22 +58,6 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
     }
 
-    public Map<String, JexValue> getContext() {
-        return Map.copyOf(context);
-    }
-
-    public void clearVariables() {
-        context = this.mathConstants();
-    }
-
-    private void pushScope() {
-        scopeStack.pushScope();
-    }
-
-    private void popScope() {
-        scopeStack.popScope();
-    }
-
     @Override
     public JexValue visit(ParseTree tree) {
         return super.visit(tree);
@@ -116,16 +65,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
     @Override
     public JexValue visitProgram(JexLangParser.ProgramContext ctx) {
-        pushScope();
 
         JexValue result = null;
 
-        try {
-            for (int i = 0; i < ctx.statement().size(); i++) {
-                result = this.visit(ctx.statement(i));
-            }
-        } finally {
-            popScope();
+        for (int i = 0; i < ctx.statement().size(); i++) {
+            result = this.visit(ctx.statement(i));
         }
 
         return result;
@@ -155,7 +99,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             value = new JexNull(); // Default to JexNull if no value is provided
         }
 
-        this.scopeStack.currentScope().set(variableName, value);
+        this.scope.declareVariable(variableName, value, false);
         return value;
     }
 
@@ -164,7 +108,13 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String variableName = ctx.IDENTIFIER().getText();
         JexValue value = this.visit(ctx.expression());
 
-        this.scopeStack.set(variableName, value);
+        Scope resolvedScope = this.scope.resolveScope(variableName);
+        if (resolvedScope != null) {
+            resolvedScope.assignVariable(variableName, value);
+        } else {
+            // if not found, declare in the current scope
+            this.scope.declareVariable(variableName, value, false);
+        }
         return value;
     }
 
@@ -285,12 +235,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitVariableExpression(JexLangParser.VariableExpressionContext ctx) {
         String variableName = ctx.IDENTIFIER().getText();
 
-        if (this.scopeStack.has(variableName)) {
-            return this.scopeStack.get(variableName);
-        }
-
-        if (context.containsKey(variableName)) {
-            return context.get(variableName);
+        Scope resolvedScope = this.scope.resolveScope(variableName);
+        if (resolvedScope != null) {
+            return resolvedScope.getVariable(variableName);
         }
 
         throw new UndefinedVariableError(variableName);
@@ -449,20 +396,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
         Number currentValue = null;
 
-        if (this.scopeStack.has((variableName))) {
-            JexValue value = this.scopeStack.get(variableName);
+        if (this.scope.hasVariable((variableName))) {
+            JexValue value = this.scope.getVariable(variableName);
             currentValue = Utils.toNumber(value, "PrefixIncrementExpression");
             Number newValue = currentValue.doubleValue() + 1;
-            this.scopeStack.set(variableName, new JexNumber(newValue));
-            return new JexNumber(newValue);
-        }
-
-        // Fall back to global context
-        if (context.containsKey(variableName)) {
-            JexValue value = context.get(variableName);
-            currentValue = Utils.toNumber(value, "PrefixIncrementExpression");
-            Number newValue = currentValue.doubleValue() + 1;
-            context.put(variableName, new JexNumber(newValue));
+            this.scope.assignVariable(variableName, new JexNumber(newValue));
             return new JexNumber(newValue);
         }
 
@@ -479,20 +417,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
         Number currentValue = null;
 
-        if (this.scopeStack.has((variableName))) {
-            JexValue value = this.scopeStack.get(variableName);
+        if (this.scope.hasVariable((variableName))) {
+            JexValue value = this.scope.getVariable(variableName);
             currentValue = Utils.toNumber(value, "PrefixDecrementExpression");
             Number newValue = currentValue.doubleValue() - 1;
-            this.scopeStack.set(variableName, new JexNumber(newValue));
-            return new JexNumber(newValue);
-        }
-
-        // Fall back to global context
-        if (context.containsKey(variableName)) {
-            JexValue value = context.get(variableName);
-            currentValue = Utils.toNumber(value, "PrefixDecrementExpression");
-            Number newValue = currentValue.doubleValue() - 1;
-            context.put(variableName, new JexNumber(newValue));
+            this.scope.assignVariable(variableName, new JexNumber(newValue));
             return new JexNumber(newValue);
         }
 
@@ -509,20 +438,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
         Number currentValue = null;
 
-        if (this.scopeStack.has((variableName))) {
-            JexValue value = this.scopeStack.get(variableName);
+        if (this.scope.hasVariable((variableName))) {
+            JexValue value = this.scope.getVariable(variableName);
             currentValue = Utils.toNumber(value, "PostfixIncrementExpression");
             Number newValue = currentValue.doubleValue() + 1;
-            this.scopeStack.set(variableName, new JexNumber(newValue));
-            return new JexNumber(currentValue.doubleValue()); // Return old value
-        }
-
-        // Fall back to global context
-        if (context.containsKey(variableName)) {
-            JexValue value = context.get(variableName);
-            currentValue = Utils.toNumber(value, "PostfixIncrementExpression");
-            Number newValue = currentValue.doubleValue() + 1;
-            context.put(variableName, new JexNumber(newValue));
+            this.scope.assignVariable(variableName, new JexNumber(newValue));
             return new JexNumber(currentValue.doubleValue()); // Return old value
         }
 
@@ -539,20 +459,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
         Number currentValue = null;
 
-        if (this.scopeStack.has((variableName))) {
-            JexValue value = this.scopeStack.get(variableName);
+        if (this.scope.hasVariable((variableName))) {
+            JexValue value = this.scope.getVariable(variableName);
             currentValue = Utils.toNumber(value, "PostfixDecrementExpression");
             Number newValue = currentValue.doubleValue() - 1;
-            this.scopeStack.set(variableName, new JexNumber(newValue));
-            return new JexNumber(currentValue.doubleValue()); // Return old value
-        }
-
-        // Fall back to global context
-        if (context.containsKey(variableName)) {
-            JexValue value = context.get(variableName);
-            currentValue = Utils.toNumber(value, "PostfixDecrementExpression");
-            Number newValue = currentValue.doubleValue() - 1;
-            context.put(variableName, new JexNumber(newValue));
+            this.scope.assignVariable(variableName, new JexNumber(newValue));
             return new JexNumber(currentValue.doubleValue()); // Return old value
         }
 
@@ -605,13 +516,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String key = null;
         if (ctx.IDENTIFIER() != null) {
             String idText = ctx.IDENTIFIER().getText();
-            if (this.scopeStack.has(idText)) {
-                JexValue keyValue = this.scopeStack.get(idText);
-                if (keyValue != null) {
-                    key = Utils.toString(keyValue, "ObjectProperty");
-                }
-            } else if (this.context.containsKey(idText)) {
-                JexValue keyValue = this.context.get(idText);
+            Scope resolvedScope = this.scope.resolveScope(idText);
+            if (resolvedScope != null) {
+                JexValue keyValue = resolvedScope.getVariable(idText);
                 if (keyValue != null) {
                     key = Utils.toString(keyValue, "ObjectProperty");
                 }

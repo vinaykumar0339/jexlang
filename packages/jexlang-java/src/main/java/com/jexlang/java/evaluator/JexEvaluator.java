@@ -1,9 +1,11 @@
 package com.jexlang.java.evaluator;
 
+import com.jexlang.java.Utils;
 import com.jexlang.java.functions.FuncImpl;
 import com.jexlang.java.grammar.JexLangLexer;
 import com.jexlang.java.grammar.JexLangParser;
 import com.jexlang.java.listeners.JexLangErrorListener;
+import com.jexlang.java.scopes.Scope;
 import com.jexlang.java.transforms.TransformImpl;
 import com.jexlang.java.types.JexValue;
 import com.jexlang.java.visitors.EvalVisitor;
@@ -16,9 +18,11 @@ import java.util.Map;
 
 public class JexEvaluator {
 
-    private Map<String, JexValue> context;
+    private final Map<String, JexValue> context;
     private final Map<String, FuncImpl> funcsMap;
     private final Map<String, TransformImpl> transformMap;
+
+    private final Scope globalScope = Utils.createGlobalScope();
     private final EvalVisitor evalVisitor;
     private final JexLangErrorListener errorListener;
     private final Map<String, JexLangParser.ProgramContext> cacheParsedTrees = new HashMap<>();
@@ -34,15 +38,24 @@ public class JexEvaluator {
         return jexContext;
     }
 
+    private void addAllContextValuesIntoGlobalScope(Map<String, JexValue> context) {
+        if (context != null) {
+            for (Map.Entry<String, JexValue> entry : context.entrySet()) {
+                globalScope.declareVariable(entry.getKey(), entry.getValue(), false);
+            }
+        }
+    }
+
     public JexEvaluator(
             Map<String, Object> context,
             Map<String, FuncImpl> funcsMap,
             Map<String, TransformImpl> transformMap
     ) {
         this.context = context != null ? convertContextToJexValue(context) : new HashMap<>();
+        addAllContextValuesIntoGlobalScope(this.context);
         this.funcsMap = funcsMap != null ? funcsMap : new HashMap<>();
         this.transformMap = transformMap != null ? transformMap : new HashMap<>();
-        this.evalVisitor = new EvalVisitor(this.context, funcsMap, transformMap);
+        this.evalVisitor = new EvalVisitor(this.globalScope, funcsMap, transformMap);
         this.errorListener = new JexLangErrorListener();
     }
 
@@ -102,13 +115,10 @@ public class JexEvaluator {
         return null;
     }
 
-    public void setContext(Map<String, JexValue> context) {
-        this.context = context != null ? context : new HashMap<>();
-        this.evalVisitor.setContext(context);
-    }
-
-    public Map<String, JexValue> getContext() {
-        return context;
+    public void addContextValue(String name, Object value) {
+        JexValue jexValue = JexValue.from(value);
+        this.context.put(name, jexValue);
+        this.globalScope.declareVariable(name, jexValue, false);
     }
 
     public void addFunction(String name, FuncImpl function) {
