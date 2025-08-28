@@ -304,7 +304,7 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
     visitArgumentList = (ctx: JexLangParser.ArgumentListContext): JexValue[] => {
         const args: JexValue[] = [];
-        for (let i = 0; i < ctx.expression_list.length; i++) {
+        for (let i = 0; i < ctx.expression_list().length; i++) {
             const arg = this.visit(ctx.expression(i));
             args.push(arg);
         }
@@ -417,8 +417,8 @@ export class EvalVisitor extends JexLangVisitor<JexValue> {
 
     visitObjectLiteral = (ctx: JexLangParser.ObjectLiteralContext): JexValue => {
         const obj: Record<string, JexValue> = {};
-        for (let i = 0; i < ctx.getChildCount(); i++) {
-            const value = this.visit(ctx.getChild(i));
+        for (let i = 0; i < ctx.objectProperty_list().length; i++) {
+            const value = this.visit(ctx.objectProperty(i));
             if (value && typeof value === 'object' && !Array.isArray(value)) {
                 Object.assign(obj, value);
             }
