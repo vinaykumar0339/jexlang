@@ -448,7 +448,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     visitDotPropertyAccessExpression = (ctx: JexLangParser.DotPropertyAccessExpressionContext): MaybePromise<JexValue> => {
         const objPromise = this.visit(ctx.expression());
         const prop = ctx.IDENTIFIER().getText();
-
+        
         return this.handlePromise(objPromise, obj => {
             if (
                 obj &&
@@ -542,6 +542,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         const transformName = ctx.IDENTIFIER().getText();
 
         return this.handlePromise(input, (resolvedInput) => {
+            console.log(resolvedInput, "resolvedINput");
+            
             if (this.transformRegistry.has(transformName)) {
                 try {
                     return this.transformRegistry.transform(transformName, resolvedInput);
@@ -756,6 +758,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         const obj: Record<string, JexValue> = {};
         let key: string | null = null;
 
+        
         if (ctx.IDENTIFIER()) {
             const idText = ctx.IDENTIFIER().getText();
             if (this.scopeStack.has(idText)) {
@@ -768,6 +771,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                 if (keyValue !== null && keyValue !== undefined) {
                     key = toString(keyValue);
                 }
+            } else {
+                key = idText; // Use the identifier as the key if not found in context or scope
             }
         } else if (ctx.STRING()) {
             key = ctx.STRING().getText().slice(1, -1);
