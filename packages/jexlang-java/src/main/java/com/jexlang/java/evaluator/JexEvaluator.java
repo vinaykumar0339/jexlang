@@ -115,10 +115,25 @@ public class JexEvaluator {
         return null;
     }
 
-    public void addContextValue(String name, Object value) {
+    public void setContextValue(String name, Object value) {
         JexValue jexValue = JexValue.from(value);
         this.context.put(name, jexValue);
-        this.globalScope.declareVariable(name, jexValue, false);
+        this.globalScope.assignVariable(name, jexValue);
+    }
+
+    public JexValue declareContextValue(String name, Object value, boolean isConst) {
+        JexValue jexValue = JexValue.from(value);
+        this.context.put(name, jexValue);
+        this.globalScope.declareVariable(name, jexValue, isConst);
+        return jexValue;
+    }
+
+    public Object getContextValue(String name) {
+        JexValue value = this.context.get(name);
+        if (value != null) {
+            return value.toObject();
+        }
+        return null;
     }
 
     public void addFunction(String name, FuncImpl function) {

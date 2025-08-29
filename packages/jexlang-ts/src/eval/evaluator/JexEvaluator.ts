@@ -109,9 +109,22 @@ export class JexEvaluator {
     return Promise.resolve(result);
   }
 
-  addContextValue(key: string, value: JexValue): void {
+  setContextValue(key: string, value: JexValue): void {
     this.context[key] = value;
-    this.globalScope.declareVariable(key, value);
+    this.globalScope.assignVariable(key, value);
+  }
+
+  declareContextValue(key: string, value: JexValue, isConst = false): void {
+    this.context[key] = value;
+    this.globalScope.declareVariable(key, value, isConst);
+  }
+
+  getContextValue(key: string): JexValue {
+    const value = this.context[key];
+    if (value === undefined) {
+      return null;
+    }
+    return value;
   }
 
   addFunction(name: string, func: FuncImpl): void {
