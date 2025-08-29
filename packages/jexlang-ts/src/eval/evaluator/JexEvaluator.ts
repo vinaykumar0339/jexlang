@@ -90,6 +90,24 @@ export class JexEvaluator {
     return this.visitor.visit(tree);
   }
 
+  evaluateSync(expr: string): JexValue {
+    const tree = this.parseExpression(expr);
+    const result =  this.visitor.visit(tree);
+    if (result instanceof Promise) {
+      throw new Error("Synchronous evaluation cannot handle promises if you want generic evaluation. please use evaluate() method.");
+    }
+    return result;
+  }
+
+  evaluateAsync(expr: string): Promise<JexValue> {
+    const tree = this.parseExpression(expr);
+    const result = this.visitor.visit(tree);
+    if (result instanceof Promise) {
+      return result;
+    }
+    return Promise.resolve(result);
+  }
+
   addContextValue(key: string, value: JexValue): void {
     this.context[key] = value;
     this.globalScope.declareVariable(key, value);
