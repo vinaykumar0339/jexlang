@@ -6,6 +6,7 @@ import JexLangLexer from "../../grammar/JexLangLexer";
 import JexLangParser, { ProgramContext } from "../../grammar/JexLangParser";
 import { createGlobalScope } from "../../utils";
 import type { Scope } from "../scopes";
+import { JexLangRuntimeError } from "../errors";
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
@@ -94,7 +95,7 @@ export class JexEvaluator {
     const tree = this.parseExpression(expr);
     const result =  this.visitor.visit(tree);
     if (result instanceof Promise) {
-      throw new Error("Synchronous evaluation cannot handle promises if you want generic evaluation. please use evaluate() method.");
+      throw new JexLangRuntimeError("Synchronous evaluation cannot handle promises if you want generic evaluation. please use evaluate() method.");
     }
     return result;
   }
