@@ -527,8 +527,6 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         const transformName = ctx.IDENTIFIER().getText();
 
         return this.handlePromise(input, (resolvedInput) => {
-            console.log(resolvedInput, "resolvedINput");
-            
             if (this.transformRegistry.has(transformName)) {
                 try {
                     return this.transformRegistry.transform(transformName, resolvedInput);
