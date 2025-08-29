@@ -21,7 +21,7 @@ import java.util.*;
 public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private final MapFuncRegistry funcRegistry;
     private final MapTransformRegistry transformRegistry;
-    private final Scope scope;
+    private Scope scope;
 
 
     public EvalVisitor(
@@ -66,10 +66,18 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     public JexValue visitProgram(JexLangParser.ProgramContext ctx) {
 
+        // create a new scope per program;
+        this.scope = new Scope(this.scope);
+
         JexValue result = null;
 
         for (int i = 0; i < ctx.statement().size(); i++) {
             result = this.visit(ctx.statement(i));
+        }
+
+        // Exit the program scope.
+        if (this.scope.getParentScope() != null) {
+            this.scope = this.scope.getParentScope();
         }
 
         return result;

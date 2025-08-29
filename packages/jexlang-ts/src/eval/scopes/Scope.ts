@@ -12,6 +12,10 @@ export class Scope {
         this.constants = new Set<string>();
     }
 
+    getParentScope(): Scope | undefined {
+        return this.parentScope;
+    }
+
     declareVariable(name: string, value: JexValue, isConst = false): void {
         if (this.variables.has(name)) {
             throw new JexLangRuntimeError(`Variable '${name}' is already declared.`);

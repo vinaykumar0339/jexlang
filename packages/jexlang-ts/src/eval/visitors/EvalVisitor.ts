@@ -133,6 +133,10 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     }
 
     visitProgram = (ctx: JexLangParser.ProgramContext): MaybePromise<JexValue> => {
+
+        // create a new scope for the program
+        this.scope = new Scope(this.scope);
+
         const statements: ParseTree[] = [];
 
         // Collect all non-EOF statements
@@ -163,6 +167,13 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         if (hasPromise) {
             return (lastResult as Promise<JexValue>).then(result => result ?? null);
         }
+
+        // Exit the program scope
+        const parentScope = this.scope.getParentScope();
+        if (parentScope) {
+            this.scope = parentScope;
+        }
+
         return lastResult ?? null;
     }
 

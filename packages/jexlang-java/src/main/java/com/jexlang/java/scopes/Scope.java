@@ -21,6 +21,10 @@ public class Scope {
         this.constants = new java.util.HashSet<>();
     }
 
+    public Scope getParentScope() {
+        return parentScope;
+    }
+
     public void declareVariable(String name, JexValue value, boolean isConst) {
         if (this.variables.containsKey(name)) {
             throw new JexLangRuntimeError("Variable '" + name + "' is already declared.");
