@@ -5,41 +5,49 @@ import {ParseTreeListener} from "antlr4";
 
 import { ProgramContext } from "./JexLangParser.js";
 import { StatementContext } from "./JexLangParser.js";
-import { AssignmentContext } from "./JexLangParser.js";
-import { DotPropertyAssignmentContext } from "./JexLangParser.js";
-import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
-import { LocalDeclarationContext } from "./JexLangParser.js";
+import { BlockContext } from "./JexLangParser.js";
+import { EmptyStatementContext } from "./JexLangParser.js";
+import { VarDeclarationContext } from "./JexLangParser.js";
+import { ExpressionStatementContext } from "./JexLangParser.js";
+import { ExpressionSequenceContext } from "./JexLangParser.js";
+import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
+import { AdditiveExpressionContext } from "./JexLangParser.js";
+import { RelationalExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
+import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { LogicalAndExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
-import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
+import { DotPropertyAssignmentContext } from "./JexLangParser.js";
+import { LiteralExpressionContext } from "./JexLangParser.js";
 import { LogicalOrExpressionContext } from "./JexLangParser.js";
-import { PrefixIncrementExpressionContext } from "./JexLangParser.js";
-import { MulDivModExpressionContext } from "./JexLangParser.js";
+import { MemberDotExpressionContext } from "./JexLangParser.js";
+import { UnaryExpressionContext } from "./JexLangParser.js";
+import { MemberIndexExpressionContext } from "./JexLangParser.js";
 import { FunctionCallExpressionContext } from "./JexLangParser.js";
-import { AddSubExpressionContext } from "./JexLangParser.js";
-import { BooleanExpressionContext } from "./JexLangParser.js";
-import { UnaryMinusExpressionContext } from "./JexLangParser.js";
-import { ComparatorExpressionContext } from "./JexLangParser.js";
-import { UnaryPlusExpressionContext } from "./JexLangParser.js";
-import { PostfixIncrementExpressionContext } from "./JexLangParser.js";
-import { PrefixDecrementExpressionContext } from "./JexLangParser.js";
-import { ParenthesizedExpressionContext } from "./JexLangParser.js";
-import { PostfixDecrementExpressionContext } from "./JexLangParser.js";
-import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
-import { VariableExpressionContext } from "./JexLangParser.js";
-import { NumberExpressionContext } from "./JexLangParser.js";
-import { DotPropertyAccessExpressionContext } from "./JexLangParser.js";
+import { IdentifierExpressionContext } from "./JexLangParser.js";
+import { AssignmentExpressionContext } from "./JexLangParser.js";
 import { TransformExpressionContext } from "./JexLangParser.js";
-import { StringExpressionContext } from "./JexLangParser.js";
-import { BracketPropertyAccessExpressionContext } from "./JexLangParser.js";
+import { PrefixExpressionContext } from "./JexLangParser.js";
+import { PostfixExpressionContext } from "./JexLangParser.js";
 import { SquareRootExpressionContext } from "./JexLangParser.js";
-import { ObjectLiteralContext } from "./JexLangParser.js";
-import { ObjectPropertyContext } from "./JexLangParser.js";
-import { FunctionCallContext } from "./JexLangParser.js";
-import { ArgumentListContext } from "./JexLangParser.js";
+import { EqualityExpressionContext } from "./JexLangParser.js";
+import { MultiplicativeExpressionContext } from "./JexLangParser.js";
+import { StringLiteralContext } from "./JexLangParser.js";
+import { NumberLiteralContext } from "./JexLangParser.js";
+import { BooleanLiteralContext } from "./JexLangParser.js";
+import { NullLiteralContext } from "./JexLangParser.js";
+import { ArrayLiteralExpressionContext } from "./JexLangParser.js";
+import { ObjectLiteralExpressionContext } from "./JexLangParser.js";
 import { ArrayLiteralContext } from "./JexLangParser.js";
+import { ArrayElementContext } from "./JexLangParser.js";
+import { ObjectLiteralContext } from "./JexLangParser.js";
+import { PropertyExpressionObjectPropertyContext } from "./JexLangParser.js";
+import { ComputedPropertyExpressionObjectPropertyContext } from "./JexLangParser.js";
+import { ShorthandPropertyExpressionObjectPropertyContext } from "./JexLangParser.js";
+import { ObjectPropertyNameContext } from "./JexLangParser.js";
+import { ArgumentsContext } from "./JexLangParser.js";
+import { ArgumentContext } from "./JexLangParser.js";
 
 
 /**
@@ -68,361 +76,423 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitStatement?: (ctx: StatementContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.assignment`.
+	 * Enter a parse tree produced by `JexLangParser.block`.
 	 * @param ctx the parse tree
 	 */
-	enterAssignment?: (ctx: AssignmentContext) => void;
+	enterBlock?: (ctx: BlockContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.assignment`.
+	 * Exit a parse tree produced by `JexLangParser.block`.
 	 * @param ctx the parse tree
 	 */
-	exitAssignment?: (ctx: AssignmentContext) => void;
+	exitBlock?: (ctx: BlockContext) => void;
 	/**
-	 * Enter a parse tree produced by the `DotPropertyAssignment`
-	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * Enter a parse tree produced by `JexLangParser.emptyStatement`.
 	 * @param ctx the parse tree
 	 */
-	enterDotPropertyAssignment?: (ctx: DotPropertyAssignmentContext) => void;
+	enterEmptyStatement?: (ctx: EmptyStatementContext) => void;
 	/**
-	 * Exit a parse tree produced by the `DotPropertyAssignment`
-	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * Exit a parse tree produced by `JexLangParser.emptyStatement`.
 	 * @param ctx the parse tree
 	 */
-	exitDotPropertyAssignment?: (ctx: DotPropertyAssignmentContext) => void;
+	exitEmptyStatement?: (ctx: EmptyStatementContext) => void;
 	/**
-	 * Enter a parse tree produced by the `BracketPropertyAssignment`
-	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * Enter a parse tree produced by `JexLangParser.varDeclaration`.
 	 * @param ctx the parse tree
 	 */
-	enterBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => void;
+	enterVarDeclaration?: (ctx: VarDeclarationContext) => void;
 	/**
-	 * Exit a parse tree produced by the `BracketPropertyAssignment`
-	 * labeled alternative in `JexLangParser.propertyAssignment`.
+	 * Exit a parse tree produced by `JexLangParser.varDeclaration`.
 	 * @param ctx the parse tree
 	 */
-	exitBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => void;
+	exitVarDeclaration?: (ctx: VarDeclarationContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.localDeclaration`.
+	 * Enter a parse tree produced by `JexLangParser.expressionStatement`.
 	 * @param ctx the parse tree
 	 */
-	enterLocalDeclaration?: (ctx: LocalDeclarationContext) => void;
+	enterExpressionStatement?: (ctx: ExpressionStatementContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.localDeclaration`.
+	 * Exit a parse tree produced by `JexLangParser.expressionStatement`.
 	 * @param ctx the parse tree
 	 */
-	exitLocalDeclaration?: (ctx: LocalDeclarationContext) => void;
+	exitExpressionStatement?: (ctx: ExpressionStatementContext) => void;
 	/**
-	 * Enter a parse tree produced by the `ShortTernaryExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by `JexLangParser.expressionSequence`.
 	 * @param ctx the parse tree
 	 */
-	enterShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => void;
+	enterExpressionSequence?: (ctx: ExpressionSequenceContext) => void;
 	/**
-	 * Exit a parse tree produced by the `ShortTernaryExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by `JexLangParser.expressionSequence`.
 	 * @param ctx the parse tree
 	 */
-	exitShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `TernaryExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterTernaryExpression?: (ctx: TernaryExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `TernaryExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitTernaryExpression?: (ctx: TernaryExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `LogicalAndExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterLogicalAndExpression?: (ctx: LogicalAndExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `LogicalAndExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitLogicalAndExpression?: (ctx: LogicalAndExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `PowerExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterPowerExpression?: (ctx: PowerExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `PowerExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitPowerExpression?: (ctx: PowerExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `ObjectLiteralExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `ObjectLiteralExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `LogicalOrExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `LogicalOrExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `PrefixIncrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterPrefixIncrementExpression?: (ctx: PrefixIncrementExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `PrefixIncrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitPrefixIncrementExpression?: (ctx: PrefixIncrementExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `MulDivModExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterMulDivModExpression?: (ctx: MulDivModExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `MulDivModExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitMulDivModExpression?: (ctx: MulDivModExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `FunctionCallExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `FunctionCallExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `AddSubExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterAddSubExpression?: (ctx: AddSubExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `AddSubExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitAddSubExpression?: (ctx: AddSubExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `BooleanExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterBooleanExpression?: (ctx: BooleanExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `BooleanExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitBooleanExpression?: (ctx: BooleanExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `UnaryMinusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `UnaryMinusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitUnaryMinusExpression?: (ctx: UnaryMinusExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `ComparatorExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `ComparatorExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitComparatorExpression?: (ctx: ComparatorExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `UnaryPlusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `UnaryPlusExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitUnaryPlusExpression?: (ctx: UnaryPlusExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `PostfixIncrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterPostfixIncrementExpression?: (ctx: PostfixIncrementExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `PostfixIncrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitPostfixIncrementExpression?: (ctx: PostfixIncrementExpressionContext) => void;
-	/**
-	 * Enter a parse tree produced by the `PrefixDecrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	enterPrefixDecrementExpression?: (ctx: PrefixDecrementExpressionContext) => void;
-	/**
-	 * Exit a parse tree produced by the `PrefixDecrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
-	 * @param ctx the parse tree
-	 */
-	exitPrefixDecrementExpression?: (ctx: PrefixDecrementExpressionContext) => void;
+	exitExpressionSequence?: (ctx: ExpressionSequenceContext) => void;
 	/**
 	 * Enter a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	enterParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
 	/**
 	 * Exit a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	exitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `PostfixDecrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `ShortTernaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterPostfixDecrementExpression?: (ctx: PostfixDecrementExpressionContext) => void;
+	enterShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `PostfixDecrementExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `ShortTernaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitPostfixDecrementExpression?: (ctx: PostfixDecrementExpressionContext) => void;
+	exitShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `ArrayLiteralExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `AdditiveExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	enterAdditiveExpression?: (ctx: AdditiveExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `ArrayLiteralExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `AdditiveExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	exitAdditiveExpression?: (ctx: AdditiveExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `VariableExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `RelationalExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterVariableExpression?: (ctx: VariableExpressionContext) => void;
+	enterRelationalExpression?: (ctx: RelationalExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `VariableExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `RelationalExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitVariableExpression?: (ctx: VariableExpressionContext) => void;
+	exitRelationalExpression?: (ctx: RelationalExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `NumberExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `TernaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterNumberExpression?: (ctx: NumberExpressionContext) => void;
+	enterTernaryExpression?: (ctx: TernaryExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `NumberExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `TernaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitNumberExpression?: (ctx: NumberExpressionContext) => void;
+	exitTernaryExpression?: (ctx: TernaryExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `DotPropertyAccessExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `BracketPropertyAssignment`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterDotPropertyAccessExpression?: (ctx: DotPropertyAccessExpressionContext) => void;
+	enterBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => void;
 	/**
-	 * Exit a parse tree produced by the `DotPropertyAccessExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `BracketPropertyAssignment`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitDotPropertyAccessExpression?: (ctx: DotPropertyAccessExpressionContext) => void;
+	exitBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => void;
+	/**
+	 * Enter a parse tree produced by the `LogicalAndExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterLogicalAndExpression?: (ctx: LogicalAndExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `LogicalAndExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitLogicalAndExpression?: (ctx: LogicalAndExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `PowerExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterPowerExpression?: (ctx: PowerExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `PowerExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitPowerExpression?: (ctx: PowerExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `DotPropertyAssignment`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterDotPropertyAssignment?: (ctx: DotPropertyAssignmentContext) => void;
+	/**
+	 * Exit a parse tree produced by the `DotPropertyAssignment`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitDotPropertyAssignment?: (ctx: DotPropertyAssignmentContext) => void;
+	/**
+	 * Enter a parse tree produced by the `LiteralExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterLiteralExpression?: (ctx: LiteralExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `LiteralExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitLiteralExpression?: (ctx: LiteralExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `LogicalOrExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `LogicalOrExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `MemberDotExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterMemberDotExpression?: (ctx: MemberDotExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `MemberDotExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitMemberDotExpression?: (ctx: MemberDotExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `UnaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterUnaryExpression?: (ctx: UnaryExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `UnaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitUnaryExpression?: (ctx: UnaryExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `MemberIndexExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterMemberIndexExpression?: (ctx: MemberIndexExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `MemberIndexExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitMemberIndexExpression?: (ctx: MemberIndexExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `FunctionCallExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `FunctionCallExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `IdentifierExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterIdentifierExpression?: (ctx: IdentifierExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `IdentifierExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitIdentifierExpression?: (ctx: IdentifierExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `AssignmentExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterAssignmentExpression?: (ctx: AssignmentExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `AssignmentExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitAssignmentExpression?: (ctx: AssignmentExpressionContext) => void;
 	/**
 	 * Enter a parse tree produced by the `TransformExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	enterTransformExpression?: (ctx: TransformExpressionContext) => void;
 	/**
 	 * Exit a parse tree produced by the `TransformExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	exitTransformExpression?: (ctx: TransformExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `StringExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `PrefixExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterStringExpression?: (ctx: StringExpressionContext) => void;
+	enterPrefixExpression?: (ctx: PrefixExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `StringExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `PrefixExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitStringExpression?: (ctx: StringExpressionContext) => void;
+	exitPrefixExpression?: (ctx: PrefixExpressionContext) => void;
 	/**
-	 * Enter a parse tree produced by the `BracketPropertyAccessExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Enter a parse tree produced by the `PostfixExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	enterBracketPropertyAccessExpression?: (ctx: BracketPropertyAccessExpressionContext) => void;
+	enterPostfixExpression?: (ctx: PostfixExpressionContext) => void;
 	/**
-	 * Exit a parse tree produced by the `BracketPropertyAccessExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * Exit a parse tree produced by the `PostfixExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
-	exitBracketPropertyAccessExpression?: (ctx: BracketPropertyAccessExpressionContext) => void;
+	exitPostfixExpression?: (ctx: PostfixExpressionContext) => void;
 	/**
 	 * Enter a parse tree produced by the `SquareRootExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	enterSquareRootExpression?: (ctx: SquareRootExpressionContext) => void;
 	/**
 	 * Exit a parse tree produced by the `SquareRootExpression`
-	 * labeled alternative in `JexLangParser.expression`.
+	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 */
 	exitSquareRootExpression?: (ctx: SquareRootExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `EqualityExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterEqualityExpression?: (ctx: EqualityExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `EqualityExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitEqualityExpression?: (ctx: EqualityExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `MultiplicativeExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	enterMultiplicativeExpression?: (ctx: MultiplicativeExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `MultiplicativeExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 */
+	exitMultiplicativeExpression?: (ctx: MultiplicativeExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `StringLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterStringLiteral?: (ctx: StringLiteralContext) => void;
+	/**
+	 * Exit a parse tree produced by the `StringLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitStringLiteral?: (ctx: StringLiteralContext) => void;
+	/**
+	 * Enter a parse tree produced by the `NumberLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterNumberLiteral?: (ctx: NumberLiteralContext) => void;
+	/**
+	 * Exit a parse tree produced by the `NumberLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitNumberLiteral?: (ctx: NumberLiteralContext) => void;
+	/**
+	 * Enter a parse tree produced by the `BooleanLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterBooleanLiteral?: (ctx: BooleanLiteralContext) => void;
+	/**
+	 * Exit a parse tree produced by the `BooleanLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitBooleanLiteral?: (ctx: BooleanLiteralContext) => void;
+	/**
+	 * Enter a parse tree produced by the `NullLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterNullLiteral?: (ctx: NullLiteralContext) => void;
+	/**
+	 * Exit a parse tree produced by the `NullLiteral`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitNullLiteral?: (ctx: NullLiteralContext) => void;
+	/**
+	 * Enter a parse tree produced by the `ArrayLiteralExpression`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `ArrayLiteralExpression`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitArrayLiteralExpression?: (ctx: ArrayLiteralExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by the `ObjectLiteralExpression`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	enterObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `ObjectLiteralExpression`
+	 * labeled alternative in `JexLangParser.literal`.
+	 * @param ctx the parse tree
+	 */
+	exitObjectLiteralExpression?: (ctx: ObjectLiteralExpressionContext) => void;
+	/**
+	 * Enter a parse tree produced by `JexLangParser.arrayLiteral`.
+	 * @param ctx the parse tree
+	 */
+	enterArrayLiteral?: (ctx: ArrayLiteralContext) => void;
+	/**
+	 * Exit a parse tree produced by `JexLangParser.arrayLiteral`.
+	 * @param ctx the parse tree
+	 */
+	exitArrayLiteral?: (ctx: ArrayLiteralContext) => void;
+	/**
+	 * Enter a parse tree produced by `JexLangParser.arrayElement`.
+	 * @param ctx the parse tree
+	 */
+	enterArrayElement?: (ctx: ArrayElementContext) => void;
+	/**
+	 * Exit a parse tree produced by `JexLangParser.arrayElement`.
+	 * @param ctx the parse tree
+	 */
+	exitArrayElement?: (ctx: ArrayElementContext) => void;
 	/**
 	 * Enter a parse tree produced by `JexLangParser.objectLiteral`.
 	 * @param ctx the parse tree
@@ -434,44 +504,70 @@ export default class JexLangListener extends ParseTreeListener {
 	 */
 	exitObjectLiteral?: (ctx: ObjectLiteralContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.objectProperty`.
+	 * Enter a parse tree produced by the `PropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	enterObjectProperty?: (ctx: ObjectPropertyContext) => void;
+	enterPropertyExpressionObjectProperty?: (ctx: PropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.objectProperty`.
+	 * Exit a parse tree produced by the `PropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	exitObjectProperty?: (ctx: ObjectPropertyContext) => void;
+	exitPropertyExpressionObjectProperty?: (ctx: PropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.functionCall`.
+	 * Enter a parse tree produced by the `ComputedPropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	enterFunctionCall?: (ctx: FunctionCallContext) => void;
+	enterComputedPropertyExpressionObjectProperty?: (ctx: ComputedPropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.functionCall`.
+	 * Exit a parse tree produced by the `ComputedPropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	exitFunctionCall?: (ctx: FunctionCallContext) => void;
+	exitComputedPropertyExpressionObjectProperty?: (ctx: ComputedPropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.argumentList`.
+	 * Enter a parse tree produced by the `ShorthandPropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	enterArgumentList?: (ctx: ArgumentListContext) => void;
+	enterShorthandPropertyExpressionObjectProperty?: (ctx: ShorthandPropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.argumentList`.
+	 * Exit a parse tree produced by the `ShorthandPropertyExpressionObjectProperty`
+	 * labeled alternative in `JexLangParser.objectProperty`.
 	 * @param ctx the parse tree
 	 */
-	exitArgumentList?: (ctx: ArgumentListContext) => void;
+	exitShorthandPropertyExpressionObjectProperty?: (ctx: ShorthandPropertyExpressionObjectPropertyContext) => void;
 	/**
-	 * Enter a parse tree produced by `JexLangParser.arrayLiteral`.
+	 * Enter a parse tree produced by `JexLangParser.objectPropertyName`.
 	 * @param ctx the parse tree
 	 */
-	enterArrayLiteral?: (ctx: ArrayLiteralContext) => void;
+	enterObjectPropertyName?: (ctx: ObjectPropertyNameContext) => void;
 	/**
-	 * Exit a parse tree produced by `JexLangParser.arrayLiteral`.
+	 * Exit a parse tree produced by `JexLangParser.objectPropertyName`.
 	 * @param ctx the parse tree
 	 */
-	exitArrayLiteral?: (ctx: ArrayLiteralContext) => void;
+	exitObjectPropertyName?: (ctx: ObjectPropertyNameContext) => void;
+	/**
+	 * Enter a parse tree produced by `JexLangParser.arguments`.
+	 * @param ctx the parse tree
+	 */
+	enterArguments?: (ctx: ArgumentsContext) => void;
+	/**
+	 * Exit a parse tree produced by `JexLangParser.arguments`.
+	 * @param ctx the parse tree
+	 */
+	exitArguments?: (ctx: ArgumentsContext) => void;
+	/**
+	 * Enter a parse tree produced by `JexLangParser.argument`.
+	 * @param ctx the parse tree
+	 */
+	enterArgument?: (ctx: ArgumentContext) => void;
+	/**
+	 * Exit a parse tree produced by `JexLangParser.argument`.
+	 * @param ctx the parse tree
+	 */
+	exitArgument?: (ctx: ArgumentContext) => void;
 }
 
