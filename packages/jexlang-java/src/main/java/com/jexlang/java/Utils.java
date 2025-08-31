@@ -280,9 +280,6 @@ public class Utils {
     public static Scope createGlobalScope() {
         Scope scope = new Scope(null);
         // Add built-in functions and variables to the global scope
-        scope.declareVariable("true", new JexBoolean(true), true);
-        scope.declareVariable("false", new JexBoolean(false), true);
-        scope.declareVariable("null", new JexNull(), true);
 
         scope.declareVariable("PI", new JexNumber(FastMath.PI), true);
         scope.declareVariable("E", new JexNumber(FastMath.E), true);

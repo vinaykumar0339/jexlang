@@ -1,6 +1,7 @@
 package com.jexlang.java.scopes;
 
 import com.jexlang.java.eval.errors.JexLangRuntimeError;
+import com.jexlang.java.types.JexNull;
 import com.jexlang.java.types.JexValue;
 
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class Scope {
             return this.parentScope.getVariable(name);
         }
 
-        return null;
+        return new JexNull();
     }
 
     public boolean hasVariable(String name) {

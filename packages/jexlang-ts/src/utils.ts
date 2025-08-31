@@ -47,9 +47,6 @@ export function toString(value: JexValue): string {
 export function createGlobalScope(): Scope {
     const scope = new Scope();
     // Add built-in functions and variables to the global scope
-    scope.declareVariable("true", true, true);
-    scope.declareVariable("false", false, true);
-    scope.declareVariable("null", null, true);
 
     scope.declareVariable("PI", Math.PI, true);
     scope.declareVariable("E", Math.E, true);

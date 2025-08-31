@@ -172,15 +172,15 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     };
 
     visitLiteralExpression = (ctx: JexLangParser.LiteralExpressionContext): MaybePromise<JexValue> => {
-        return this.visit(ctx.getChild(0)); // visit to the literal
+        return this.visit(ctx.literal());
     };
 
     visitBooleanLiteral = (ctx: JexLangParser.BooleanLiteralContext): MaybePromise<JexValue> => {
-        return ctx.getText() === "true";
+        return ctx.getText().toLocaleLowerCase() === "true"; // Normalize boolean literals
     };
 
     visitNumberLiteral = (ctx: JexLangParser.NumberLiteralContext): MaybePromise<JexValue> => {
-        return parseFloat(ctx.getText()); // all numbers are treated as floats
+        return toNumber(ctx.getText()); // all numbers are treated as floats
     };
 
     visitStringLiteral = (ctx: JexLangParser.StringLiteralContext): MaybePromise<JexValue> => {
@@ -382,6 +382,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                     object[normalizedIndex] = value;
                     return object;
                 }
+                return null; // if out of bounds just return null. don't throw any errors.
             }
             throw new JexLangRuntimeError(`Cannot assign property on non-object or non-array value`);
         });
@@ -406,7 +407,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): MaybePromise<JexValue> => {
 
         return this.handlePromise(this.visit(ctx.singleExpression(0)), (resolvedCondition) => {
-            // If values are present, return the resolved condition null and undefined are falsy others are truthy
+            // If values are present, return the resolved condition, null and undefined are falsy others are truthy
             if (resolvedCondition != null && resolvedCondition != undefined) {
                 return resolvedCondition;
             } else {
@@ -426,7 +427,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                 });
             }
 
-            // if transform not found lets check in funcs
+            // if transform not found lets check in functions
             if (this.funcRegistry.has(transformName)) {
                 return this.handlePromise(this.funcRegistry.call(transformName, [input]), (output) => {
                     return output;
@@ -690,7 +691,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             throw new UndefinedVariableError(identifier);
         }
 
-        throw new Error(`Unknown argument type: ${ctx.getText()}`);
+        throw new JexLangRuntimeError(`Unknown argument type: ${ctx.getText()}`);
     };
 
     visitPrefixExpression = (ctx: JexLangParser.PrefixExpressionContext): MaybePromise<JexValue> => {
