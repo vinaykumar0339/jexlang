@@ -1,5 +1,5 @@
 import type { FuncImpl, JexValue } from "../../types";
-import { getJexValueType, toNumber, toString } from "../../utils";
+import { getJexValueType, toBoolean, toNumber, toString } from "../../utils";
 import { TypeMismatchError } from "../errors";
 
 // Built-in functions
@@ -54,8 +54,11 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
     // Type conversion functions
     'number': (x: JexValue) => toNumber(x),
     'string': (x: JexValue) => toString(x),
-    'boolean': (x: JexValue) => Boolean(x),
-    
+    'boolean': (x: JexValue) => toBoolean(x),
+    'int': (x: JexValue) => Math.floor(toNumber(x)),
+    'float': (x: JexValue) => parseFloat(toString(x)),
+    'double': (x: JexValue) => parseFloat(toString(x)),
+
     // String functions
     'length': (x: JexValue) => {
         if (typeof x === 'string') return x.length;

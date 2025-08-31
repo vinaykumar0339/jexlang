@@ -17,30 +17,24 @@ public class Functions {
     public static Map<String, FuncImpl> makeBuiltins() {
         return Map.ofEntries(
                 // Math functions that work with numbers
-                Map.entry("abs", Utils.n1(FastMath::abs, "abs")),
-                Map.entry("ceil", Utils.n1(FastMath::ceil, "ceil")),
-                Map.entry("floor", Utils.n1(FastMath::floor, "floor")),
-                Map.entry("round", Utils.n1(x -> (double) FastMath.round(x), "round")),
-                Map.entry("trunc", Utils.n1(Functions::trunc, "trunc")),
+                Map.entry("abs", Utils.n1(FastMath::abs, "abs function")),
+                Map.entry("ceil", Utils.n1(FastMath::ceil, "ceil function")),
+                Map.entry("floor", Utils.n1(FastMath::floor, "floor function")),
+                Map.entry("round", Utils.n1(x -> (double) FastMath.round(x), "round function")),
+                Map.entry("trunc", Utils.n1(Functions::trunc, "trunc function")),
 
                 // Trigonometry
-                Map.entry("sin", Utils.n1(FastMath::sin, "sin")),
-                Map.entry("cos", Utils.n1(FastMath::cos, "cos")),
-                Map.entry("tan", Utils.n1(FastMath::tan, "tan")),
-                Map.entry("asin", Utils.n1(x -> {
-                    Utils.checkTrigDomain("asin", x);
-                    return FastMath.asin(x);
-                }, "asin")),
-                Map.entry("acos", Utils.n1(x -> {
-                    Utils.checkTrigDomain("acos", x);
-                    return FastMath.acos(x);
-                }, "acos")),
-                Map.entry("atan", Utils.n1(FastMath::atan, "atan")),
+                Map.entry("sin", Utils.n1(FastMath::sin, "sin function")),
+                Map.entry("cos", Utils.n1(FastMath::cos, "cos function")),
+                Map.entry("tan", Utils.n1(FastMath::tan, "tan function")),
+                Map.entry("asin", Utils.n1(FastMath::asin, "asin")),
+                Map.entry("acos", Utils.n1(FastMath::acos, "acos")),
+                Map.entry("atan", Utils.n1(FastMath::atan, "atan function")),
                 // Note TS signature: atan2(y, x)
-                Map.entry("atan2", Utils.n2(FastMath::atan2, "atan2:y", "atan2:x")),
+                Map.entry("atan2", Utils.n2(FastMath::atan2, "atan2:y function", "atan2:x function")),
 
                 // Exponential & logarithmic
-                Map.entry("exp", Utils.n1(FastMath::exp, "exp")),
+                Map.entry("exp", Utils.n1(FastMath::exp, "exp function")),
                 Map.entry("log", Utils.n1(x -> {
                     Utils.checkPositive("log", x, false);
                     return Math.log(x);
@@ -57,22 +51,15 @@ public class Functions {
                     Utils.checkPositive("sqrt", x, true);
                     return Math.sqrt(x);
                 }, "sqrt")),
-                Map.entry("cbrt", Utils.n1(FastMath::cbrt, "cbrt")),
+                Map.entry("cbrt", Utils.n1(FastMath::cbrt, "cbrt function")),
 
                 // Hyperbolic
-                Map.entry("sinh", Utils.n1(FastMath::sinh, "sinh")),
-                Map.entry("cosh", Utils.n1(FastMath::cosh, "cosh")),
-                Map.entry("tanh", Utils.n1(FastMath::tanh, "tanh")),
-                Map.entry("asinh", Utils.n1(FastMath::asinh, "asinh")),
-                Map.entry("acosh", Utils.n1(x -> {
-                    Utils.checkPositive("acosh", x, true);
-                    return FastMath.acosh(x);
-                }, "acosh")),
-                Map.entry("atanh", Utils.n1(x -> {
-                    if (x <= -1.0 || x >= 1.0)
-                        throw new RuntimeException("atanh domain error: expected x in (-1, 1), got " + x);
-                    return FastMath.atanh(x);
-                }, "atanh")),
+                Map.entry("sinh", Utils.n1(FastMath::sinh, "sinh function")),
+                Map.entry("cosh", Utils.n1(FastMath::cosh, "cosh function")),
+                Map.entry("tanh", Utils.n1(FastMath::tanh, "tanh function")),
+                Map.entry("asinh", Utils.n1(FastMath::asinh, "asinh function")),
+                Map.entry("acosh", Utils.n1(FastMath::acosh, "acosh function")),
+                Map.entry("atanh", Utils.n1(FastMath::atanh, "atanh")),
 
                 // Utilities (variadic or mixed)
                 Map.entry("min", (args) -> {
@@ -95,13 +82,13 @@ public class Functions {
                     Utils.assertFinite("max", best);
                     return Utils.num(best);
                 }),
-                Map.entry("pow", Utils.n2(FastMath::pow, "pow base", "pow exponent")),
+                Map.entry("pow", Utils.n2(FastMath::pow, "pow base function", "pow exponent function")),
                 Map.entry("random", (args) -> Utils.num(Math.random())),
-                Map.entry("sign", Utils.n1(FastMath::signum, "sign")),
+                Map.entry("sign", Utils.n1(FastMath::signum, "sign function")),
 
                 // Custom math
-                Map.entry("deg", Utils.n1(x -> x * 180.0 / Math.PI, "deg")),
-                Map.entry("rad", Utils.n1(x -> x * Math.PI / 180.0, "rad")),
+                Map.entry("deg", Utils.n1(x -> x * 180.0 / Math.PI, "deg function")),
+                Map.entry("rad", Utils.n1(x -> x * Math.PI / 180.0, "rad function")),
                 Map.entry("clamp", Utils.n3((v, lo, hi) -> {
                     if (lo > hi)
                         throw new RuntimeException("clamp: min (" + lo + ") cannot be greater than max (" + hi + ")");
@@ -110,9 +97,12 @@ public class Functions {
                 Map.entry("lerp", Utils.n3((a, b, t) -> a + (b - a) * t, "lerp a", "lerp b", "lerp t")),
 
                 // Conversions
-                Map.entry("number", Utils.n1(x -> x, "number")), // wrapper ensures toNumber semantics
-                Map.entry("string", (args) -> Utils.str(Utils.toString(args[0], "string method"))),
-                Map.entry("boolean", (args) -> Utils.bool(Utils.toBoolean(args[0], "boolean method"))),
+                Map.entry("number", Utils.n1(x -> x, "number function")), // wrapper ensures toNumber semantics
+                Map.entry("string", (args) -> Utils.str(Utils.toString(args[0], "string function"))),
+                Map.entry("boolean", (args) -> Utils.bool(Utils.toBoolean(args[0], "boolean function"))),
+                Map.entry("int", Utils.n1(FastMath::floor, "int function")),
+                Map.entry("float", Utils.n1(x -> (float) x, "float function")), // alias for number
+                Map.entry("double", Utils.n1(x -> x, "double function")), // alias for number
 
                 // String functions
                 Map.entry("length", (args) -> {

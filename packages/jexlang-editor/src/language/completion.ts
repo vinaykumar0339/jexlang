@@ -80,9 +80,33 @@ const GLOBAL_VARIABLES: monaco.languages.CompletionItem[] = [
 const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
   { 
     label: 'let', 
-    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Variable declaration',
-    documentation: 'Declares a new variable',
-    insertText: 'let ${1:name} = ${2:value}',
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Let Variable declaration',
+    documentation: 'Declares a new let variable',
+    insertText: 'let',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'const', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Const Variable declaration',
+    documentation: 'Declares a new const variable',
+    insertText: 'const',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'global', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Global Let Variable declaration',
+    documentation: 'Declares a new global variable',
+    insertText: 'global let',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'global', 
+    kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Global var Variable declaration',
+    documentation: 'Declares a new global const variable',
+    insertText: 'global const',
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },
@@ -428,6 +452,30 @@ const JEX_FUNCTIONS: monaco.languages.CompletionItem[] = [
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },
+  {
+    label: 'int',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Converts a value to an integer',
+    insertText: 'int(${1:value})',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'float',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Converts a value to a float',
+    insertText: 'float(${1:value})',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'double',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Converts a value to a double',
+    insertText: 'double(${1:value})',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
   
   // String functions
   { 
@@ -603,6 +651,30 @@ const JEX_TRANSFORMS: monaco.languages.CompletionItem[] = [
     insertText: '| boolean', 
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'int',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Transform: Converts a value to an integer',
+    insertText: '| int',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'float',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Transform: Converts a value to a float',
+    insertText: '| float',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'double',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Transform: Converts a value to a double',
+    insertText: '| double',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
   }
 ];
 
@@ -611,8 +683,32 @@ const JEX_SNIPPETS: monaco.languages.CompletionItem[] = [
   { 
     label: 'let-declaration', 
     kind: monaco.languages.CompletionItemKind.Snippet, 
-    detail: 'Variable declaration',
+    detail: 'Let Variable declaration',
     insertText: 'let ${1:name} = ${2:value};',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'global-let-declaration', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Global Let Variable declaration',
+    insertText: 'global let ${1:name} = ${2:value};',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'const-declaration', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Const Variable declaration',
+    insertText: 'const ${1:name} = ${2:value};',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'global-const-declaration', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Global Const Variable declaration',
+    insertText: 'global const ${1:name} = ${2:value};',
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },

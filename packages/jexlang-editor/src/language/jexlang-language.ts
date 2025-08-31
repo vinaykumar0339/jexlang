@@ -6,7 +6,7 @@ export const JEX_LANGUAGE_ID = 'jexlang';
 const monarch: monaco.languages.IMonarchLanguage = {
     defaultToken: "",
     tokenPostfix: ".jex",
-    keywords: ['let', 'true', 'false', 'and', 'or', 'sqrt'],
+    keywords: ['global', 'let', 'const', 'true', 'false', 'and', 'or', 'sqrt'],
     operators: [
         '+', '-', '*', '/', '%', '^', '**', '√', 'sqrt', '++', '--',
         '=', '==', '!=', '<', '>', '<=', '>=',

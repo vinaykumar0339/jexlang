@@ -61,12 +61,6 @@ public class Utils {
         };
     }
 
-    public static void checkTrigDomain(String name, double x) {
-        if ("asin".equals(name) || "acos".equals(name)) {
-            if (x < -1.0 || x > 1.0) throw new RuntimeException(name + " domain error: expected x in [-1, 1], got " + x);
-        }
-    }
-
     public static void checkPositive(String name, double x, boolean allowZero) {
         if (allowZero ? x < 0.0 : x <= 0.0) {
             throw new RuntimeException(name + " domain error: expected " + (allowZero ? "x >= 0" : "x > 0") + ", got " + x);
