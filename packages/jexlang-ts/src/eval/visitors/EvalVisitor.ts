@@ -1,12 +1,12 @@
 import JexLangVisitor from "../../grammar/JexLangVisitor";
 import * as JexLangParser from "../../grammar/JexLangParser";
-import { ErrorNode, ParseTree } from "antlr4";
 import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { toBoolean, toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { Scope } from "../scopes";
+import type { ErrorNode } from "antlr4";
 
 export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     private funcRegistry: FuncRegistry;
@@ -636,7 +636,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         const functionName = ctx.IDENTIFIER().getText();
         // check function is available or not
         if (!this.funcRegistry.has(functionName)) {
-            throw new JexLangRuntimeError(`Function not found: ${functionName}`);
+            throw new UndefinedFunctionError(functionName);
         }
 
         const args: MaybePromise<JexValue[]> = ctx.arguments() ? this.visit(ctx.arguments()) as MaybePromise<JexValue[]> : [];
@@ -840,6 +840,46 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             });
         }
     };
+
+    private escapeTokenText(text: string): string {
+        return text
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    }
+
+    protected defaultResult(): JexValue {
+        return null;
+    }
+
+    visitErrorNode(node: ErrorNode): JexValue {
+        const location = {
+            line: node.symbol?.line || 0,
+            column: node.symbol?.column || 0,
+            offendingSymbol: node.getText() || null
+        };
+
+        let errorMessage = "Syntax error";
+
+        if (node.symbol) {
+            const tokenType = node.symbol.type;
+            const tokenText = this.escapeTokenText(node.symbol.text || '');
+
+            if (tokenType >= 0) {
+                errorMessage = `Unexpected token '${tokenText}'`;
+            } else {
+                errorMessage = `Invalid syntax near '${tokenText}'`;
+            }
+
+            if (node.symbol.line > 0) {
+                errorMessage += ` at line ${node.symbol.line}:${node.symbol.column + 1}`;
+            }
+        } else {
+            errorMessage = `Syntax error encountered: ${node.getText()}`;
+        }
+
+        throw new JexLangSyntaxError(errorMessage, location);
+    }
 }
 
 export function createDefaultFuncRegistry(): MapFuncRegistry {
