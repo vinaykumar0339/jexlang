@@ -126,14 +126,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_program; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterProgram(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitProgram(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitProgram(this);
 			else return visitor.visitChildren(this);
@@ -194,14 +186,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_statement; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterStatement(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitStatement(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitStatement(this);
@@ -272,14 +256,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_block; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterBlock(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitBlock(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitBlock(this);
 			else return visitor.visitChildren(this);
@@ -332,14 +308,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_emptyStatement; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterEmptyStatement(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitEmptyStatement(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitEmptyStatement(this);
 			else return visitor.visitChildren(this);
@@ -382,14 +350,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_varDeclaration; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterVarDeclaration(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitVarDeclaration(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitVarDeclaration(this);
@@ -472,14 +432,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_expressionStatement; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterExpressionStatement(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitExpressionStatement(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitExpressionStatement(this);
 			else return visitor.visitChildren(this);
@@ -533,14 +485,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expressionSequence; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterExpressionSequence(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitExpressionSequence(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitExpressionSequence(this);
@@ -607,14 +551,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode RPAREN() { return getToken(JexLangParser.RPAREN, 0); }
 		public ParenthesizedExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterParenthesizedExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitParenthesizedExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitParenthesizedExpression(this);
 			else return visitor.visitChildren(this);
@@ -632,14 +568,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode COLON() { return getToken(JexLangParser.COLON, 0); }
 		public ShortTernaryExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterShortTernaryExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitShortTernaryExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitShortTernaryExpression(this);
 			else return visitor.visitChildren(this);
@@ -656,14 +584,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode PLUS() { return getToken(JexLangParser.PLUS, 0); }
 		public TerminalNode MINUS() { return getToken(JexLangParser.MINUS, 0); }
 		public AdditiveExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterAdditiveExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitAdditiveExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitAdditiveExpression(this);
@@ -684,14 +604,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode GTE() { return getToken(JexLangParser.GTE, 0); }
 		public RelationalExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterRelationalExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitRelationalExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitRelationalExpression(this);
 			else return visitor.visitChildren(this);
@@ -708,14 +620,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode QUESTION() { return getToken(JexLangParser.QUESTION, 0); }
 		public TerminalNode COLON() { return getToken(JexLangParser.COLON, 0); }
 		public TernaryExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterTernaryExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitTernaryExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitTernaryExpression(this);
@@ -738,14 +642,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode ASSIGN() { return getToken(JexLangParser.ASSIGN, 0); }
 		public BracketPropertyAssignmentContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterBracketPropertyAssignment(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitBracketPropertyAssignment(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitBracketPropertyAssignment(this);
 			else return visitor.visitChildren(this);
@@ -761,14 +657,6 @@ public class JexLangParser extends Parser {
 		}
 		public TerminalNode AND() { return getToken(JexLangParser.AND, 0); }
 		public LogicalAndExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterLogicalAndExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitLogicalAndExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitLogicalAndExpression(this);
@@ -786,14 +674,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode POW() { return getToken(JexLangParser.POW, 0); }
 		public TerminalNode POWER() { return getToken(JexLangParser.POWER, 0); }
 		public PowerExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterPowerExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitPowerExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitPowerExpression(this);
@@ -815,14 +695,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode ASSIGN() { return getToken(JexLangParser.ASSIGN, 0); }
 		public DotPropertyAssignmentContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterDotPropertyAssignment(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitDotPropertyAssignment(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitDotPropertyAssignment(this);
 			else return visitor.visitChildren(this);
@@ -834,14 +706,6 @@ public class JexLangParser extends Parser {
 			return getRuleContext(LiteralContext.class,0);
 		}
 		public LiteralExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterLiteralExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitLiteralExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitLiteralExpression(this);
@@ -858,14 +722,6 @@ public class JexLangParser extends Parser {
 		}
 		public TerminalNode OR() { return getToken(JexLangParser.OR, 0); }
 		public LogicalOrExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterLogicalOrExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitLogicalOrExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitLogicalOrExpression(this);
@@ -884,14 +740,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode QUESTION() { return getToken(JexLangParser.QUESTION, 0); }
 		public MemberDotExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterMemberDotExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitMemberDotExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitMemberDotExpression(this);
 			else return visitor.visitChildren(this);
@@ -905,14 +753,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode PLUS() { return getToken(JexLangParser.PLUS, 0); }
 		public TerminalNode MINUS() { return getToken(JexLangParser.MINUS, 0); }
 		public UnaryExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterUnaryExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitUnaryExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitUnaryExpression(this);
@@ -932,14 +772,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode QUESTION() { return getToken(JexLangParser.QUESTION, 0); }
 		public MemberIndexExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterMemberIndexExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitMemberIndexExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitMemberIndexExpression(this);
 			else return visitor.visitChildren(this);
@@ -953,14 +785,6 @@ public class JexLangParser extends Parser {
 		}
 		public FunctionCallExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterFunctionCallExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitFunctionCallExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitFunctionCallExpression(this);
 			else return visitor.visitChildren(this);
@@ -970,14 +794,6 @@ public class JexLangParser extends Parser {
 	public static class IdentifierExpressionContext extends SingleExpressionContext {
 		public TerminalNode IDENTIFIER() { return getToken(JexLangParser.IDENTIFIER, 0); }
 		public IdentifierExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterIdentifierExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitIdentifierExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitIdentifierExpression(this);
@@ -993,14 +809,6 @@ public class JexLangParser extends Parser {
 		}
 		public AssignmentExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterAssignmentExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitAssignmentExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitAssignmentExpression(this);
 			else return visitor.visitChildren(this);
@@ -1014,14 +822,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode PIPE() { return getToken(JexLangParser.PIPE, 0); }
 		public TerminalNode IDENTIFIER() { return getToken(JexLangParser.IDENTIFIER, 0); }
 		public TransformExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterTransformExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitTransformExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitTransformExpression(this);
@@ -1037,14 +837,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode DECREMENT() { return getToken(JexLangParser.DECREMENT, 0); }
 		public PrefixExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterPrefixExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitPrefixExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitPrefixExpression(this);
 			else return visitor.visitChildren(this);
@@ -1059,14 +851,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode DECREMENT() { return getToken(JexLangParser.DECREMENT, 0); }
 		public PostfixExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterPostfixExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitPostfixExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitPostfixExpression(this);
 			else return visitor.visitChildren(this);
@@ -1079,14 +863,6 @@ public class JexLangParser extends Parser {
 		}
 		public TerminalNode SQRT() { return getToken(JexLangParser.SQRT, 0); }
 		public SquareRootExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterSquareRootExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitSquareRootExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitSquareRootExpression(this);
@@ -1105,14 +881,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode NEQ() { return getToken(JexLangParser.NEQ, 0); }
 		public EqualityExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterEqualityExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitEqualityExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitEqualityExpression(this);
 			else return visitor.visitChildren(this);
@@ -1130,14 +898,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode DIVIDE() { return getToken(JexLangParser.DIVIDE, 0); }
 		public TerminalNode MODULO() { return getToken(JexLangParser.MODULO, 0); }
 		public MultiplicativeExpressionContext(SingleExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterMultiplicativeExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitMultiplicativeExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitMultiplicativeExpression(this);
@@ -1591,14 +1351,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode STRING() { return getToken(JexLangParser.STRING, 0); }
 		public StringLiteralContext(LiteralContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterStringLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitStringLiteral(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitStringLiteral(this);
 			else return visitor.visitChildren(this);
@@ -1611,14 +1363,6 @@ public class JexLangParser extends Parser {
 		}
 		public ObjectLiteralExpressionContext(LiteralContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterObjectLiteralExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitObjectLiteralExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitObjectLiteralExpression(this);
 			else return visitor.visitChildren(this);
@@ -1628,14 +1372,6 @@ public class JexLangParser extends Parser {
 	public static class BooleanLiteralContext extends LiteralContext {
 		public TerminalNode BOOLEAN() { return getToken(JexLangParser.BOOLEAN, 0); }
 		public BooleanLiteralContext(LiteralContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterBooleanLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitBooleanLiteral(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitBooleanLiteral(this);
@@ -1649,14 +1385,6 @@ public class JexLangParser extends Parser {
 		}
 		public ArrayLiteralExpressionContext(LiteralContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterArrayLiteralExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitArrayLiteralExpression(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitArrayLiteralExpression(this);
 			else return visitor.visitChildren(this);
@@ -1667,14 +1395,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode NULL() { return getToken(JexLangParser.NULL, 0); }
 		public NullLiteralContext(LiteralContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterNullLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitNullLiteral(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitNullLiteral(this);
 			else return visitor.visitChildren(this);
@@ -1684,14 +1404,6 @@ public class JexLangParser extends Parser {
 	public static class NumberLiteralContext extends LiteralContext {
 		public TerminalNode NUMBER() { return getToken(JexLangParser.NUMBER, 0); }
 		public NumberLiteralContext(LiteralContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterNumberLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitNumberLiteral(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitNumberLiteral(this);
@@ -1788,14 +1500,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_arrayLiteral; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterArrayLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitArrayLiteral(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitArrayLiteral(this);
 			else return visitor.visitChildren(this);
@@ -1862,14 +1566,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_arrayElement; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterArrayElement(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitArrayElement(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitArrayElement(this);
 			else return visitor.visitChildren(this);
@@ -1915,14 +1611,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_objectLiteral; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterObjectLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitObjectLiteral(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitObjectLiteral(this);
@@ -1997,14 +1685,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode IDENTIFIER() { return getToken(JexLangParser.IDENTIFIER, 0); }
 		public ShorthandPropertyExpressionObjectPropertyContext(ObjectPropertyContext ctx) { copyFrom(ctx); }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterShorthandPropertyExpressionObjectProperty(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitShorthandPropertyExpressionObjectProperty(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitShorthandPropertyExpressionObjectProperty(this);
 			else return visitor.visitChildren(this);
@@ -2020,14 +1700,6 @@ public class JexLangParser extends Parser {
 			return getRuleContext(SingleExpressionContext.class,0);
 		}
 		public PropertyExpressionObjectPropertyContext(ObjectPropertyContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterPropertyExpressionObjectProperty(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitPropertyExpressionObjectProperty(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitPropertyExpressionObjectProperty(this);
@@ -2046,14 +1718,6 @@ public class JexLangParser extends Parser {
 		public TerminalNode RBRACKET() { return getToken(JexLangParser.RBRACKET, 0); }
 		public TerminalNode COLON() { return getToken(JexLangParser.COLON, 0); }
 		public ComputedPropertyExpressionObjectPropertyContext(ObjectPropertyContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterComputedPropertyExpressionObjectProperty(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitComputedPropertyExpressionObjectProperty(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitComputedPropertyExpressionObjectProperty(this);
@@ -2129,14 +1793,6 @@ public class JexLangParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_objectPropertyName; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterObjectPropertyName(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitObjectPropertyName(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitObjectPropertyName(this);
 			else return visitor.visitChildren(this);
@@ -2191,14 +1847,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_arguments; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterArguments(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitArguments(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitArguments(this);
@@ -2279,14 +1927,6 @@ public class JexLangParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_argument; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).enterArgument(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof JexLangListener ) ((JexLangListener)listener).exitArgument(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof JexLangVisitor ) return ((JexLangVisitor<? extends T>)visitor).visitArgument(this);

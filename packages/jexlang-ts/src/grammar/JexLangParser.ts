@@ -11,7 +11,6 @@ import {
 	Token, TokenStream,
 	Interval, IntervalSet
 } from 'antlr4';
-import JexLangListener from "./JexLangListener.js";
 import JexLangVisitor from "./JexLangVisitor.js";
 
 // for running tests with parameters, TODO: discuss strategy for typed parameters in CI
@@ -1469,16 +1468,6 @@ export class ProgramContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_program;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterProgram) {
-	 		listener.enterProgram(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitProgram) {
-	 		listener.exitProgram(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitProgram) {
@@ -1509,16 +1498,6 @@ export class StatementContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_statement;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterStatement) {
-	 		listener.enterStatement(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitStatement) {
-	 		listener.exitStatement(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1551,16 +1530,6 @@ export class BlockContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_block;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterBlock) {
-	 		listener.enterBlock(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitBlock) {
-	 		listener.exitBlock(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitBlock) {
@@ -1582,16 +1551,6 @@ export class EmptyStatementContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_emptyStatement;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterEmptyStatement) {
-	 		listener.enterEmptyStatement(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitEmptyStatement) {
-	 		listener.exitEmptyStatement(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1633,16 +1592,6 @@ export class VarDeclarationContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_varDeclaration;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterVarDeclaration) {
-	 		listener.enterVarDeclaration(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitVarDeclaration) {
-	 		listener.exitVarDeclaration(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitVarDeclaration) {
@@ -1667,16 +1616,6 @@ export class ExpressionStatementContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_expressionStatement;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterExpressionStatement) {
-	 		listener.enterExpressionStatement(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitExpressionStatement) {
-	 		listener.exitExpressionStatement(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1708,16 +1647,6 @@ export class ExpressionSequenceContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_expressionSequence;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterExpressionSequence) {
-	 		listener.enterExpressionSequence(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitExpressionSequence) {
-	 		listener.exitExpressionSequence(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1756,16 +1685,6 @@ export class ParenthesizedExpressionContext extends SingleExpressionContext {
 	public RPAREN(): TerminalNode {
 		return this.getToken(JexLangParser.RPAREN, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterParenthesizedExpression) {
-	 		listener.enterParenthesizedExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitParenthesizedExpression) {
-	 		listener.exitParenthesizedExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitParenthesizedExpression) {
@@ -1792,16 +1711,6 @@ export class ShortTernaryExpressionContext extends SingleExpressionContext {
 	public COLON(): TerminalNode {
 		return this.getToken(JexLangParser.COLON, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterShortTernaryExpression) {
-	 		listener.enterShortTernaryExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitShortTernaryExpression) {
-	 		listener.exitShortTernaryExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitShortTernaryExpression) {
@@ -1827,16 +1736,6 @@ export class AdditiveExpressionContext extends SingleExpressionContext {
 	}
 	public MINUS(): TerminalNode {
 		return this.getToken(JexLangParser.MINUS, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterAdditiveExpression) {
-	 		listener.enterAdditiveExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitAdditiveExpression) {
-	 		listener.exitAdditiveExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1870,16 +1769,6 @@ export class RelationalExpressionContext extends SingleExpressionContext {
 	public GTE(): TerminalNode {
 		return this.getToken(JexLangParser.GTE, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterRelationalExpression) {
-	 		listener.enterRelationalExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitRelationalExpression) {
-	 		listener.exitRelationalExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitRelationalExpression) {
@@ -1905,16 +1794,6 @@ export class TernaryExpressionContext extends SingleExpressionContext {
 	}
 	public COLON(): TerminalNode {
 		return this.getToken(JexLangParser.COLON, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterTernaryExpression) {
-	 		listener.enterTernaryExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitTernaryExpression) {
-	 		listener.exitTernaryExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -1948,16 +1827,6 @@ export class BracketPropertyAssignmentContext extends SingleExpressionContext {
 	public ASSIGN(): TerminalNode {
 		return this.getToken(JexLangParser.ASSIGN, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterBracketPropertyAssignment) {
-	 		listener.enterBracketPropertyAssignment(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitBracketPropertyAssignment) {
-	 		listener.exitBracketPropertyAssignment(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitBracketPropertyAssignment) {
@@ -1980,16 +1849,6 @@ export class LogicalAndExpressionContext extends SingleExpressionContext {
 	}
 	public AND(): TerminalNode {
 		return this.getToken(JexLangParser.AND, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterLogicalAndExpression) {
-	 		listener.enterLogicalAndExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitLogicalAndExpression) {
-	 		listener.exitLogicalAndExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2016,16 +1875,6 @@ export class PowerExpressionContext extends SingleExpressionContext {
 	}
 	public POWER(): TerminalNode {
 		return this.getToken(JexLangParser.POWER, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterPowerExpression) {
-	 		listener.enterPowerExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitPowerExpression) {
-	 		listener.exitPowerExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2056,16 +1905,6 @@ export class DotPropertyAssignmentContext extends SingleExpressionContext {
 	public ASSIGN(): TerminalNode {
 		return this.getToken(JexLangParser.ASSIGN, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterDotPropertyAssignment) {
-	 		listener.enterDotPropertyAssignment(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitDotPropertyAssignment) {
-	 		listener.exitDotPropertyAssignment(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitDotPropertyAssignment) {
@@ -2082,16 +1921,6 @@ export class LiteralExpressionContext extends SingleExpressionContext {
 	}
 	public literal(): LiteralContext {
 		return this.getTypedRuleContext(LiteralContext, 0) as LiteralContext;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterLiteralExpression) {
-	 		listener.enterLiteralExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitLiteralExpression) {
-	 		listener.exitLiteralExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2115,16 +1944,6 @@ export class LogicalOrExpressionContext extends SingleExpressionContext {
 	}
 	public OR(): TerminalNode {
 		return this.getToken(JexLangParser.OR, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterLogicalOrExpression) {
-	 		listener.enterLogicalOrExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitLogicalOrExpression) {
-	 		listener.exitLogicalOrExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2152,16 +1971,6 @@ export class MemberDotExpressionContext extends SingleExpressionContext {
 	public QUESTION(): TerminalNode {
 		return this.getToken(JexLangParser.QUESTION, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterMemberDotExpression) {
-	 		listener.enterMemberDotExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitMemberDotExpression) {
-	 		listener.exitMemberDotExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitMemberDotExpression) {
@@ -2184,16 +1993,6 @@ export class UnaryExpressionContext extends SingleExpressionContext {
 	}
 	public MINUS(): TerminalNode {
 		return this.getToken(JexLangParser.MINUS, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterUnaryExpression) {
-	 		listener.enterUnaryExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitUnaryExpression) {
-	 		listener.exitUnaryExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2224,16 +2023,6 @@ export class MemberIndexExpressionContext extends SingleExpressionContext {
 	public QUESTION(): TerminalNode {
 		return this.getToken(JexLangParser.QUESTION, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterMemberIndexExpression) {
-	 		listener.enterMemberIndexExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitMemberIndexExpression) {
-	 		listener.exitMemberIndexExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitMemberIndexExpression) {
@@ -2254,16 +2043,6 @@ export class FunctionCallExpressionContext extends SingleExpressionContext {
 	public arguments(): ArgumentsContext {
 		return this.getTypedRuleContext(ArgumentsContext, 0) as ArgumentsContext;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterFunctionCallExpression) {
-	 		listener.enterFunctionCallExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitFunctionCallExpression) {
-	 		listener.exitFunctionCallExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitFunctionCallExpression) {
@@ -2280,16 +2059,6 @@ export class IdentifierExpressionContext extends SingleExpressionContext {
 	}
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterIdentifierExpression) {
-	 		listener.enterIdentifierExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitIdentifierExpression) {
-	 		listener.exitIdentifierExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2314,16 +2083,6 @@ export class AssignmentExpressionContext extends SingleExpressionContext {
 	public singleExpression(): SingleExpressionContext {
 		return this.getTypedRuleContext(SingleExpressionContext, 0) as SingleExpressionContext;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterAssignmentExpression) {
-	 		listener.enterAssignmentExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitAssignmentExpression) {
-	 		listener.exitAssignmentExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitAssignmentExpression) {
@@ -2346,16 +2105,6 @@ export class TransformExpressionContext extends SingleExpressionContext {
 	}
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterTransformExpression) {
-	 		listener.enterTransformExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitTransformExpression) {
-	 		listener.exitTransformExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2380,16 +2129,6 @@ export class PrefixExpressionContext extends SingleExpressionContext {
 	public DECREMENT(): TerminalNode {
 		return this.getToken(JexLangParser.DECREMENT, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterPrefixExpression) {
-	 		listener.enterPrefixExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitPrefixExpression) {
-	 		listener.exitPrefixExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitPrefixExpression) {
@@ -2413,16 +2152,6 @@ export class PostfixExpressionContext extends SingleExpressionContext {
 	public DECREMENT(): TerminalNode {
 		return this.getToken(JexLangParser.DECREMENT, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterPostfixExpression) {
-	 		listener.enterPostfixExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitPostfixExpression) {
-	 		listener.exitPostfixExpression(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitPostfixExpression) {
@@ -2442,16 +2171,6 @@ export class SquareRootExpressionContext extends SingleExpressionContext {
 	}
 	public SQRT(): TerminalNode {
 		return this.getToken(JexLangParser.SQRT, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterSquareRootExpression) {
-	 		listener.enterSquareRootExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitSquareRootExpression) {
-	 		listener.exitSquareRootExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2478,16 +2197,6 @@ export class EqualityExpressionContext extends SingleExpressionContext {
 	}
 	public NEQ(): TerminalNode {
 		return this.getToken(JexLangParser.NEQ, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterEqualityExpression) {
-	 		listener.enterEqualityExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitEqualityExpression) {
-	 		listener.exitEqualityExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2517,16 +2226,6 @@ export class MultiplicativeExpressionContext extends SingleExpressionContext {
 	}
 	public MODULO(): TerminalNode {
 		return this.getToken(JexLangParser.MODULO, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterMultiplicativeExpression) {
-	 		listener.enterMultiplicativeExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitMultiplicativeExpression) {
-	 		listener.exitMultiplicativeExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2559,16 +2258,6 @@ export class StringLiteralContext extends LiteralContext {
 	public STRING(): TerminalNode {
 		return this.getToken(JexLangParser.STRING, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterStringLiteral) {
-	 		listener.enterStringLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitStringLiteral) {
-	 		listener.exitStringLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitStringLiteral) {
@@ -2585,16 +2274,6 @@ export class ObjectLiteralExpressionContext extends LiteralContext {
 	}
 	public objectLiteral(): ObjectLiteralContext {
 		return this.getTypedRuleContext(ObjectLiteralContext, 0) as ObjectLiteralContext;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterObjectLiteralExpression) {
-	 		listener.enterObjectLiteralExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitObjectLiteralExpression) {
-	 		listener.exitObjectLiteralExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2613,16 +2292,6 @@ export class BooleanLiteralContext extends LiteralContext {
 	public BOOLEAN(): TerminalNode {
 		return this.getToken(JexLangParser.BOOLEAN, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterBooleanLiteral) {
-	 		listener.enterBooleanLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitBooleanLiteral) {
-	 		listener.exitBooleanLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitBooleanLiteral) {
@@ -2639,16 +2308,6 @@ export class ArrayLiteralExpressionContext extends LiteralContext {
 	}
 	public arrayLiteral(): ArrayLiteralContext {
 		return this.getTypedRuleContext(ArrayLiteralContext, 0) as ArrayLiteralContext;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterArrayLiteralExpression) {
-	 		listener.enterArrayLiteralExpression(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitArrayLiteralExpression) {
-	 		listener.exitArrayLiteralExpression(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2667,16 +2326,6 @@ export class NullLiteralContext extends LiteralContext {
 	public NULL(): TerminalNode {
 		return this.getToken(JexLangParser.NULL, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterNullLiteral) {
-	 		listener.enterNullLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitNullLiteral) {
-	 		listener.exitNullLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitNullLiteral) {
@@ -2693,16 +2342,6 @@ export class NumberLiteralContext extends LiteralContext {
 	}
 	public NUMBER(): TerminalNode {
 		return this.getToken(JexLangParser.NUMBER, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterNumberLiteral) {
-	 		listener.enterNumberLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitNumberLiteral) {
-	 		listener.exitNumberLiteral(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2741,16 +2380,6 @@ export class ArrayLiteralContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_arrayLiteral;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterArrayLiteral) {
-	 		listener.enterArrayLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitArrayLiteral) {
-	 		listener.exitArrayLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitArrayLiteral) {
@@ -2772,16 +2401,6 @@ export class ArrayElementContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_arrayElement;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterArrayElement) {
-	 		listener.enterArrayElement(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitArrayElement) {
-	 		listener.exitArrayElement(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2820,16 +2439,6 @@ export class ObjectLiteralContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_objectLiteral;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterObjectLiteral) {
-	 		listener.enterObjectLiteral(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitObjectLiteral) {
-	 		listener.exitObjectLiteral(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitObjectLiteral) {
@@ -2861,16 +2470,6 @@ export class ShorthandPropertyExpressionObjectPropertyContext extends ObjectProp
 	public IDENTIFIER(): TerminalNode {
 		return this.getToken(JexLangParser.IDENTIFIER, 0);
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterShorthandPropertyExpressionObjectProperty) {
-	 		listener.enterShorthandPropertyExpressionObjectProperty(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitShorthandPropertyExpressionObjectProperty) {
-	 		listener.exitShorthandPropertyExpressionObjectProperty(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitShorthandPropertyExpressionObjectProperty) {
@@ -2893,16 +2492,6 @@ export class PropertyExpressionObjectPropertyContext extends ObjectPropertyConte
 	}
 	public singleExpression(): SingleExpressionContext {
 		return this.getTypedRuleContext(SingleExpressionContext, 0) as SingleExpressionContext;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterPropertyExpressionObjectProperty) {
-	 		listener.enterPropertyExpressionObjectProperty(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitPropertyExpressionObjectProperty) {
-	 		listener.exitPropertyExpressionObjectProperty(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2932,16 +2521,6 @@ export class ComputedPropertyExpressionObjectPropertyContext extends ObjectPrope
 	}
 	public COLON(): TerminalNode {
 		return this.getToken(JexLangParser.COLON, 0);
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterComputedPropertyExpressionObjectProperty) {
-	 		listener.enterComputedPropertyExpressionObjectProperty(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitComputedPropertyExpressionObjectProperty) {
-	 		listener.exitComputedPropertyExpressionObjectProperty(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -2976,16 +2555,6 @@ export class ObjectPropertyNameContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_objectPropertyName;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterObjectPropertyName) {
-	 		listener.enterObjectPropertyName(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitObjectPropertyName) {
-	 		listener.exitObjectPropertyName(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
@@ -3024,16 +2593,6 @@ export class ArgumentsContext extends ParserRuleContext {
     public get ruleIndex(): number {
     	return JexLangParser.RULE_arguments;
 	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterArguments) {
-	 		listener.enterArguments(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitArguments) {
-	 		listener.exitArguments(this);
-		}
-	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
 		if (visitor.visitArguments) {
@@ -3058,16 +2617,6 @@ export class ArgumentContext extends ParserRuleContext {
 	}
     public get ruleIndex(): number {
     	return JexLangParser.RULE_argument;
-	}
-	public enterRule(listener: JexLangListener): void {
-	    if(listener.enterArgument) {
-	 		listener.enterArgument(this);
-		}
-	}
-	public exitRule(listener: JexLangListener): void {
-	    if(listener.exitArgument) {
-	 		listener.exitArgument(this);
-		}
 	}
 	// @Override
 	public accept<Result>(visitor: JexLangVisitor<Result>): Result {
