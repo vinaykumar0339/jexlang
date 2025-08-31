@@ -20,8 +20,13 @@ export class Scope {
         return this.parentScope;
     }
 
-    declareVariable(name: string, value: JexValue, isConst = false): void {
-        if (this.variables.has(name)) {
+    declareVariable(
+        name: string, 
+        value: JexValue, 
+        isConst = false,
+    ): void {
+        const isGlobalScope = this.scopeType === 'global';
+        if (this.variables.has(name) && !isGlobalScope) { // global variables can be re-declared in the global scope.
             throw new JexLangRuntimeError(`Variable '${name}' is already declared.`);
         }
         this.variables.set(name, value);

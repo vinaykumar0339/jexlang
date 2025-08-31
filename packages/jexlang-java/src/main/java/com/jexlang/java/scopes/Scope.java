@@ -38,7 +38,8 @@ public class Scope {
     }
 
     public void declareVariable(String name, JexValue value, boolean isConst) {
-        if (this.variables.containsKey(name)) {
+        boolean isGlobalScope = this.scopeType == ScopeType.GLOBAL;
+        if (this.variables.containsKey(name) && !isGlobalScope) { // global variables can be re-declared in the global scope.
             throw new JexLangRuntimeError("Variable '" + name + "' is already declared.");
         }
         this.variables.put(name, value);

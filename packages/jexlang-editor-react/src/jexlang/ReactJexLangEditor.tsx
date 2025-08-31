@@ -10,7 +10,9 @@ export const ReactJexLangEditor = ({
 }) => {
 
   const disposeRef = useRef<() => void>(undefined);
-  const [text, setText] = useState<string>("");
+  const evaluatorRef = useRef<JexEvaluator | null>(new JexEvaluator(context));
+  const [editor, setEditor] = useState<string>("");
+  const [editor2, setEditor2] = useState<string>("");
   const [result, setResult] = useState<JexValue | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,15 +20,10 @@ export const ReactJexLangEditor = ({
     registerJexLangFeatures(m);
   };
 
-  useEffect(() => () => disposeRef.current?.(), []);
+  useEffect(() => {
+    evaluatorRef.current = new JexEvaluator(context);
 
-  const validate = async (value: string) => {
-    // Perform validation logic here
-    try {
-
-      const jexEvaluator = new JexEvaluator(context);
-
-      jexEvaluator.addFunction('httpGet', async (url: JexValue) => {
+    evaluatorRef.current.addFunction('httpGet', async (url: JexValue) => {
           try {
             const response = await fetch(toString(url));
             return await response.json();
@@ -36,16 +33,25 @@ export const ReactJexLangEditor = ({
           }
       });
 
-      jexEvaluator.addFunction('setTimeout', async (ms: JexValue) => {
-          return await new Promise<string>((resolve) => setTimeout(() => resolve("hello"), toNumber(ms)));
-      });
+    evaluatorRef.current.addFunction('setTimeout', async (ms: JexValue) => {
+        return await new Promise<string>((resolve) => setTimeout(() => resolve("hello"), toNumber(ms)));
+    });
 
 
-      jexEvaluator.addFunction('getAsyncValueForSetTimeout', async (ms: JexValue) => {
-          return await new Promise<number>((resolve) => setTimeout(() => resolve(toNumber(ms)), 1000));
-      });
+    evaluatorRef.current.addFunction('getAsyncValueForSetTimeout', async (ms: JexValue) => {
+        return await new Promise<number>((resolve) => setTimeout(() => resolve(toNumber(ms)), 1000));
+    });
 
-      setResult(await jexEvaluator.evaluate(value));
+    // register methods;
+  }, [context]);
+
+  useEffect(() => () => disposeRef.current?.(), []);
+
+  const validate = async (value: string) => {
+    // Perform validation logic here
+    try {
+      const jexEvaluator = evaluatorRef.current;
+      setResult((await jexEvaluator?.evaluate(value)) ?? null);
       setError(null);
     } catch (error) {
       setResult(null);
@@ -55,7 +61,12 @@ export const ReactJexLangEditor = ({
   };
 
   const onChange = (value: string | undefined) => {
-    setText(value || "");
+    setEditor(value || "");
+    validate(value || "");
+  };
+
+  const onChange2 = (value: string | undefined) => {
+    setEditor2(value || "");
     validate(value || "");
   };
 
@@ -67,10 +78,11 @@ export const ReactJexLangEditor = ({
       <div>
         {result !== null && result !== undefined ? <pre>{JSON.stringify(result, null, 2)}</pre> : <p>No result or might be invalid syntax</p>}
       </div>
+      <div style={{ display: "flex", height: "70%", gap: "10px" }}>
       <Editor
         defaultLanguage={JEX_LANGUAGE_ID}
         onMount={onMount}
-        defaultValue={text}
+        defaultValue={editor}
         onChange={onChange}
         options={{
         minimap: { enabled: false },
@@ -78,6 +90,18 @@ export const ReactJexLangEditor = ({
           tabSize: 2,
         }}
       />
+      <Editor
+        defaultLanguage={JEX_LANGUAGE_ID}
+        onMount={onMount}
+        defaultValue={editor2}
+        onChange={onChange2}
+        options={{
+        minimap: { enabled: false },
+          fontLigatures: true,
+          tabSize: 2,
+        }}
+      />
+      </div>
     </div>
   );
 };

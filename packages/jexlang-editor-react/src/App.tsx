@@ -8,10 +8,10 @@ function App() {
     <div style={{ height: "100vh", width: "100vw" }}>
       <h1>JexLang Editor</h1>
       <div style={{ display: "flex", height: "90vh" }}>
-        <div style={{ flex: 1, marginRight: "8px" }}>
+        <div style={{ flex: 0.7, marginRight: "8px" }}>
           <ReactJexLangEditor context={context} />
         </div>
-        <div style={{ flex: 1, marginLeft: "8px" }}>
+        <div style={{ flex: 0.3, marginLeft: "8px" }}>
           <div>Context</div>
           <Editor
             defaultLanguage="json"
