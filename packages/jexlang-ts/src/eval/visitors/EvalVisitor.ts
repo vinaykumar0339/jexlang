@@ -617,6 +617,16 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                 if (normalizedIndex >= 0 && normalizedIndex < object.length) {
                     return object[normalizedIndex];
                 }
+            } else if (object != null && object != undefined && typeof object === 'string') {
+                const str = object as string;
+                const indexNumber = toNumber(index);
+                let normalizedIndex = isNaN(indexNumber) ? -1 : indexNumber;
+                if (normalizedIndex < 0) {
+                    normalizedIndex = str.length + normalizedIndex;
+                }
+                if (normalizedIndex >= 0 && normalizedIndex < str.length) {
+                    return str[normalizedIndex];
+                }
             }
             return null; // don't throw any error if the object is null or not an array just return null to further chain.
         });
