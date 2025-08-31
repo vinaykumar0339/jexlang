@@ -26,7 +26,7 @@ emptyStatement
     ;
 
 varDeclaration
-    : LET IDENTIFIER (ASSIGN singleExpression)? SEMICOLON?
+    : GLOBAL? (LET | CONST) IDENTIFIER (ASSIGN singleExpression)? SEMICOLON?
     ;
 
 expressionStatement
@@ -141,6 +141,8 @@ argument
 
 // Keywords (must come before IDENTIFIER)
 LET         : 'let' ;
+CONST       : 'const' ;
+GLOBAL      : 'global' ;
 BOOLEAN     : 'true' | 'false' ;
 NULL        : 'null' ;
 
