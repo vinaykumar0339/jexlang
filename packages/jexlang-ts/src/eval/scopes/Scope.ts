@@ -1,18 +1,22 @@
 import type { JexValue } from "../../types";
 import { JexLangRuntimeError } from "../errors";
 
+export type ScopeType = 'global' | 'program' | 'block';
+
 export class Scope {
-    private parentScope?: Scope;
+    private parentScope: Scope | null = null;
     private variables: Map<string, JexValue>;
     private constants: Set<string>;
+    private scopeType: ScopeType;
 
-    constructor(parentScope?: Scope) {
+    constructor(parentScope: Scope | null = null, scopeType: ScopeType = 'program') {
         this.parentScope = parentScope;
         this.variables = new Map<string, JexValue>();
         this.constants = new Set<string>();
+        this.scopeType = scopeType;
     }
 
-    getParentScope(): Scope | undefined {
+    getParentScope(): Scope | null {
         return this.parentScope;
     }
 
@@ -56,6 +60,15 @@ export class Scope {
             return this;
         } else if (this.parentScope) {
             return this.parentScope.resolveScope(name);
+        }
+        return null;
+    }
+
+    resolveScopeByType(type: ScopeType): Scope | null {
+        if (this.scopeType === type) {
+            return this;
+        } else if (this.parentScope) {
+            return this.parentScope.resolveScopeByType(type);
         }
         return null;
     }

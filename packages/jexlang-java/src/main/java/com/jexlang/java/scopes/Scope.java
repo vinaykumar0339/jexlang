@@ -6,18 +6,29 @@ import com.jexlang.java.types.JexValue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class Scope {
+
+    public enum ScopeType {
+        GLOBAL,
+        PROGRAM,
+        BLOCK
+    }
+
     private final Scope parentScope;
 
     private final Map<String, JexValue> variables;
     private final Set<String> constants;
+    private final ScopeType scopeType;
 
     public Scope(
-            Scope parentScope
+            Scope parentScope,
+            ScopeType scopeType
     ) {
         this.parentScope = parentScope;
+        this.scopeType = Objects.requireNonNullElse(scopeType, ScopeType.PROGRAM);
         this.variables = new HashMap<>();
         this.constants = new java.util.HashSet<>();
     }
@@ -52,6 +63,16 @@ public class Scope {
             return this;
         } else if (this.parentScope != null) {
             return this.parentScope.resolveScope(name);
+        } else {
+            return null;
+        }
+    }
+
+    public Scope resolveScope(ScopeType scopeType) {
+        if (this.scopeType == scopeType) {
+            return this;
+        } else if (this.parentScope != null) {
+            return this.parentScope.resolveScope(scopeType);
         } else {
             return null;
         }

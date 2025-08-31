@@ -21,45 +21,47 @@ type int = number;
 export default class JexLangParser extends Parser {
 	public static readonly T__0 = 1;
 	public static readonly LET = 2;
-	public static readonly BOOLEAN = 3;
-	public static readonly NULL = 4;
-	public static readonly INCREMENT = 5;
-	public static readonly DECREMENT = 6;
-	public static readonly POW = 7;
-	public static readonly SQRT = 8;
-	public static readonly EQ = 9;
-	public static readonly NEQ = 10;
-	public static readonly LTE = 11;
-	public static readonly GTE = 12;
-	public static readonly AND = 13;
-	public static readonly OR = 14;
-	public static readonly ASSIGN = 15;
-	public static readonly PLUS = 16;
-	public static readonly MINUS = 17;
-	public static readonly MULTIPLY = 18;
-	public static readonly DIVIDE = 19;
-	public static readonly MODULO = 20;
-	public static readonly POWER = 21;
-	public static readonly LT = 22;
-	public static readonly GT = 23;
-	public static readonly LPAREN = 24;
-	public static readonly RPAREN = 25;
-	public static readonly LBRACE = 26;
-	public static readonly RBRACE = 27;
-	public static readonly LBRACKET = 28;
-	public static readonly RBRACKET = 29;
-	public static readonly SEMICOLON = 30;
-	public static readonly COMMA = 31;
-	public static readonly DOT = 32;
-	public static readonly PIPE = 33;
-	public static readonly QUESTION = 34;
-	public static readonly COLON = 35;
-	public static readonly NUMBER = 36;
-	public static readonly IDENTIFIER = 37;
-	public static readonly STRING = 38;
-	public static readonly WS = 39;
-	public static readonly LINE_COMMENT = 40;
-	public static readonly BLOCK_COMMENT = 41;
+	public static readonly CONST = 3;
+	public static readonly GLOBAL = 4;
+	public static readonly BOOLEAN = 5;
+	public static readonly NULL = 6;
+	public static readonly INCREMENT = 7;
+	public static readonly DECREMENT = 8;
+	public static readonly POW = 9;
+	public static readonly SQRT = 10;
+	public static readonly EQ = 11;
+	public static readonly NEQ = 12;
+	public static readonly LTE = 13;
+	public static readonly GTE = 14;
+	public static readonly AND = 15;
+	public static readonly OR = 16;
+	public static readonly ASSIGN = 17;
+	public static readonly PLUS = 18;
+	public static readonly MINUS = 19;
+	public static readonly MULTIPLY = 20;
+	public static readonly DIVIDE = 21;
+	public static readonly MODULO = 22;
+	public static readonly POWER = 23;
+	public static readonly LT = 24;
+	public static readonly GT = 25;
+	public static readonly LPAREN = 26;
+	public static readonly RPAREN = 27;
+	public static readonly LBRACE = 28;
+	public static readonly RBRACE = 29;
+	public static readonly LBRACKET = 30;
+	public static readonly RBRACKET = 31;
+	public static readonly SEMICOLON = 32;
+	public static readonly COMMA = 33;
+	public static readonly DOT = 34;
+	public static readonly PIPE = 35;
+	public static readonly QUESTION = 36;
+	public static readonly COLON = 37;
+	public static readonly NUMBER = 38;
+	public static readonly IDENTIFIER = 39;
+	public static readonly STRING = 40;
+	public static readonly WS = 41;
+	public static readonly LINE_COMMENT = 42;
+	public static readonly BLOCK_COMMENT = 43;
 	public static override readonly EOF = Token.EOF;
 	public static readonly RULE_program = 0;
 	public static readonly RULE_statement = 1;
@@ -78,10 +80,11 @@ export default class JexLangParser extends Parser {
 	public static readonly RULE_arguments = 14;
 	public static readonly RULE_argument = 15;
 	public static readonly literalNames: (string | null)[] = [ null, "'sqrt'", 
-                                                            "'let'", null, 
-                                                            "'null'", "'++'", 
-                                                            "'--'", "'**'", 
-                                                            "'\\u221A'", 
+                                                            "'let'", "'const'", 
+                                                            "'global'", 
+                                                            null, "'null'", 
+                                                            "'++'", "'--'", 
+                                                            "'**'", "'\\u221A'", 
                                                             "'=='", "'!='", 
                                                             "'<='", "'>='", 
                                                             null, null, 
@@ -97,7 +100,8 @@ export default class JexLangParser extends Parser {
                                                             "'|'", "'?'", 
                                                             "':'" ];
 	public static readonly symbolicNames: (string | null)[] = [ null, null, 
-                                                             "LET", "BOOLEAN", 
+                                                             "LET", "CONST", 
+                                                             "GLOBAL", "BOOLEAN", 
                                                              "NULL", "INCREMENT", 
                                                              "DECREMENT", 
                                                              "POW", "SQRT", 
@@ -152,7 +156,7 @@ export default class JexLangParser extends Parser {
 			this.state = 35;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1426260350) !== 0) || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0)) {
+			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1410074110) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 449) !== 0)) {
 				{
 				{
 				this.state = 32;
@@ -246,7 +250,7 @@ export default class JexLangParser extends Parser {
 			this.state = 50;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1426260350) !== 0) || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0)) {
+			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1410074110) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & 449) !== 0)) {
 				{
 				{
 				this.state = 47;
@@ -308,28 +312,45 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 57;
-			this.match(JexLangParser.LET);
 			this.state = 58;
-			this.match(JexLangParser.IDENTIFIER);
-			this.state = 61;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la===15) {
+			if (_la===4) {
 				{
-				this.state = 59;
+				this.state = 57;
+				this.match(JexLangParser.GLOBAL);
+				}
+			}
+
+			this.state = 60;
+			_la = this._input.LA(1);
+			if(!(_la===2 || _la===3)) {
+			this._errHandler.recoverInline(this);
+			}
+			else {
+				this._errHandler.reportMatch(this);
+			    this.consume();
+			}
+			this.state = 61;
+			this.match(JexLangParser.IDENTIFIER);
+			this.state = 64;
+			this._errHandler.sync(this);
+			_la = this._input.LA(1);
+			if (_la===17) {
+				{
+				this.state = 62;
 				this.match(JexLangParser.ASSIGN);
-				this.state = 60;
+				this.state = 63;
 				this.singleExpression(0);
 				}
 			}
 
-			this.state = 64;
+			this.state = 67;
 			this._errHandler.sync(this);
-			switch ( this._interp.adaptivePredict(this._input, 4, this._ctx) ) {
+			switch ( this._interp.adaptivePredict(this._input, 5, this._ctx) ) {
 			case 1:
 				{
-				this.state = 63;
+				this.state = 66;
 				this.match(JexLangParser.SEMICOLON);
 				}
 				break;
@@ -357,14 +378,14 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 66;
+			this.state = 69;
 			this.expressionSequence();
-			this.state = 68;
+			this.state = 71;
 			this._errHandler.sync(this);
-			switch ( this._interp.adaptivePredict(this._input, 5, this._ctx) ) {
+			switch ( this._interp.adaptivePredict(this._input, 6, this._ctx) ) {
 			case 1:
 				{
-				this.state = 67;
+				this.state = 70;
 				this.match(JexLangParser.SEMICOLON);
 				}
 				break;
@@ -393,21 +414,21 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 70;
+			this.state = 73;
 			this.singleExpression(0);
-			this.state = 75;
+			this.state = 78;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la===31) {
+			while (_la===33) {
 				{
 				{
-				this.state = 71;
+				this.state = 74;
 				this.match(JexLangParser.COMMA);
-				this.state = 72;
+				this.state = 75;
 				this.singleExpression(0);
 				}
 				}
-				this.state = 77;
+				this.state = 80;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
@@ -447,18 +468,18 @@ export default class JexLangParser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 96;
+			this.state = 99;
 			this._errHandler.sync(this);
-			switch ( this._interp.adaptivePredict(this._input, 7, this._ctx) ) {
+			switch ( this._interp.adaptivePredict(this._input, 8, this._ctx) ) {
 			case 1:
 				{
 				localctx = new FunctionCallExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
 
-				this.state = 79;
+				this.state = 82;
 				this.match(JexLangParser.IDENTIFIER);
-				this.state = 80;
+				this.state = 83;
 				this.arguments();
 				}
 				break;
@@ -467,16 +488,16 @@ export default class JexLangParser extends Parser {
 				localctx = new PrefixExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 81;
+				this.state = 84;
 				_la = this._input.LA(1);
-				if(!(_la===5 || _la===6)) {
+				if(!(_la===7 || _la===8)) {
 				this._errHandler.recoverInline(this);
 				}
 				else {
 					this._errHandler.reportMatch(this);
 				    this.consume();
 				}
-				this.state = 82;
+				this.state = 85;
 				this.singleExpression(19);
 				}
 				break;
@@ -485,16 +506,16 @@ export default class JexLangParser extends Parser {
 				localctx = new SquareRootExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 83;
+				this.state = 86;
 				_la = this._input.LA(1);
-				if(!(_la===1 || _la===8)) {
+				if(!(_la===1 || _la===10)) {
 				this._errHandler.recoverInline(this);
 				}
 				else {
 					this._errHandler.reportMatch(this);
 				    this.consume();
 				}
-				this.state = 84;
+				this.state = 87;
 				this.singleExpression(18);
 				}
 				break;
@@ -503,16 +524,16 @@ export default class JexLangParser extends Parser {
 				localctx = new UnaryExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 85;
+				this.state = 88;
 				_la = this._input.LA(1);
-				if(!(_la===16 || _la===17)) {
+				if(!(_la===18 || _la===19)) {
 				this._errHandler.recoverInline(this);
 				}
 				else {
 					this._errHandler.reportMatch(this);
 				    this.consume();
 				}
-				this.state = 86;
+				this.state = 89;
 				this.singleExpression(17);
 				}
 				break;
@@ -521,11 +542,11 @@ export default class JexLangParser extends Parser {
 				localctx = new AssignmentExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 87;
+				this.state = 90;
 				this.match(JexLangParser.IDENTIFIER);
-				this.state = 88;
+				this.state = 91;
 				this.match(JexLangParser.ASSIGN);
-				this.state = 89;
+				this.state = 92;
 				this.singleExpression(6);
 				}
 				break;
@@ -534,11 +555,11 @@ export default class JexLangParser extends Parser {
 				localctx = new ParenthesizedExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 90;
+				this.state = 93;
 				this.match(JexLangParser.LPAREN);
-				this.state = 91;
+				this.state = 94;
 				this.expressionSequence();
-				this.state = 92;
+				this.state = 95;
 				this.match(JexLangParser.RPAREN);
 				}
 				break;
@@ -547,7 +568,7 @@ export default class JexLangParser extends Parser {
 				localctx = new LiteralExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 94;
+				this.state = 97;
 				this.literal();
 				}
 				break;
@@ -556,15 +577,15 @@ export default class JexLangParser extends Parser {
 				localctx = new IdentifierExpressionContext(this, localctx);
 				this._ctx = localctx;
 				_prevctx = localctx;
-				this.state = 95;
+				this.state = 98;
 				this.match(JexLangParser.IDENTIFIER);
 				}
 				break;
 			}
 			this._ctx.stop = this._input.LT(-1);
-			this.state = 163;
+			this.state = 166;
 			this._errHandler.sync(this);
-			_alt = this._interp.adaptivePredict(this._input, 11, this._ctx);
+			_alt = this._interp.adaptivePredict(this._input, 12, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					if (this._parseListeners != null) {
@@ -572,41 +593,20 @@ export default class JexLangParser extends Parser {
 					}
 					_prevctx = localctx;
 					{
-					this.state = 161;
+					this.state = 164;
 					this._errHandler.sync(this);
-					switch ( this._interp.adaptivePredict(this._input, 10, this._ctx) ) {
+					switch ( this._interp.adaptivePredict(this._input, 11, this._ctx) ) {
 					case 1:
 						{
 						localctx = new PowerExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 98;
+						this.state = 101;
 						if (!(this.precpred(this._ctx, 16))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 16)");
 						}
-						this.state = 99;
-						_la = this._input.LA(1);
-						if(!(_la===7 || _la===21)) {
-						this._errHandler.recoverInline(this);
-						}
-						else {
-							this._errHandler.reportMatch(this);
-						    this.consume();
-						}
-						this.state = 100;
-						this.singleExpression(16);
-						}
-						break;
-					case 2:
-						{
-						localctx = new MultiplicativeExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
-						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 101;
-						if (!(this.precpred(this._ctx, 15))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
-						}
 						this.state = 102;
 						_la = this._input.LA(1);
-						if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 1835008) !== 0))) {
+						if(!(_la===9 || _la===23)) {
 						this._errHandler.recoverInline(this);
 						}
 						else {
@@ -617,17 +617,17 @@ export default class JexLangParser extends Parser {
 						this.singleExpression(16);
 						}
 						break;
-					case 3:
+					case 2:
 						{
-						localctx = new AdditiveExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
+						localctx = new MultiplicativeExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
 						this.state = 104;
-						if (!(this.precpred(this._ctx, 14))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
+						if (!(this.precpred(this._ctx, 15))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
 						}
 						this.state = 105;
 						_la = this._input.LA(1);
-						if(!(_la===16 || _la===17)) {
+						if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 7340032) !== 0))) {
 						this._errHandler.recoverInline(this);
 						}
 						else {
@@ -635,20 +635,20 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 106;
-						this.singleExpression(15);
+						this.singleExpression(16);
 						}
 						break;
-					case 4:
+					case 3:
 						{
-						localctx = new RelationalExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
+						localctx = new AdditiveExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
 						this.state = 107;
-						if (!(this.precpred(this._ctx, 13))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
+						if (!(this.precpred(this._ctx, 14))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
 						}
 						this.state = 108;
 						_la = this._input.LA(1);
-						if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 12589056) !== 0))) {
+						if(!(_la===18 || _la===19)) {
 						this._errHandler.recoverInline(this);
 						}
 						else {
@@ -656,20 +656,20 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 109;
-						this.singleExpression(14);
+						this.singleExpression(15);
 						}
 						break;
-					case 5:
+					case 4:
 						{
-						localctx = new EqualityExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
+						localctx = new RelationalExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
 						this.state = 110;
-						if (!(this.precpred(this._ctx, 12))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
+						if (!(this.precpred(this._ctx, 13))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
 						}
 						this.state = 111;
 						_la = this._input.LA(1);
-						if(!(_la===9 || _la===10)) {
+						if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 50356224) !== 0))) {
 						this._errHandler.recoverInline(this);
 						}
 						else {
@@ -677,6 +677,27 @@ export default class JexLangParser extends Parser {
 						    this.consume();
 						}
 						this.state = 112;
+						this.singleExpression(14);
+						}
+						break;
+					case 5:
+						{
+						localctx = new EqualityExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
+						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
+						this.state = 113;
+						if (!(this.precpred(this._ctx, 12))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
+						}
+						this.state = 114;
+						_la = this._input.LA(1);
+						if(!(_la===11 || _la===12)) {
+						this._errHandler.recoverInline(this);
+						}
+						else {
+							this._errHandler.reportMatch(this);
+						    this.consume();
+						}
+						this.state = 115;
 						this.singleExpression(13);
 						}
 						break;
@@ -684,13 +705,13 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new LogicalAndExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 113;
+						this.state = 116;
 						if (!(this.precpred(this._ctx, 11))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 11)");
 						}
-						this.state = 114;
+						this.state = 117;
 						this.match(JexLangParser.AND);
-						this.state = 115;
+						this.state = 118;
 						this.singleExpression(12);
 						}
 						break;
@@ -698,13 +719,13 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new LogicalOrExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 116;
+						this.state = 119;
 						if (!(this.precpred(this._ctx, 10))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 10)");
 						}
-						this.state = 117;
+						this.state = 120;
 						this.match(JexLangParser.OR);
-						this.state = 118;
+						this.state = 121;
 						this.singleExpression(11);
 						}
 						break;
@@ -712,17 +733,17 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new TernaryExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 119;
+						this.state = 122;
 						if (!(this.precpred(this._ctx, 8))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 8)");
 						}
-						this.state = 120;
-						this.match(JexLangParser.QUESTION);
-						this.state = 121;
-						this.singleExpression(0);
-						this.state = 122;
-						this.match(JexLangParser.COLON);
 						this.state = 123;
+						this.match(JexLangParser.QUESTION);
+						this.state = 124;
+						this.singleExpression(0);
+						this.state = 125;
+						this.match(JexLangParser.COLON);
+						this.state = 126;
 						this.singleExpression(8);
 						}
 						break;
@@ -730,15 +751,15 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new ShortTernaryExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 125;
+						this.state = 128;
 						if (!(this.precpred(this._ctx, 7))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 7)");
 						}
-						this.state = 126;
+						this.state = 129;
 						this.match(JexLangParser.QUESTION);
-						this.state = 127;
+						this.state = 130;
 						this.match(JexLangParser.COLON);
-						this.state = 128;
+						this.state = 131;
 						this.singleExpression(8);
 						}
 						break;
@@ -746,19 +767,19 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new BracketPropertyAssignmentContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 129;
+						this.state = 132;
 						if (!(this.precpred(this._ctx, 5))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 5)");
 						}
-						this.state = 130;
-						this.match(JexLangParser.LBRACKET);
-						this.state = 131;
-						this.expressionSequence();
-						this.state = 132;
-						this.match(JexLangParser.RBRACKET);
 						this.state = 133;
-						this.match(JexLangParser.ASSIGN);
+						this.match(JexLangParser.LBRACKET);
 						this.state = 134;
+						this.expressionSequence();
+						this.state = 135;
+						this.match(JexLangParser.RBRACKET);
+						this.state = 136;
+						this.match(JexLangParser.ASSIGN);
+						this.state = 137;
 						this.singleExpression(5);
 						}
 						break;
@@ -766,17 +787,17 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new DotPropertyAssignmentContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 136;
+						this.state = 139;
 						if (!(this.precpred(this._ctx, 4))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 4)");
 						}
-						this.state = 137;
-						this.match(JexLangParser.DOT);
-						this.state = 138;
-						this.objectPropertyName();
-						this.state = 139;
-						this.match(JexLangParser.ASSIGN);
 						this.state = 140;
+						this.match(JexLangParser.DOT);
+						this.state = 141;
+						this.objectPropertyName();
+						this.state = 142;
+						this.match(JexLangParser.ASSIGN);
+						this.state = 143;
 						this.singleExpression(4);
 						}
 						break;
@@ -784,25 +805,25 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new MemberIndexExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 142;
+						this.state = 145;
 						if (!(this.precpred(this._ctx, 23))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 23)");
 						}
-						this.state = 144;
+						this.state = 147;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la===34) {
+						if (_la===36) {
 							{
-							this.state = 143;
+							this.state = 146;
 							this.match(JexLangParser.QUESTION);
 							}
 						}
 
-						this.state = 146;
+						this.state = 149;
 						this.match(JexLangParser.LBRACKET);
-						this.state = 147;
+						this.state = 150;
 						this.expressionSequence();
-						this.state = 148;
+						this.state = 151;
 						this.match(JexLangParser.RBRACKET);
 						}
 						break;
@@ -810,23 +831,23 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new MemberDotExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 150;
+						this.state = 153;
 						if (!(this.precpred(this._ctx, 22))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 22)");
 						}
-						this.state = 152;
+						this.state = 155;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la===34) {
+						if (_la===36) {
 							{
-							this.state = 151;
+							this.state = 154;
 							this.match(JexLangParser.QUESTION);
 							}
 						}
 
-						this.state = 154;
+						this.state = 157;
 						this.match(JexLangParser.DOT);
-						this.state = 155;
+						this.state = 158;
 						this.objectPropertyName();
 						}
 						break;
@@ -834,13 +855,13 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new PostfixExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 156;
+						this.state = 159;
 						if (!(this.precpred(this._ctx, 20))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 20)");
 						}
-						this.state = 157;
+						this.state = 160;
 						_la = this._input.LA(1);
-						if(!(_la===5 || _la===6)) {
+						if(!(_la===7 || _la===8)) {
 						this._errHandler.recoverInline(this);
 						}
 						else {
@@ -853,22 +874,22 @@ export default class JexLangParser extends Parser {
 						{
 						localctx = new TransformExpressionContext(this, new SingleExpressionContext(this, _parentctx, _parentState));
 						this.pushNewRecursionContext(localctx, _startState, JexLangParser.RULE_singleExpression);
-						this.state = 158;
+						this.state = 161;
 						if (!(this.precpred(this._ctx, 9))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 9)");
 						}
-						this.state = 159;
+						this.state = 162;
 						this.match(JexLangParser.PIPE);
-						this.state = 160;
+						this.state = 163;
 						this.match(JexLangParser.IDENTIFIER);
 						}
 						break;
 					}
 					}
 				}
-				this.state = 165;
+				this.state = 168;
 				this._errHandler.sync(this);
-				_alt = this._interp.adaptivePredict(this._input, 11, this._ctx);
+				_alt = this._interp.adaptivePredict(this._input, 12, this._ctx);
 			}
 			}
 		}
@@ -891,54 +912,54 @@ export default class JexLangParser extends Parser {
 		let localctx: LiteralContext = new LiteralContext(this, this._ctx, this.state);
 		this.enterRule(localctx, 16, JexLangParser.RULE_literal);
 		try {
-			this.state = 172;
+			this.state = 175;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case 38:
+			case 40:
 				localctx = new StringLiteralContext(this, localctx);
 				this.enterOuterAlt(localctx, 1);
 				{
-				this.state = 166;
+				this.state = 169;
 				this.match(JexLangParser.STRING);
 				}
 				break;
-			case 36:
+			case 38:
 				localctx = new NumberLiteralContext(this, localctx);
 				this.enterOuterAlt(localctx, 2);
 				{
-				this.state = 167;
+				this.state = 170;
 				this.match(JexLangParser.NUMBER);
 				}
 				break;
-			case 3:
+			case 5:
 				localctx = new BooleanLiteralContext(this, localctx);
 				this.enterOuterAlt(localctx, 3);
 				{
-				this.state = 168;
+				this.state = 171;
 				this.match(JexLangParser.BOOLEAN);
 				}
 				break;
-			case 4:
+			case 6:
 				localctx = new NullLiteralContext(this, localctx);
 				this.enterOuterAlt(localctx, 4);
 				{
-				this.state = 169;
+				this.state = 172;
 				this.match(JexLangParser.NULL);
 				}
 				break;
-			case 28:
+			case 30:
 				localctx = new ArrayLiteralExpressionContext(this, localctx);
 				this.enterOuterAlt(localctx, 5);
 				{
-				this.state = 170;
+				this.state = 173;
 				this.arrayLiteral();
 				}
 				break;
-			case 26:
+			case 28:
 				localctx = new ObjectLiteralExpressionContext(this, localctx);
 				this.enterOuterAlt(localctx, 6);
 				{
-				this.state = 171;
+				this.state = 174;
 				this.objectLiteral();
 				}
 				break;
@@ -968,35 +989,35 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 174;
+			this.state = 177;
 			this.match(JexLangParser.LBRACKET);
-			this.state = 183;
+			this.state = 186;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 352518522) !== 0) || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1410074082) !== 0) || ((((_la - 38)) & ~0x1F) === 0 && ((1 << (_la - 38)) & 7) !== 0)) {
 				{
-				this.state = 175;
+				this.state = 178;
 				this.arrayElement();
-				this.state = 180;
+				this.state = 183;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while (_la===31) {
+				while (_la===33) {
 					{
 					{
-					this.state = 176;
+					this.state = 179;
 					this.match(JexLangParser.COMMA);
-					this.state = 177;
+					this.state = 180;
 					this.arrayElement();
 					}
 					}
-					this.state = 182;
+					this.state = 185;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				}
 				}
 			}
 
-			this.state = 185;
+			this.state = 188;
 			this.match(JexLangParser.RBRACKET);
 			}
 		}
@@ -1021,7 +1042,7 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 187;
+			this.state = 190;
 			this.singleExpression(0);
 			}
 		}
@@ -1047,35 +1068,35 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 189;
+			this.state = 192;
 			this.match(JexLangParser.LBRACE);
-			this.state = 198;
+			this.state = 201;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 268435476) !== 0) || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1073741892) !== 0) || ((((_la - 38)) & ~0x1F) === 0 && ((1 << (_la - 38)) & 7) !== 0)) {
 				{
-				this.state = 190;
+				this.state = 193;
 				this.objectProperty();
-				this.state = 195;
+				this.state = 198;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while (_la===31) {
+				while (_la===33) {
 					{
 					{
-					this.state = 191;
+					this.state = 194;
 					this.match(JexLangParser.COMMA);
-					this.state = 192;
+					this.state = 195;
 					this.objectProperty();
 					}
 					}
-					this.state = 197;
+					this.state = 200;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				}
 				}
 			}
 
-			this.state = 200;
+			this.state = 203;
 			this.match(JexLangParser.RBRACE);
 			}
 		}
@@ -1098,18 +1119,18 @@ export default class JexLangParser extends Parser {
 		let localctx: ObjectPropertyContext = new ObjectPropertyContext(this, this._ctx, this.state);
 		this.enterRule(localctx, 24, JexLangParser.RULE_objectProperty);
 		try {
-			this.state = 213;
+			this.state = 216;
 			this._errHandler.sync(this);
-			switch ( this._interp.adaptivePredict(this._input, 17, this._ctx) ) {
+			switch ( this._interp.adaptivePredict(this._input, 18, this._ctx) ) {
 			case 1:
 				localctx = new PropertyExpressionObjectPropertyContext(this, localctx);
 				this.enterOuterAlt(localctx, 1);
 				{
-				this.state = 202;
+				this.state = 205;
 				this.objectPropertyName();
-				this.state = 203;
+				this.state = 206;
 				this.match(JexLangParser.COLON);
-				this.state = 204;
+				this.state = 207;
 				this.singleExpression(0);
 				}
 				break;
@@ -1117,15 +1138,15 @@ export default class JexLangParser extends Parser {
 				localctx = new ComputedPropertyExpressionObjectPropertyContext(this, localctx);
 				this.enterOuterAlt(localctx, 2);
 				{
-				this.state = 206;
-				this.match(JexLangParser.LBRACKET);
-				this.state = 207;
-				this.singleExpression(0);
-				this.state = 208;
-				this.match(JexLangParser.RBRACKET);
 				this.state = 209;
-				this.match(JexLangParser.COLON);
+				this.match(JexLangParser.LBRACKET);
 				this.state = 210;
+				this.singleExpression(0);
+				this.state = 211;
+				this.match(JexLangParser.RBRACKET);
+				this.state = 212;
+				this.match(JexLangParser.COLON);
+				this.state = 213;
 				this.singleExpression(0);
 				}
 				break;
@@ -1133,7 +1154,7 @@ export default class JexLangParser extends Parser {
 				localctx = new ShorthandPropertyExpressionObjectPropertyContext(this, localctx);
 				this.enterOuterAlt(localctx, 3);
 				{
-				this.state = 212;
+				this.state = 215;
 				this.match(JexLangParser.IDENTIFIER);
 				}
 				break;
@@ -1161,9 +1182,9 @@ export default class JexLangParser extends Parser {
 		try {
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 215;
+			this.state = 218;
 			_la = this._input.LA(1);
-			if(!(_la===2 || _la===4 || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0))) {
+			if(!(_la===2 || _la===6 || ((((_la - 38)) & ~0x1F) === 0 && ((1 << (_la - 38)) & 7) !== 0))) {
 			this._errHandler.recoverInline(this);
 			}
 			else {
@@ -1195,39 +1216,39 @@ export default class JexLangParser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(localctx, 1);
 			{
-			this.state = 217;
+			this.state = 220;
 			this.match(JexLangParser.LPAREN);
-			this.state = 229;
+			this.state = 232;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 352518522) !== 0) || ((((_la - 36)) & ~0x1F) === 0 && ((1 << (_la - 36)) & 7) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 1410074082) !== 0) || ((((_la - 38)) & ~0x1F) === 0 && ((1 << (_la - 38)) & 7) !== 0)) {
 				{
-				this.state = 218;
+				this.state = 221;
 				this.argument();
-				this.state = 223;
+				this.state = 226;
 				this._errHandler.sync(this);
-				_alt = this._interp.adaptivePredict(this._input, 18, this._ctx);
+				_alt = this._interp.adaptivePredict(this._input, 19, this._ctx);
 				while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 					if (_alt === 1) {
 						{
 						{
-						this.state = 219;
+						this.state = 222;
 						this.match(JexLangParser.COMMA);
-						this.state = 220;
+						this.state = 223;
 						this.argument();
 						}
 						}
 					}
-					this.state = 225;
+					this.state = 228;
 					this._errHandler.sync(this);
-					_alt = this._interp.adaptivePredict(this._input, 18, this._ctx);
+					_alt = this._interp.adaptivePredict(this._input, 19, this._ctx);
 				}
-				this.state = 227;
+				this.state = 230;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la===31) {
+				if (_la===33) {
 					{
-					this.state = 226;
+					this.state = 229;
 					this.match(JexLangParser.COMMA);
 					}
 				}
@@ -1235,7 +1256,7 @@ export default class JexLangParser extends Parser {
 				}
 			}
 
-			this.state = 231;
+			this.state = 234;
 			this.match(JexLangParser.RPAREN);
 			}
 		}
@@ -1258,20 +1279,20 @@ export default class JexLangParser extends Parser {
 		let localctx: ArgumentContext = new ArgumentContext(this, this._ctx, this.state);
 		this.enterRule(localctx, 30, JexLangParser.RULE_argument);
 		try {
-			this.state = 235;
+			this.state = 238;
 			this._errHandler.sync(this);
-			switch ( this._interp.adaptivePredict(this._input, 21, this._ctx) ) {
+			switch ( this._interp.adaptivePredict(this._input, 22, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(localctx, 1);
 				{
-				this.state = 233;
+				this.state = 236;
 				this.singleExpression(0);
 				}
 				break;
 			case 2:
 				this.enterOuterAlt(localctx, 2);
 				{
-				this.state = 234;
+				this.state = 237;
 				this.match(JexLangParser.IDENTIFIER);
 				}
 				break;
@@ -1335,85 +1356,87 @@ export default class JexLangParser extends Parser {
 		return true;
 	}
 
-	public static readonly _serializedATN: number[] = [4,1,41,238,2,0,7,0,2,
+	public static readonly _serializedATN: number[] = [4,1,43,241,2,0,7,0,2,
 	1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,7,7,2,8,7,8,2,9,7,9,2,
 	10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,2,15,7,15,1,0,5,0,34,8,
 	0,10,0,12,0,37,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,45,8,1,1,2,1,2,5,2,49,8,
-	2,10,2,12,2,52,9,2,1,2,1,2,1,3,1,3,1,4,1,4,1,4,1,4,3,4,62,8,4,1,4,3,4,65,
-	8,4,1,5,1,5,3,5,69,8,5,1,6,1,6,1,6,5,6,74,8,6,10,6,12,6,77,9,6,1,7,1,7,
-	1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,97,
-	8,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,
+	2,10,2,12,2,52,9,2,1,2,1,2,1,3,1,3,1,4,3,4,59,8,4,1,4,1,4,1,4,1,4,3,4,65,
+	8,4,1,4,3,4,68,8,4,1,5,1,5,3,5,72,8,5,1,6,1,6,1,6,5,6,77,8,6,10,6,12,6,
+	80,9,6,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,
+	1,7,1,7,3,7,100,8,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,
 	1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,
-	1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,145,8,7,1,7,1,7,1,7,1,7,
-	1,7,1,7,3,7,153,8,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,5,7,162,8,7,10,7,12,7,165,
-	9,7,1,8,1,8,1,8,1,8,1,8,1,8,3,8,173,8,8,1,9,1,9,1,9,1,9,5,9,179,8,9,10,
-	9,12,9,182,9,9,3,9,184,8,9,1,9,1,9,1,10,1,10,1,11,1,11,1,11,1,11,5,11,194,
-	8,11,10,11,12,11,197,9,11,3,11,199,8,11,1,11,1,11,1,12,1,12,1,12,1,12,1,
-	12,1,12,1,12,1,12,1,12,1,12,1,12,3,12,214,8,12,1,13,1,13,1,14,1,14,1,14,
-	1,14,5,14,222,8,14,10,14,12,14,225,9,14,1,14,3,14,228,8,14,3,14,230,8,14,
-	1,14,1,14,1,15,1,15,3,15,236,8,15,1,15,0,1,14,16,0,2,4,6,8,10,12,14,16,
-	18,20,22,24,26,28,30,0,8,1,0,5,6,2,0,1,1,8,8,1,0,16,17,2,0,7,7,21,21,1,
-	0,18,20,2,0,11,12,22,23,1,0,9,10,3,0,2,2,4,4,36,38,269,0,35,1,0,0,0,2,44,
-	1,0,0,0,4,46,1,0,0,0,6,55,1,0,0,0,8,57,1,0,0,0,10,66,1,0,0,0,12,70,1,0,
-	0,0,14,96,1,0,0,0,16,172,1,0,0,0,18,174,1,0,0,0,20,187,1,0,0,0,22,189,1,
-	0,0,0,24,213,1,0,0,0,26,215,1,0,0,0,28,217,1,0,0,0,30,235,1,0,0,0,32,34,
-	3,2,1,0,33,32,1,0,0,0,34,37,1,0,0,0,35,33,1,0,0,0,35,36,1,0,0,0,36,38,1,
-	0,0,0,37,35,1,0,0,0,38,39,5,0,0,1,39,1,1,0,0,0,40,45,3,10,5,0,41,45,3,8,
-	4,0,42,45,3,4,2,0,43,45,3,6,3,0,44,40,1,0,0,0,44,41,1,0,0,0,44,42,1,0,0,
-	0,44,43,1,0,0,0,45,3,1,0,0,0,46,50,5,26,0,0,47,49,3,2,1,0,48,47,1,0,0,0,
-	49,52,1,0,0,0,50,48,1,0,0,0,50,51,1,0,0,0,51,53,1,0,0,0,52,50,1,0,0,0,53,
-	54,5,27,0,0,54,5,1,0,0,0,55,56,5,30,0,0,56,7,1,0,0,0,57,58,5,2,0,0,58,61,
-	5,37,0,0,59,60,5,15,0,0,60,62,3,14,7,0,61,59,1,0,0,0,61,62,1,0,0,0,62,64,
-	1,0,0,0,63,65,5,30,0,0,64,63,1,0,0,0,64,65,1,0,0,0,65,9,1,0,0,0,66,68,3,
-	12,6,0,67,69,5,30,0,0,68,67,1,0,0,0,68,69,1,0,0,0,69,11,1,0,0,0,70,75,3,
-	14,7,0,71,72,5,31,0,0,72,74,3,14,7,0,73,71,1,0,0,0,74,77,1,0,0,0,75,73,
-	1,0,0,0,75,76,1,0,0,0,76,13,1,0,0,0,77,75,1,0,0,0,78,79,6,7,-1,0,79,80,
-	5,37,0,0,80,97,3,28,14,0,81,82,7,0,0,0,82,97,3,14,7,19,83,84,7,1,0,0,84,
-	97,3,14,7,18,85,86,7,2,0,0,86,97,3,14,7,17,87,88,5,37,0,0,88,89,5,15,0,
-	0,89,97,3,14,7,6,90,91,5,24,0,0,91,92,3,12,6,0,92,93,5,25,0,0,93,97,1,0,
-	0,0,94,97,3,16,8,0,95,97,5,37,0,0,96,78,1,0,0,0,96,81,1,0,0,0,96,83,1,0,
-	0,0,96,85,1,0,0,0,96,87,1,0,0,0,96,90,1,0,0,0,96,94,1,0,0,0,96,95,1,0,0,
-	0,97,163,1,0,0,0,98,99,10,16,0,0,99,100,7,3,0,0,100,162,3,14,7,16,101,102,
-	10,15,0,0,102,103,7,4,0,0,103,162,3,14,7,16,104,105,10,14,0,0,105,106,7,
-	2,0,0,106,162,3,14,7,15,107,108,10,13,0,0,108,109,7,5,0,0,109,162,3,14,
-	7,14,110,111,10,12,0,0,111,112,7,6,0,0,112,162,3,14,7,13,113,114,10,11,
-	0,0,114,115,5,13,0,0,115,162,3,14,7,12,116,117,10,10,0,0,117,118,5,14,0,
-	0,118,162,3,14,7,11,119,120,10,8,0,0,120,121,5,34,0,0,121,122,3,14,7,0,
-	122,123,5,35,0,0,123,124,3,14,7,8,124,162,1,0,0,0,125,126,10,7,0,0,126,
-	127,5,34,0,0,127,128,5,35,0,0,128,162,3,14,7,8,129,130,10,5,0,0,130,131,
-	5,28,0,0,131,132,3,12,6,0,132,133,5,29,0,0,133,134,5,15,0,0,134,135,3,14,
-	7,5,135,162,1,0,0,0,136,137,10,4,0,0,137,138,5,32,0,0,138,139,3,26,13,0,
-	139,140,5,15,0,0,140,141,3,14,7,4,141,162,1,0,0,0,142,144,10,23,0,0,143,
-	145,5,34,0,0,144,143,1,0,0,0,144,145,1,0,0,0,145,146,1,0,0,0,146,147,5,
-	28,0,0,147,148,3,12,6,0,148,149,5,29,0,0,149,162,1,0,0,0,150,152,10,22,
-	0,0,151,153,5,34,0,0,152,151,1,0,0,0,152,153,1,0,0,0,153,154,1,0,0,0,154,
-	155,5,32,0,0,155,162,3,26,13,0,156,157,10,20,0,0,157,162,7,0,0,0,158,159,
-	10,9,0,0,159,160,5,33,0,0,160,162,5,37,0,0,161,98,1,0,0,0,161,101,1,0,0,
-	0,161,104,1,0,0,0,161,107,1,0,0,0,161,110,1,0,0,0,161,113,1,0,0,0,161,116,
-	1,0,0,0,161,119,1,0,0,0,161,125,1,0,0,0,161,129,1,0,0,0,161,136,1,0,0,0,
-	161,142,1,0,0,0,161,150,1,0,0,0,161,156,1,0,0,0,161,158,1,0,0,0,162,165,
-	1,0,0,0,163,161,1,0,0,0,163,164,1,0,0,0,164,15,1,0,0,0,165,163,1,0,0,0,
-	166,173,5,38,0,0,167,173,5,36,0,0,168,173,5,3,0,0,169,173,5,4,0,0,170,173,
-	3,18,9,0,171,173,3,22,11,0,172,166,1,0,0,0,172,167,1,0,0,0,172,168,1,0,
-	0,0,172,169,1,0,0,0,172,170,1,0,0,0,172,171,1,0,0,0,173,17,1,0,0,0,174,
-	183,5,28,0,0,175,180,3,20,10,0,176,177,5,31,0,0,177,179,3,20,10,0,178,176,
-	1,0,0,0,179,182,1,0,0,0,180,178,1,0,0,0,180,181,1,0,0,0,181,184,1,0,0,0,
-	182,180,1,0,0,0,183,175,1,0,0,0,183,184,1,0,0,0,184,185,1,0,0,0,185,186,
-	5,29,0,0,186,19,1,0,0,0,187,188,3,14,7,0,188,21,1,0,0,0,189,198,5,26,0,
-	0,190,195,3,24,12,0,191,192,5,31,0,0,192,194,3,24,12,0,193,191,1,0,0,0,
-	194,197,1,0,0,0,195,193,1,0,0,0,195,196,1,0,0,0,196,199,1,0,0,0,197,195,
-	1,0,0,0,198,190,1,0,0,0,198,199,1,0,0,0,199,200,1,0,0,0,200,201,5,27,0,
-	0,201,23,1,0,0,0,202,203,3,26,13,0,203,204,5,35,0,0,204,205,3,14,7,0,205,
-	214,1,0,0,0,206,207,5,28,0,0,207,208,3,14,7,0,208,209,5,29,0,0,209,210,
-	5,35,0,0,210,211,3,14,7,0,211,214,1,0,0,0,212,214,5,37,0,0,213,202,1,0,
-	0,0,213,206,1,0,0,0,213,212,1,0,0,0,214,25,1,0,0,0,215,216,7,7,0,0,216,
-	27,1,0,0,0,217,229,5,24,0,0,218,223,3,30,15,0,219,220,5,31,0,0,220,222,
-	3,30,15,0,221,219,1,0,0,0,222,225,1,0,0,0,223,221,1,0,0,0,223,224,1,0,0,
-	0,224,227,1,0,0,0,225,223,1,0,0,0,226,228,5,31,0,0,227,226,1,0,0,0,227,
-	228,1,0,0,0,228,230,1,0,0,0,229,218,1,0,0,0,229,230,1,0,0,0,230,231,1,0,
-	0,0,231,232,5,25,0,0,232,29,1,0,0,0,233,236,3,14,7,0,234,236,5,37,0,0,235,
-	233,1,0,0,0,235,234,1,0,0,0,236,31,1,0,0,0,22,35,44,50,61,64,68,75,96,144,
-	152,161,163,172,180,183,195,198,213,223,227,229,235];
+	1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,148,8,7,
+	1,7,1,7,1,7,1,7,1,7,1,7,3,7,156,8,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,5,7,165,
+	8,7,10,7,12,7,168,9,7,1,8,1,8,1,8,1,8,1,8,1,8,3,8,176,8,8,1,9,1,9,1,9,1,
+	9,5,9,182,8,9,10,9,12,9,185,9,9,3,9,187,8,9,1,9,1,9,1,10,1,10,1,11,1,11,
+	1,11,1,11,5,11,197,8,11,10,11,12,11,200,9,11,3,11,202,8,11,1,11,1,11,1,
+	12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,3,12,217,8,12,1,13,
+	1,13,1,14,1,14,1,14,1,14,5,14,225,8,14,10,14,12,14,228,9,14,1,14,3,14,231,
+	8,14,3,14,233,8,14,1,14,1,14,1,15,1,15,3,15,239,8,15,1,15,0,1,14,16,0,2,
+	4,6,8,10,12,14,16,18,20,22,24,26,28,30,0,9,1,0,2,3,1,0,7,8,2,0,1,1,10,10,
+	1,0,18,19,2,0,9,9,23,23,1,0,20,22,2,0,13,14,24,25,1,0,11,12,3,0,2,2,6,6,
+	38,40,273,0,35,1,0,0,0,2,44,1,0,0,0,4,46,1,0,0,0,6,55,1,0,0,0,8,58,1,0,
+	0,0,10,69,1,0,0,0,12,73,1,0,0,0,14,99,1,0,0,0,16,175,1,0,0,0,18,177,1,0,
+	0,0,20,190,1,0,0,0,22,192,1,0,0,0,24,216,1,0,0,0,26,218,1,0,0,0,28,220,
+	1,0,0,0,30,238,1,0,0,0,32,34,3,2,1,0,33,32,1,0,0,0,34,37,1,0,0,0,35,33,
+	1,0,0,0,35,36,1,0,0,0,36,38,1,0,0,0,37,35,1,0,0,0,38,39,5,0,0,1,39,1,1,
+	0,0,0,40,45,3,10,5,0,41,45,3,8,4,0,42,45,3,4,2,0,43,45,3,6,3,0,44,40,1,
+	0,0,0,44,41,1,0,0,0,44,42,1,0,0,0,44,43,1,0,0,0,45,3,1,0,0,0,46,50,5,28,
+	0,0,47,49,3,2,1,0,48,47,1,0,0,0,49,52,1,0,0,0,50,48,1,0,0,0,50,51,1,0,0,
+	0,51,53,1,0,0,0,52,50,1,0,0,0,53,54,5,29,0,0,54,5,1,0,0,0,55,56,5,32,0,
+	0,56,7,1,0,0,0,57,59,5,4,0,0,58,57,1,0,0,0,58,59,1,0,0,0,59,60,1,0,0,0,
+	60,61,7,0,0,0,61,64,5,39,0,0,62,63,5,17,0,0,63,65,3,14,7,0,64,62,1,0,0,
+	0,64,65,1,0,0,0,65,67,1,0,0,0,66,68,5,32,0,0,67,66,1,0,0,0,67,68,1,0,0,
+	0,68,9,1,0,0,0,69,71,3,12,6,0,70,72,5,32,0,0,71,70,1,0,0,0,71,72,1,0,0,
+	0,72,11,1,0,0,0,73,78,3,14,7,0,74,75,5,33,0,0,75,77,3,14,7,0,76,74,1,0,
+	0,0,77,80,1,0,0,0,78,76,1,0,0,0,78,79,1,0,0,0,79,13,1,0,0,0,80,78,1,0,0,
+	0,81,82,6,7,-1,0,82,83,5,39,0,0,83,100,3,28,14,0,84,85,7,1,0,0,85,100,3,
+	14,7,19,86,87,7,2,0,0,87,100,3,14,7,18,88,89,7,3,0,0,89,100,3,14,7,17,90,
+	91,5,39,0,0,91,92,5,17,0,0,92,100,3,14,7,6,93,94,5,26,0,0,94,95,3,12,6,
+	0,95,96,5,27,0,0,96,100,1,0,0,0,97,100,3,16,8,0,98,100,5,39,0,0,99,81,1,
+	0,0,0,99,84,1,0,0,0,99,86,1,0,0,0,99,88,1,0,0,0,99,90,1,0,0,0,99,93,1,0,
+	0,0,99,97,1,0,0,0,99,98,1,0,0,0,100,166,1,0,0,0,101,102,10,16,0,0,102,103,
+	7,4,0,0,103,165,3,14,7,16,104,105,10,15,0,0,105,106,7,5,0,0,106,165,3,14,
+	7,16,107,108,10,14,0,0,108,109,7,3,0,0,109,165,3,14,7,15,110,111,10,13,
+	0,0,111,112,7,6,0,0,112,165,3,14,7,14,113,114,10,12,0,0,114,115,7,7,0,0,
+	115,165,3,14,7,13,116,117,10,11,0,0,117,118,5,15,0,0,118,165,3,14,7,12,
+	119,120,10,10,0,0,120,121,5,16,0,0,121,165,3,14,7,11,122,123,10,8,0,0,123,
+	124,5,36,0,0,124,125,3,14,7,0,125,126,5,37,0,0,126,127,3,14,7,8,127,165,
+	1,0,0,0,128,129,10,7,0,0,129,130,5,36,0,0,130,131,5,37,0,0,131,165,3,14,
+	7,8,132,133,10,5,0,0,133,134,5,30,0,0,134,135,3,12,6,0,135,136,5,31,0,0,
+	136,137,5,17,0,0,137,138,3,14,7,5,138,165,1,0,0,0,139,140,10,4,0,0,140,
+	141,5,34,0,0,141,142,3,26,13,0,142,143,5,17,0,0,143,144,3,14,7,4,144,165,
+	1,0,0,0,145,147,10,23,0,0,146,148,5,36,0,0,147,146,1,0,0,0,147,148,1,0,
+	0,0,148,149,1,0,0,0,149,150,5,30,0,0,150,151,3,12,6,0,151,152,5,31,0,0,
+	152,165,1,0,0,0,153,155,10,22,0,0,154,156,5,36,0,0,155,154,1,0,0,0,155,
+	156,1,0,0,0,156,157,1,0,0,0,157,158,5,34,0,0,158,165,3,26,13,0,159,160,
+	10,20,0,0,160,165,7,1,0,0,161,162,10,9,0,0,162,163,5,35,0,0,163,165,5,39,
+	0,0,164,101,1,0,0,0,164,104,1,0,0,0,164,107,1,0,0,0,164,110,1,0,0,0,164,
+	113,1,0,0,0,164,116,1,0,0,0,164,119,1,0,0,0,164,122,1,0,0,0,164,128,1,0,
+	0,0,164,132,1,0,0,0,164,139,1,0,0,0,164,145,1,0,0,0,164,153,1,0,0,0,164,
+	159,1,0,0,0,164,161,1,0,0,0,165,168,1,0,0,0,166,164,1,0,0,0,166,167,1,0,
+	0,0,167,15,1,0,0,0,168,166,1,0,0,0,169,176,5,40,0,0,170,176,5,38,0,0,171,
+	176,5,5,0,0,172,176,5,6,0,0,173,176,3,18,9,0,174,176,3,22,11,0,175,169,
+	1,0,0,0,175,170,1,0,0,0,175,171,1,0,0,0,175,172,1,0,0,0,175,173,1,0,0,0,
+	175,174,1,0,0,0,176,17,1,0,0,0,177,186,5,30,0,0,178,183,3,20,10,0,179,180,
+	5,33,0,0,180,182,3,20,10,0,181,179,1,0,0,0,182,185,1,0,0,0,183,181,1,0,
+	0,0,183,184,1,0,0,0,184,187,1,0,0,0,185,183,1,0,0,0,186,178,1,0,0,0,186,
+	187,1,0,0,0,187,188,1,0,0,0,188,189,5,31,0,0,189,19,1,0,0,0,190,191,3,14,
+	7,0,191,21,1,0,0,0,192,201,5,28,0,0,193,198,3,24,12,0,194,195,5,33,0,0,
+	195,197,3,24,12,0,196,194,1,0,0,0,197,200,1,0,0,0,198,196,1,0,0,0,198,199,
+	1,0,0,0,199,202,1,0,0,0,200,198,1,0,0,0,201,193,1,0,0,0,201,202,1,0,0,0,
+	202,203,1,0,0,0,203,204,5,29,0,0,204,23,1,0,0,0,205,206,3,26,13,0,206,207,
+	5,37,0,0,207,208,3,14,7,0,208,217,1,0,0,0,209,210,5,30,0,0,210,211,3,14,
+	7,0,211,212,5,31,0,0,212,213,5,37,0,0,213,214,3,14,7,0,214,217,1,0,0,0,
+	215,217,5,39,0,0,216,205,1,0,0,0,216,209,1,0,0,0,216,215,1,0,0,0,217,25,
+	1,0,0,0,218,219,7,8,0,0,219,27,1,0,0,0,220,232,5,26,0,0,221,226,3,30,15,
+	0,222,223,5,33,0,0,223,225,3,30,15,0,224,222,1,0,0,0,225,228,1,0,0,0,226,
+	224,1,0,0,0,226,227,1,0,0,0,227,230,1,0,0,0,228,226,1,0,0,0,229,231,5,33,
+	0,0,230,229,1,0,0,0,230,231,1,0,0,0,231,233,1,0,0,0,232,221,1,0,0,0,232,
+	233,1,0,0,0,233,234,1,0,0,0,234,235,5,27,0,0,235,29,1,0,0,0,236,239,3,14,
+	7,0,237,239,5,39,0,0,238,236,1,0,0,0,238,237,1,0,0,0,239,31,1,0,0,0,23,
+	35,44,50,58,64,67,71,78,99,147,155,164,166,175,183,186,198,201,216,226,
+	230,232,238];
 
 	private static __ATN: ATN;
 	public static get _ATN(): ATN {
@@ -1586,11 +1609,17 @@ export class VarDeclarationContext extends ParserRuleContext {
 		super(parent, invokingState);
     	this.parser = parser;
 	}
+	public IDENTIFIER(): TerminalNode {
+		return this.getToken(JexLangParser.IDENTIFIER, 0);
+	}
 	public LET(): TerminalNode {
 		return this.getToken(JexLangParser.LET, 0);
 	}
-	public IDENTIFIER(): TerminalNode {
-		return this.getToken(JexLangParser.IDENTIFIER, 0);
+	public CONST(): TerminalNode {
+		return this.getToken(JexLangParser.CONST, 0);
+	}
+	public GLOBAL(): TerminalNode {
+		return this.getToken(JexLangParser.GLOBAL, 0);
 	}
 	public ASSIGN(): TerminalNode {
 		return this.getToken(JexLangParser.ASSIGN, 0);

@@ -15,7 +15,6 @@ import com.jexlang.java.types.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.rmi.server.UID;
 import java.util.*;
 
 public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
@@ -67,7 +66,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitProgram(JexLangParser.ProgramContext ctx) {
 
         // create a new scope per program;
-        this.scope = new Scope(this.scope);
+        this.scope = new Scope(this.scope, Scope.ScopeType.PROGRAM);
 
         JexValue result = null;
 
@@ -102,7 +101,14 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitVarDeclaration(JexLangParser.VarDeclarationContext ctx) {
         String varName = ctx.IDENTIFIER().getText();
         JexValue varValue = ctx.singleExpression() != null ? this.visit(ctx.singleExpression()) : new JexNull();
-        this.scope.declareVariable(varName, varValue, false);
+        boolean isConst = ctx.CONST() != null;
+        boolean isGlobal = ctx.GLOBAL() != null;
+        Scope globalScope = this.scope.resolveScope(Scope.ScopeType.GLOBAL);
+        if (isGlobal && globalScope != null) { // if variable declared as global scope then declare in global scope
+            globalScope.declareVariable(varName, varValue, isConst);
+            return varValue;
+        }
+        this.scope.declareVariable(varName, varValue, isConst); // otherwise in current scope
         return varValue;
     }
 
@@ -134,7 +140,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     public JexValue visitBlock(JexLangParser.BlockContext ctx) {
         // Create a new scope for the block
-        this.scope = new Scope(this.scope);
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
 
         JexValue result = null;
 

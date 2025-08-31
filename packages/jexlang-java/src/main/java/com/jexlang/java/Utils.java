@@ -278,7 +278,7 @@ public class Utils {
     }
 
     public static Scope createGlobalScope() {
-        Scope scope = new Scope(null);
+        Scope scope = new Scope(null, Scope.ScopeType.GLOBAL);
         // Add built-in functions and variables to the global scope
 
         scope.declareVariable("PI", new JexNumber(FastMath.PI), true);

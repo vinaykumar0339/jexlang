@@ -3,7 +3,7 @@ import * as JexLangParser from "../../grammar/JexLangParser";
 import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
-import { toBoolean, toNumber, toString } from "../../utils";
+import { createGlobalScope, toBoolean, toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { Scope } from "../scopes";
 import type { ErrorNode } from "antlr4";
@@ -14,7 +14,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     private scope: Scope;
 
     constructor(
-        scope: Scope = new Scope(),
+        scope: Scope = createGlobalScope(),
         funcsMap?: Record<string, FuncImpl>, 
         transformsMap?: Record<string, TransformImpl>,
     ) {
@@ -109,7 +109,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     visitProgram = (ctx: JexLangParser.ProgramContext): MaybePromise<JexValue> => {
 
         // create a new scope for the program
-        this.scope = new Scope(this.scope);
+        this.scope = new Scope(this.scope, 'program');
 
         let result: MaybePromise<JexValue> = null;
         let hasPromise = false;
@@ -164,9 +164,16 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     visitVarDeclaration = (ctx: JexLangParser.VarDeclarationContext): MaybePromise<JexValue> => {
         const varName = ctx.IDENTIFIER().getText();
         const varValue = ctx.singleExpression() ? this.visit(ctx.singleExpression()) : null;
+        const isConst = ctx.CONST() !== null;
+        const isGlobal = ctx.GLOBAL() !== null;
 
         return this.handlePromise(varValue, (resolvedValue) => {
-            this.scope.declareVariable(varName, resolvedValue);
+            const globalScope = this.scope.resolveScopeByType('global');
+            if (isGlobal && globalScope) { // if variable declared as global scope then declare in global scope
+                globalScope.declareVariable(varName, resolvedValue, isConst);
+            } else { // otherwise in current scope
+                this.scope.declareVariable(varName, resolvedValue, isConst);
+            }
             return resolvedValue;
         });
     };
@@ -193,7 +200,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
 
     visitBlock = (ctx: JexLangParser.BlockContext): MaybePromise<JexValue> => {
         // create a new scope for the block
-        this.scope = new Scope(this.scope);
+        this.scope = new Scope(this.scope, 'block');
 
         let result: MaybePromise<JexValue> = null;
         let hasPromise = false;
