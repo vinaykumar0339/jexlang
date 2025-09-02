@@ -1,4 +1,4 @@
-import { BinaryExpression, Expression, Identifier, NumberLiteral, Program, Statement } from "./ast.ts";
+import { BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
@@ -34,6 +34,18 @@ export class Evaluate {
 
     private evaluateNumericalExpression(numericalLiteral: NumberLiteral): JexValue {
         return numericalLiteral.value;
+    }
+
+    private evaluateStringLiteral(stringLiteral: StringLiteral): JexValue {
+        return stringLiteral.value;
+    }
+
+    private evaluateBooleanLiteral(booleanLiteral: BooleanLiteral): JexValue {
+        return booleanLiteral.value;
+    }
+
+    private evaluateNullLiteral(nullLiteral: NullLiteral): JexValue {
+        return nullLiteral.value;
     }
 
     private evaluateBinaryExpression(expression: BinaryExpression): JexValue {
@@ -86,6 +98,12 @@ export class Evaluate {
             return this.evaluateBinaryExpression(expression as BinaryExpression);
         } else if (expression.kind === 'Identifier') {
             return this.evaluateIdentifier(expression as Identifier);
+        } else if (expression.kind === 'StringLiteral') {
+            return this.evaluateStringLiteral(expression as StringLiteral);
+        } else if (expression.kind === 'BooleanLiteral') {
+            return this.evaluateBooleanLiteral(expression as BooleanLiteral);
+        } else if (expression.kind === 'NullLiteral') {
+            return this.evaluateNullLiteral(expression as NullLiteral);
         }
         return null;
     }

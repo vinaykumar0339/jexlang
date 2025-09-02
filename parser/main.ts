@@ -2,11 +2,12 @@ import { Evaluate } from './evaluate.ts';
 import { Parser } from './parser.ts';
 
 const parse = () => {
-    const code = `2 * PI * 10`;
+    const code = `true + true - true`;
 
     const parser = new Parser(code);
     const program = parser.program();
-
+    // console.log(program);
+    
     const evaluate = new Evaluate();
 
     const result = evaluate.evaluate(program);
