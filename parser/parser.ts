@@ -62,24 +62,24 @@ export class Parser {
     }
 
     private parseExpression() {
-        return this.additiveExpression();
+        return this.parseAdditiveExpression();
     }
 
-    private additiveExpression(): Statement {
-        let left = this.multiplicativeExpression();
+    private parseAdditiveExpression(): Statement {
+        let left = this.parseMultiplicativeExpression();
 
         while (this.token().type === 'PLUS' || this.token().type === 'MINUS') {
             const operator = this.token().value;
             this.consume();
-            const right = this.multiplicativeExpression();
+            const right = this.parseMultiplicativeExpression();
             left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
         }
 
         return left;
     }
 
-    private multiplicativeExpression(): Statement {
-        let left = this.primaryExpression();
+    private parseMultiplicativeExpression(): Statement {
+        let left = this.parsePrimaryExpression();
 
         while (
             this.token().type === 'MULTIPLY' ||
@@ -88,14 +88,14 @@ export class Parser {
         ) {
             const operator = this.token().value;
             this.consume();
-            const right = this.primaryExpression();
+            const right = this.parsePrimaryExpression();
             left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
         }
 
         return left;
     }
 
-    private primaryExpression(): Statement {
+    private parsePrimaryExpression(): Statement {
         const token = this.token();
         switch (token.type) {
             case 'NUMBER': {
