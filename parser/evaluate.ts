@@ -2,7 +2,7 @@ import { BinaryExpression, Expression, NumberLiteral, Program, Statement } from 
 import { DivisionByZeroError, JexLangRuntimeError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
-import { createGlobalScope, toNumber } from "./utils.ts";
+import { createGlobalScope, toNumber, toString } from "./utils.ts";
 
 export class Evaluate {
     private scope: Scope
@@ -38,12 +38,17 @@ export class Evaluate {
 
     private evaluateBinaryExpression(expression: BinaryExpression): JexValue {
         const left = this.evaluateExpression(expression.left);
+        const operator = expression.operator;
         const right = this.evaluateExpression(expression.right);
+
+        if (operator == '+' && typeof left === 'string' || typeof right === 'string') {
+            return toString(left) + toString(right);
+        }
 
         const leftNumber = toNumber(left);
         const rightNumber = toNumber(right);
 
-        switch (expression.operator) {
+        switch (operator) {
             case '+':
                 return leftNumber + rightNumber;
             case '-':
@@ -62,7 +67,7 @@ export class Evaluate {
                 return leftNumber % rightNumber;
         }
 
-        throw new JexLangRuntimeError(`Unknown operator ${expression.operator}`);
+        throw new JexLangRuntimeError(`Unknown operator ${operator}`);
     }
 
     private evaluateExpression(expression: Expression): JexValue {
