@@ -1,5 +1,5 @@
-import { BinaryExpression, Expression, NumberLiteral, Program, Statement } from "./ast.ts";
-import { DivisionByZeroError, JexLangRuntimeError } from "./errors.ts";
+import { BinaryExpression, Expression, Identifier, NumberLiteral, Program, Statement } from "./ast.ts";
+import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
 import { createGlobalScope, toNumber, toString } from "./utils.ts";
@@ -70,11 +70,22 @@ export class Evaluate {
         throw new JexLangRuntimeError(`Unknown operator ${operator}`);
     }
 
+    private evaluateIdentifier(identifier: Identifier): JexValue {
+        const identifierName = identifier.name;
+        if (this.scope.hasVariable(identifierName)) {
+            return this.scope.getVariable(identifierName);
+        }
+
+        throw new UndefinedVariableError(identifierName);
+    }
+
     private evaluateExpression(expression: Expression): JexValue {
         if (expression.kind === 'NumberLiteral') {
             return this.evaluateNumericalExpression(expression as NumberLiteral);
         } else if (expression.kind === 'BinaryExpression') {
             return this.evaluateBinaryExpression(expression as BinaryExpression);
+        } else if (expression.kind === 'Identifier') {
+            return this.evaluateIdentifier(expression as Identifier);
         }
         return null;
     }

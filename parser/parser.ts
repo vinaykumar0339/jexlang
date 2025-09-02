@@ -1,4 +1,4 @@
-import { BinaryExpression, NumberLiteral, Program, Statement } from "./ast.ts";
+import { BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -6,7 +6,12 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  * (High precedence means -> evaluate first)
  * (Low precedence means -> evaluate later)
  * **Which means lowest precedence calls the highest precedence functions.**
- * 1. Parentheses ()
+ * 1. Primary Expressions
+ *      a. Number Literals
+ *      b. String Literals
+ *      c. identifiers
+ *      d. Boolean Literals
+ *      e. Parenthesized Expressions "(expressions)"
  * 2. Multiplication, Division, Modulo (*, /, %) (same level)
  * 3. Addition, Subtraction (+, -) (same level)
  */
@@ -101,6 +106,22 @@ export class Parser {
             case 'NUMBER': {
                 this.consume();
                 return { kind: 'NumberLiteral', value: parseFloat(token.value) } as NumberLiteral;
+            }
+            case 'STRING': {
+                this.consume();
+                return { kind: 'StringLiteral', value: token.value } as StringLiteral;
+            }
+            case 'BOOLEAN': {
+                this.consume();
+                return { kind: 'BooleanLiteral', value: token.value === 'true' } as BooleanLiteral;
+            }
+            case 'NULL': {
+                this.consume();
+                return { kind: 'NullLiteral', value: null } as NullLiteral;
+            }
+            case 'IDENTIFIER': {
+                this.consume();
+                return { kind: 'Identifier', name: token.value } as Identifier;
             }
             case 'LPAREN': {
                 this.consume(); // consume the LPAREN

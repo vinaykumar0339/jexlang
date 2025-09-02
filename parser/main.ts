@@ -2,7 +2,7 @@ import { Evaluate } from './evaluate.ts';
 import { Parser } from './parser.ts';
 
 const parse = () => {
-    const code = `2+2.2`;
+    const code = `2 * PI * 10`;
 
     const parser = new Parser(code);
     const program = parser.program();
