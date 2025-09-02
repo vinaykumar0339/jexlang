@@ -1,0 +1,1 @@
+export type JexValue = number | boolean | string | null | JexValue[] | { [k: string]: JexValue }
