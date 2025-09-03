@@ -1,11 +1,15 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
-import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { DivisionByZeroError, JexLangRuntimeError, UndefinedFunctionError, UndefinedVariableError } from "./errors.ts";
+import { BUILT_IN_FUNCTIONS } from "./functions/builtin.ts";
 import { Scope } from "./scope.ts";
-import { JexValue, MaybePromise } from "./types.ts";
+import { BUILT_IN_TRANSFORMS } from "./transforms/builtin.ts";
+import { FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, MapTransformRegistry, MaybePromise, TransformImpl, TransformRegistry } from "./types.ts";
 import { createGlobalScope, toBoolean, toNumber, toString } from "./utils.ts";
 
 export class Evaluate {
     private scope: Scope
+    private funcRegistry: FuncRegistry;
+    private transformRegistry: TransformRegistry;
 
     private handlePromise<T>(value: MaybePromise<T>, handler: (resolved: T) => MaybePromise<T>): MaybePromise<T> {
         if (value instanceof Promise) {
@@ -69,9 +73,33 @@ export class Evaluate {
     }
 
     constructor(
-        scope: Scope = createGlobalScope()
+        scope: Scope = createGlobalScope(),
+        funcsMap?: Record<string, FuncImpl>, 
+        transformsMap?: Record<string, TransformImpl>,
     ) {
         this.scope = scope;
+
+        this.funcRegistry = new MapFuncRegistry({
+          ...BUILT_IN_FUNCTIONS,
+          ...funcsMap
+        });
+
+        this.transformRegistry = new MapTransformRegistry({
+          ...BUILT_IN_TRANSFORMS,
+          ...transformsMap
+        });
+    }
+
+    public addFunction(name: string, func: FuncImpl): void {
+        if (this.funcRegistry instanceof MapFuncRegistry) {
+            this.funcRegistry.set(name, func);
+        }
+    }
+
+    public addTransform(name: string, transform: TransformImpl): void {
+        if (this.transformRegistry instanceof MapTransformRegistry) {
+            this.transformRegistry.set(name, transform);
+        }
     }
 
     evaluate(program: Program): MaybePromise<JexValue> {
@@ -360,6 +388,69 @@ export class Evaluate {
         });
     }
 
+    private evaluateCallExpression(expression: CallExpression): MaybePromise<JexValue> {
+        const caller = expression.caller;
+        if (caller.kind !== 'Identifier') { // We support only Identifier type for now in future we can extend it.
+            throw new JexLangRuntimeError(`Invalid caller of function call: ${caller}, expected Identifier, but got ${caller.kind.toLowerCase()}`);
+        }
+
+        const functionName = (caller as Identifier).name;
+
+        // check function is available or not
+        if (!this.funcRegistry.has(functionName)) {
+            throw new UndefinedFunctionError(functionName);
+        }
+
+        const args = expression.arguments.map(arg => this.evaluateExpression(arg));
+        return this.handlePromises(args, (...resolvedArgs) => {
+            return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs), res => res);
+        });
+    }
+
+    private evaluateMemberExpression(expression: MemberExpression): MaybePromise<JexValue> {
+        const obj = this.evaluateExpression(expression.object);
+        return this.handlePromise(this.evaluateExpression(expression.object), (obj) => {
+            const computed = expression.computed;
+            if (!computed) {
+                const property = expression.property;
+                if (property.kind !== 'Identifier') {
+                    throw new JexLangRuntimeError(`Invalid property of member expression: ${property}, expected Identifier, but got ${property.kind.toLowerCase()}`);
+                }
+                const propertyName = (property as Identifier).name;
+                if (obj != null && typeof obj === 'object' && !Array.isArray(obj)) {
+                    return obj[propertyName];
+                }
+            } else {
+                return this.handlePromise(this.evaluateExpression(expression.property), (property) => {
+                    if (obj != null && typeof obj == 'object' && !Array.isArray(obj)) {
+                        return obj[toString(property)];
+                    } else if (obj != null && typeof obj == 'object' && Array.isArray(obj)) {
+                        const indexNumber = toNumber(property);
+                        let normalizedIndex = isNaN(indexNumber) ? -1 : indexNumber;
+                        if (normalizedIndex < 0) {
+                            normalizedIndex = obj.length + normalizedIndex;
+                        }
+                        if (normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                            return obj[normalizedIndex];
+                        }
+                    } else if (obj != null && obj != undefined && typeof obj === 'string') {
+                        const str = obj as string;
+                        const indexNumber = toNumber(property);
+                        let normalizedIndex = isNaN(indexNumber) ? -1 : indexNumber;
+                        if (normalizedIndex < 0) {
+                            normalizedIndex = str.length + normalizedIndex;
+                        }
+                        if (normalizedIndex >= 0 && normalizedIndex < str.length) {
+                            return str[normalizedIndex];
+                        }
+                    }
+                    return null;  // don't throw any error if the object is null or not an object just return null to further chain.
+                })
+            }
+            return null; // don't throw any error if the object is null or not an object just return null to further chain.
+        })
+    }
+
     private evaluateExpression(expression: Expression): MaybePromise<JexValue> {
         if (expression.kind === 'NumberLiteral') {
             return this.evaluateNumericalExpression(expression as NumberLiteral);
@@ -381,6 +472,10 @@ export class Evaluate {
             return this.evaluateTernaryExpression(expression as TernaryExpression);
         } else if (expression.kind === 'ShorthandTernaryExpression') {
             return this.evaluateShorthandTernaryExpression(expression as ShorthandTernaryExpression);
+        } else if (expression.kind === 'CallExpression') {
+            return this.evaluateCallExpression(expression as CallExpression);
+        } else if (expression.kind === 'MemberExpression') {
+            return this.evaluateMemberExpression(expression as MemberExpression);
         }
         return null;
     }

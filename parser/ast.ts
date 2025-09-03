@@ -14,6 +14,8 @@ export type NodeType =
     | 'TernaryExpression'
     | 'ShorthandTernaryExpression'
     | 'AssignmentExpression'
+    | 'MemberExpression'
+    | 'CallExpression'
 
 export interface Statement {
     kind: NodeType;
@@ -91,4 +93,17 @@ export interface BooleanLiteral extends Expression {
 export interface NullLiteral extends Expression {
     kind: 'NullLiteral';
     value: null;
+}
+
+export interface MemberExpression extends Expression {
+    kind: 'MemberExpression';
+    object: Expression;
+    property: Expression;
+    computed: boolean; // true for obj[prop], false for obj.prop
+}
+
+export interface CallExpression extends Expression {
+    kind: 'CallExpression';
+    caller: Expression;
+    arguments: Expression[];
 }

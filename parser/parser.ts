@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -12,14 +12,15 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      c. Identifiers
  *      d. Boolean Literals
  *      e. Parenthesized Expressions "(expressions)"
- * 2. Unary Operators (+, -, !, √, ++, --)
- * 3. Exponentiation Or Power and Square Root ((**, ^), √)
- * 4. Multiplication, Division, Modulo (*, /, %)
- * 5. Addition, Subtraction (+, -)
- * 6. Comparison (==, !=, <, >, <=, >=)
- * 7. Logical (&&, ||, and, or)
- * 8. Ternary (condition ? exp1 : exp2)
- * 9. Assignment (=) -> Lowest Precedence.
+ * 2. Member Access and Function Calls (obj.prop, obj[prop], func())
+ * 3. Unary Operators (+, -, !, √, ++, --)
+ * 4. Exponentiation Or Power and Square Root ((**, ^), √)
+ * 5. Multiplication, Division, Modulo (*, /, %)
+ * 6. Addition, Subtraction (+, -)
+ * 7. Comparison (==, !=, <, >, <=, >=)
+ * 8. Logical (&&, ||, and, or)
+ * 9. Ternary (condition ? exp1 : exp2)
+ * 10. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -119,7 +120,56 @@ export class Parser {
             const value = this.parseUnaryExpression();
             left = { kind: 'UnaryExpression', operator, value } as UnaryExpression;
         } else {
-            left = this.parsePrimaryExpression();
+            left = this.parseMemberExpression();
+        }
+
+        return left;
+    }
+
+    private parseMemberExpression(): Expression {
+        let left = this.parsePrimaryExpression();
+
+        while (true) {
+            if (this.token().type === 'DOT') {
+                this.consume(); // consume '.'
+                const property = this.expect('IDENTIFIER', 'identifier');
+                left = {
+                    kind: 'MemberExpression',
+                    object: left,
+                    property: { kind: 'Identifier', name: property.value } as Identifier,
+                    computed: false
+                } as MemberExpression;
+            } else if (this.token().type === 'LBRACKET') {
+                this.consume(); // consume '['
+                const property = this.parseExpression();
+                this.expect('RBRACKET', ']');
+                left = {
+                    kind: 'MemberExpression',
+                    object: left,
+                    property,
+                    computed: true
+                } as MemberExpression;
+            } else if (this.token().type === 'LPAREN') {
+                this.consume(); // consume '('
+                const args: Expression[] = [];
+                
+                if (this.token().type !== 'RPAREN') {
+                    args.push(this.parseExpression());
+                    while (this.token().type === 'COMMA') {
+                        this.consume(); // consume ','
+                        args.push(this.parseExpression());
+                    }
+                }
+                
+                this.expect('RPAREN', ')');
+                left = {
+                    kind: 'CallExpression',
+                    caller: left,
+                    arguments: args
+                } as CallExpression;
+            } else {
+                break;
+            }
         }
 
         return left;
