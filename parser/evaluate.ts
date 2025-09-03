@@ -1,8 +1,8 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
-import { createGlobalScope, toNumber, toString } from "./utils.ts";
+import { createGlobalScope, toBoolean, toNumber, toString } from "./utils.ts";
 
 export class Evaluate {
     private scope: Scope
@@ -50,7 +50,7 @@ export class Evaluate {
     }
 
     private evaluateStringLiteral(stringLiteral: StringLiteral): JexValue {
-        return stringLiteral.value;
+        return stringLiteral.value.slice(1, -1); // Remove quotes
     }
 
     private evaluateBooleanLiteral(booleanLiteral: BooleanLiteral): JexValue {
@@ -99,6 +99,30 @@ export class Evaluate {
         throw new JexLangRuntimeError(`Unknown operator ${operator}`);
     }
 
+    private evaluateUnaryExpression(expression: UnaryExpression): JexValue {
+        const operator = expression.operator;
+        const value = this.evaluateExpression(expression.value);
+        console.log(value, "value");
+        
+        switch (operator) {
+            case '!':
+                return !toBoolean(value);
+            case '+':
+                return toNumber(value);
+            case '-':
+                return -toNumber(value);
+            case '√': {
+                const num = toNumber(value);
+                if (num < 0) {
+                    throw new JexLangRuntimeError(`Invalid square root: ${value}`);
+                }
+                return Math.sqrt(num);
+            }
+        }
+
+        throw new JexLangRuntimeError(`Unknown unary operator ${operator}`);
+    }
+
     private evaluateIdentifier(identifier: Identifier): JexValue {
         const identifierName = identifier.name;
         if (this.scope.hasVariable(identifierName)) {
@@ -136,6 +160,8 @@ export class Evaluate {
             return this.evaluateNullLiteral(expression as NullLiteral);
         } else if (expression.kind === 'AssignmentExpression') {
             return this.evaluateAssignmentExpression(expression as AssignmentExpression);
+        } else if (expression.kind === 'UnaryExpression') {
+            return this.evaluateUnaryExpression(expression as UnaryExpression);
         }
         return null;
     }

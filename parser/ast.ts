@@ -9,6 +9,7 @@ export type NodeType =
     | 'BooleanLiteral'
     | 'NullLiteral'
     // Expressions
+    | 'UnaryExpression'
     | 'BinaryExpression'
     | 'AssignmentExpression'
 
@@ -37,6 +38,12 @@ export interface BinaryExpression extends Expression {
     left: Expression;
     right: Expression;
     operator: string;
+}
+
+export interface UnaryExpression extends Expression {
+    kind: 'UnaryExpression';
+    operator: string;
+    value: Expression;
 }
 
 export interface AssignmentExpression extends Expression {

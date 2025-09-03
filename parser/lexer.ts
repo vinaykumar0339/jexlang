@@ -19,6 +19,8 @@ export type TokenType =
     | 'EQ'
     | 'NEQ'
     | 'POWER'
+    | 'SQRT'
+    | 'NOT'
     | 'PLUS'
     | 'MINUS'
     | 'MULTIPLY'
@@ -50,7 +52,7 @@ export interface Token {
 }
 
 export interface TokenRule {
-  name: string;
+  name: TokenType;
   pattern: RegExp;
 }
 
@@ -88,6 +90,8 @@ export const langRules: TokenRule[] = [
     { name: 'ASSIGN', pattern: /=/ },
     { name: 'LT', pattern: /</ },
     { name: 'GT', pattern: />/ },
+    { name: 'NOT', pattern: /!/ },
+    { name: 'SQRT', pattern: /√/ },
 
     // Delimiters
     { name: 'LPAREN', pattern: /\(/ },

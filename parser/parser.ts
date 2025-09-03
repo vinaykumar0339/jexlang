@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -12,10 +12,11 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      c. Identifiers
  *      d. Boolean Literals
  *      e. Parenthesized Expressions "(expressions)"
- * 2. Exponentiation Or Power (**, ^)
- * 3. Multiplication, Division, Modulo (*, /, %)
- * 4. Addition, Subtraction (+, -)
- * 5. Assignment (=) -> Lowest Precedence.
+ * 2. Unary Operators (+, -, !, √, ++, --)
+ * 3. Exponentiation Or Power (**, ^)
+ * 4. Multiplication, Division, Modulo (*, /, %)
+ * 5. Addition, Subtraction (+, -)
+ * 6. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -101,13 +102,33 @@ export class Parser {
         return this.parseAssignmentExpression();
     }
 
+    private parseUnaryExpression(): Expression {
+        let left: Expression;
+
+        if (
+            this.token().type === 'NOT' ||
+            this.token().type === 'SQRT' ||
+            this.token().type === 'PLUS' ||
+            this.token().type === 'MINUS'
+        ) {
+            const operator = this.token().value;
+            this.consume();
+            const value = this.parseUnaryExpression();
+            left = { kind: 'UnaryExpression', operator, value } as UnaryExpression;
+        } else {
+            left = this.parsePrimaryExpression();
+        }
+
+        return left;
+    }
+
     private parsePowerExpression(): Expression {
-        let left = this.parsePrimaryExpression();
+        let left = this.parseUnaryExpression();
 
         while (this.token().type === 'POWER') {
             const operator = this.token().value;
             this.consume();
-            const right = this.parsePrimaryExpression();
+            const right = this.parseUnaryExpression();
             left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
         }
 
