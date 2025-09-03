@@ -1,4 +1,4 @@
-import { BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral } from "./ast.ts";
+import { BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
@@ -28,9 +28,22 @@ export class Evaluate {
     }
 
     private evaluateStatement(statement: Statement): JexValue {
-        // by default evaluate expression. based on statement kind we can do later.
+        if (statement.kind === 'VarDeclaration') {
+            return this.evaluateVarDeclaration(statement as VarDeclaration);
+        }
         return this.evaluateExpression(statement as Expression);
     }
+
+    // ========== Statements ==========
+    private evaluateVarDeclaration(varDeclaration: VarDeclaration): JexValue {
+        const varName = varDeclaration.name;
+        const varValue = this.evaluateExpression(varDeclaration.value);
+        const isConst = varDeclaration.isConstant;
+        this.scope.declareVariable(varName, varValue, isConst);
+        return varValue;
+    }
+
+    // ========== Expressions =========
 
     private evaluateNumericalExpression(numericalLiteral: NumberLiteral): JexValue {
         return numericalLiteral.value;

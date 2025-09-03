@@ -1,5 +1,6 @@
 export type NodeType =
     | 'Program'
+    | 'VarDeclaration'
     // Identifier
     | 'Identifier'
     // Literals
@@ -19,6 +20,15 @@ export interface Program extends Statement {
     body: Statement[];
 }
 
+// ============= Statements =============
+export interface VarDeclaration extends Statement {
+    kind: 'VarDeclaration';
+    name: string;
+    isConstant: boolean;
+    value: Expression;
+}
+
+// ============= Expressions =============
 export interface Expression extends Statement {}
 
 export interface BinaryExpression extends Expression {

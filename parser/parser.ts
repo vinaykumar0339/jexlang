@@ -1,15 +1,15 @@
-import { BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral } from "./ast.ts";
+import { BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
- * Precedence order for parsing expressions
+ * Precedence order for parsing expressions (From Higher to lower)
  * (High precedence means -> evaluate first)
  * (Low precedence means -> evaluate later)
  * **Which means lowest precedence calls the highest precedence functions.**
  * 1. Primary Expressions
  *      a. Number Literals
  *      b. String Literals
- *      c. identifiers
+ *      c. Identifiers
  *      d. Boolean Literals
  *      e. Parenthesized Expressions "(expressions)"
  * 2. Multiplication, Division, Modulo (*, /, %) (same level)
@@ -63,7 +63,36 @@ export class Parser {
     }
 
     private statement(): Statement {
-        return this.parseExpression();
+        switch (this.token().type) {
+            case 'LET':
+            case 'CONST':
+                return this.parseVarDeclaration();
+            default:
+                return this.parseExpression();
+        }
+    }
+
+    private parseVarDeclaration(): Statement {
+        const keyword = this.token();
+        const isConstant = keyword.type === 'CONST';
+        this.consume(); // consume 'let' or 'const'
+
+        const identifier = this.expect('IDENTIFIER', 'identifier').value;
+        
+        let value: Statement;
+        if (this.token().type === 'ASSIGN') {
+            this.consume(); // consume '='
+            value = this.parseExpression();
+        } else {
+            value = { kind: 'NullLiteral', value: null } as NullLiteral;
+        }
+
+        // if the next token is a semicolon, consume it
+        if (this.token().type === 'SEMICOLON') {
+            this.consume();
+        }
+
+        return { kind: 'VarDeclaration', name: identifier, isConstant, value } as VarDeclaration;
     }
 
     private parseExpression() {
