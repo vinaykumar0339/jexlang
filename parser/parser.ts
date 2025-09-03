@@ -13,7 +13,7 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      d. Boolean Literals
  *      e. Parenthesized Expressions "(expressions)"
  * 2. Unary Operators (+, -, !, √, ++, --)
- * 3. Exponentiation Or Power (**, ^)
+ * 3. Exponentiation Or Power and Square Root ((**, ^), √)
  * 4. Multiplication, Division, Modulo (*, /, %)
  * 5. Addition, Subtraction (+, -)
  * 6. Comparison (==, !=, <, >, <=, >=)
