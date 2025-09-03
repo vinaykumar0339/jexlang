@@ -16,7 +16,8 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  * 3. Exponentiation Or Power (**, ^)
  * 4. Multiplication, Division, Modulo (*, /, %)
  * 5. Addition, Subtraction (+, -)
- * 6. Assignment (=) -> Lowest Precedence.
+ * 6. Comparison (==, !=, <, >, <=, >=)
+ * 7. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -136,11 +137,31 @@ export class Parser {
     }
 
     private parseAssignmentExpression(): Expression {
-        const left = this.parseAdditiveExpression();
+        const left = this.parseComparisonExpression();
         if (this.token().type === 'ASSIGN') {
             this.consume(); // consume '='
             const right = this.parseAssignmentExpression(); // Right associative (Ex: (x = y = z = 30))
             return { kind: 'AssignmentExpression', left, right } as AssignmentExpression;
+        }
+
+        return left;
+    }
+
+    private parseComparisonExpression(): Expression {
+        let left = this.parseAdditiveExpression();
+
+        while (
+            this.token().type === 'EQ' || 
+            this.token().type === 'NEQ' || 
+            this.token().type === 'LT' || 
+            this.token().type === 'GT' || 
+            this.token().type === 'LTE' ||
+            this.token().type === 'GTE'
+        ) {
+            const operator = this.token().value;
+            this.consume();
+            const right = this.parseAdditiveExpression();
+            left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
         }
 
         return left;

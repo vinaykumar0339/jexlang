@@ -150,15 +150,9 @@ export class Evaluate {
         return nullLiteral.value;
     }
 
-    private evaluateBinaryExpression(expression: BinaryExpression): MaybePromise<JexValue> {
-        
+    private evaluateMathematicalExpression(expression: BinaryExpression): MaybePromise<JexValue> {
         return this.handlePromises([this.evaluateExpression(expression.left), this.evaluateExpression(expression.right)], (left, right) => {
             const operator = expression.operator;
-            if (operator == '+' && typeof left === 'string' || typeof right === 'string') {
-                return toString(left) + toString(right);
-            }
-
-            // separate this into some helper functions for different type of expressions
             const leftNumber = toNumber(left);
             const rightNumber = toNumber(right);
 
@@ -184,9 +178,63 @@ export class Evaluate {
                     return Math.pow(leftNumber, rightNumber);
             }
 
-            throw new JexLangRuntimeError(`Unknown operator ${operator}`);
-
+            throw new JexLangRuntimeError(`Unknown operator ${operator}. supported operators are: +, -, *, /, %, **, ^`);
         });
+    }
+
+    private evaluateRelationalExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        return this.handlePromises([this.evaluateExpression(expression.left), this.evaluateExpression(expression.right)], (left, right) => {
+            const operator = expression.operator;
+            const leftNumber = toNumber(left);
+            const rightNumber = toNumber(right);
+
+            switch (operator) {
+                case 'LT':
+                    return (leftNumber == null ? 0 : leftNumber) < (rightNumber == null ? 0 : rightNumber);
+                case 'GT':
+                    return (leftNumber == null ? 0 : leftNumber) > (rightNumber == null ? 0 : rightNumber);
+                case 'LTE':
+                    return (leftNumber == null ? 0 : leftNumber) <= (rightNumber == null ? 0 : rightNumber);
+                case 'GTE':
+                    return (leftNumber == null ? 0 : leftNumber) >= (rightNumber == null ? 0 : rightNumber);
+            }
+
+            throw new JexLangRuntimeError(`Unknown relational operator ${operator}. supported operators are: LT, GT, LTE, GTE`);
+        });
+    }
+
+    private evaluateEqualityExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        return this.handlePromises([this.evaluateExpression(expression.left), this.evaluateExpression(expression.right)], (left, right) => {
+            const operator = expression.operator;
+
+            switch (operator) {
+                case '==':
+                    return left == right;
+                case '!=':
+                    return left != right;
+            }
+
+            throw new JexLangRuntimeError(`Unknown equality operator ${operator}. supported operators are: ==, !=`);
+        });
+    }
+
+    private evaluateBinaryExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        const operator = expression.operator;
+        if (
+            operator === '==' || 
+            operator === '!='
+        ) {
+            return this.evaluateEqualityExpression(expression);
+        } else if (
+            operator === '<' ||
+            operator === '>' ||
+            operator === '<=' ||
+            operator === '>='
+        ) {
+            return this.evaluateRelationalExpression(expression);
+        } else {
+            return this.evaluateMathematicalExpression(expression);
+        }
     }
 
     private evaluateUnaryExpression(expression: UnaryExpression): MaybePromise<JexValue> {
