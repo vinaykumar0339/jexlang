@@ -10,6 +10,7 @@ export type NodeType =
     | 'NullLiteral'
     // Expressions
     | 'BinaryExpression'
+    | 'AssignmentExpression'
 
 export interface Statement {
     kind: NodeType;
@@ -36,6 +37,12 @@ export interface BinaryExpression extends Expression {
     left: Expression;
     right: Expression;
     operator: string;
+}
+
+export interface AssignmentExpression extends Expression {
+    kind: 'AssignmentExpression';
+    left: Expression; // Why left is Expression and not Identifier? we can have more complex left-hand sides
+    right: Expression;
 }
 
 export interface Identifier extends Expression {

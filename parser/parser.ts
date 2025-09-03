@@ -1,4 +1,4 @@
-import { BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -6,7 +6,7 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  * (High precedence means -> evaluate first)
  * (Low precedence means -> evaluate later)
  * **Which means lowest precedence calls the highest precedence functions.**
- * 1. Primary Expressions
+ * 1. Primary Expressions -> Highest Precedence
  *      a. Number Literals
  *      b. String Literals
  *      c. Identifiers
@@ -14,6 +14,7 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      e. Parenthesized Expressions "(expressions)"
  * 2. Multiplication, Division, Modulo (*, /, %) (same level)
  * 3. Addition, Subtraction (+, -) (same level)
+ * 4. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -96,7 +97,18 @@ export class Parser {
     }
 
     private parseExpression() {
-        return this.parseAdditiveExpression();
+        return this.parseAssignmentExpression();
+    }
+
+    private parseAssignmentExpression(): Statement {
+        const left = this.parseAdditiveExpression();
+        if (this.token().type === 'ASSIGN') {
+            this.consume(); // consume '='
+            const right = this.parseAssignmentExpression(); // Right associative (Ex: (x = y = z = 30))
+            return { kind: 'AssignmentExpression', left, right } as AssignmentExpression;
+        }
+
+        return left;
     }
 
     private parseAdditiveExpression(): Statement {

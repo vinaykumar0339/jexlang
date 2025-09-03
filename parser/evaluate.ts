@@ -1,4 +1,4 @@
-import { BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue } from "./types.ts";
@@ -104,6 +104,19 @@ export class Evaluate {
         throw new UndefinedVariableError(identifierName);
     }
 
+    private evaluateAssignmentExpression(assignmentExpression: AssignmentExpression): JexValue {
+        const left = assignmentExpression.left;
+        if (left.kind !== 'Identifier') {
+            throw new JexLangRuntimeError(`Invalid left-hand side of assignment: ${left}, expected Identifier, but got ${left.kind.toLowerCase()}`);
+        }
+        const right = this.evaluateExpression(assignmentExpression.right);
+
+        const variableName = toString((left as Identifier).name);
+        
+        this.scope.assignVariable(variableName, right);
+        return right;
+    }
+
     private evaluateExpression(expression: Expression): JexValue {
         if (expression.kind === 'NumberLiteral') {
             return this.evaluateNumericalExpression(expression as NumberLiteral);
@@ -117,6 +130,8 @@ export class Evaluate {
             return this.evaluateBooleanLiteral(expression as BooleanLiteral);
         } else if (expression.kind === 'NullLiteral') {
             return this.evaluateNullLiteral(expression as NullLiteral);
+        } else if (expression.kind === 'AssignmentExpression') {
+            return this.evaluateAssignmentExpression(expression as AssignmentExpression);
         }
         return null;
     }
