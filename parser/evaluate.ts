@@ -1,5 +1,5 @@
-import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
-import { DivisionByZeroError, JexLangRuntimeError, UndefinedFunctionError, UndefinedVariableError } from "./errors.ts";
+import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, TransformExpression, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { DivisionByZeroError, JexLangRuntimeError, UndefinedFunctionError, UndefinedTransformError, UndefinedVariableError } from "./errors.ts";
 import { BUILT_IN_FUNCTIONS } from "./functions/builtin.ts";
 import { Scope } from "./scope.ts";
 import { BUILT_IN_TRANSFORMS } from "./transforms/builtin.ts";
@@ -407,6 +407,30 @@ export class Evaluate {
         });
     }
 
+    private evaluateTransformExpression(expression: TransformExpression): MaybePromise<JexValue> {
+        return this.handlePromise(this.evaluateExpression(expression.left), (leftResolved) => {
+            const transformName = expression.right;
+            if (transformName.kind != 'Identifier') {
+                throw new JexLangRuntimeError(`Invalid transform name: ${transformName}, expected Identifier, but got ${transformName.kind}`);
+            }
+
+            if (this.transformRegistry.has(transformName.name)) {
+                return this.handlePromise(this.transformRegistry.transform(transformName.name, leftResolved), (output) => {
+                    return output;
+                });
+            }
+
+            // if transform not found lets check in functions
+            if (this.funcRegistry.has(transformName.name)) {
+                return this.handlePromise(this.funcRegistry.call(transformName.name, [leftResolved]), (output) => {
+                    return output;
+                });
+            }
+
+            throw new UndefinedTransformError(transformName.name);
+        })
+    }
+
     private evaluateMemberExpression(expression: MemberExpression): MaybePromise<JexValue> {
         const obj = this.evaluateExpression(expression.object);
         return this.handlePromise(this.evaluateExpression(expression.object), (obj) => {
@@ -537,6 +561,8 @@ export class Evaluate {
             return this.evaluateArrayLiteral(expression as ArrayLiteral);
         } else if (expression.kind === 'ObjectLiteral') {
             return this.evaluateObjectLiteral(expression as ObjectLiteral);
+        } else if (expression.kind === 'TransformExpression') {
+            return this.evaluateTransformExpression(expression as TransformExpression);
         }
         return null;
     }

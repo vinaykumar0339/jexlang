@@ -1,4 +1,4 @@
-import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, Program, Property, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, TransformExpression, Program, Property, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -20,10 +20,11 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  * 4. Exponentiation Or Power and Square Root ((**, ^), √)
  * 5. Multiplication, Division, Modulo (*, /, %)
  * 6. Addition, Subtraction (+, -)
- * 7. Comparison (==, !=, <, >, <=, >=)
- * 8. Logical (&&, ||, and, or)
- * 9. Ternary (condition ? exp1 : exp2)
- * 10. Assignment (=) -> Lowest Precedence.
+ * 7. Pipe Transform (|)
+ * 8. Comparison (==, !=, <, >, <=, >=)
+ * 9. Logical (&&, ||, and, or)
+ * 10. Ternary (condition ? exp1 : exp2)
+ * 11. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -237,7 +238,7 @@ export class Parser {
     }
 
     private parseComparisonExpression(): Expression {
-        let left = this.parseAdditiveExpression();
+        let left = this.parseTransformExpression();
 
         while (
             this.token().type === 'EQ' || 
@@ -249,8 +250,21 @@ export class Parser {
         ) {
             const operator = this.token().value;
             this.consume();
-            const right = this.parseAdditiveExpression();
+            const right = this.parseTransformExpression();
             left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
+        }
+
+        return left;
+    }
+
+    private parseTransformExpression(): Expression {
+        let left = this.parseAdditiveExpression();
+
+        while (this.token().type === 'PIPE') {
+            this.consume(); // consume '|'
+            const transform = this.expect('IDENTIFIER', 'transform identifier');
+            const right = { kind: 'Identifier', name: transform.value } as Identifier;
+            left = { kind: 'TransformExpression', left, right } as TransformExpression;
         }
 
         return left;

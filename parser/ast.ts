@@ -18,6 +18,7 @@ export type NodeType =
     | 'AssignmentExpression'
     | 'MemberExpression'
     | 'CallExpression'
+    | 'TransformExpression'
 
 export interface Statement {
     kind: NodeType;
@@ -124,4 +125,10 @@ export interface Property {
     key: Expression; // Can be Identifier, StringLiteral, or computed expression
     value: Expression | null;
     computed: boolean; // true for [key]: value, false for key: value
+}
+
+export interface TransformExpression extends Expression {
+    kind: 'TransformExpression';
+    left: Expression;
+    right: Identifier; // Transform name (must be an identifier)
 }

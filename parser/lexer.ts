@@ -44,6 +44,7 @@ export type TokenType =
     | 'COLON'
     | 'NEW_LINE'
     | 'STRING'
+    | 'PIPE'
     | 'EOF'; // End of file/input marker
 
 // Token type definitions
@@ -96,6 +97,7 @@ export const langRules: TokenRule[] = [
     { name: 'GT', pattern: />/ },
     { name: 'NOT', pattern: /!/ },
     { name: 'SQRT', pattern: /√/ },
+    { name: 'PIPE', pattern: /\|/ },
 
     // Delimiters
     { name: 'LPAREN', pattern: /\(/ },
