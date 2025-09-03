@@ -19,6 +19,8 @@ export type TokenType =
     | 'EQ'
     | 'NEQ'
     | 'POWER'
+    | 'AND'
+    | 'OR'
     | 'SQRT'
     | 'NOT'
     | 'PLUS'
@@ -66,6 +68,8 @@ export const langRules: TokenRule[] = [
     { name: 'NUMBER', pattern: /\d+(\.\d+)?/ },
 
     // keywords (must come before IDENTIFIER)
+    { name: 'AND', pattern: /(&&)|(\band\b)/ },
+    { name: 'OR', pattern: /(\|\|)|(\bor\b)/ },
     { name: 'LET', pattern: /\blet\b/ },
     { name: 'CONST', pattern: /\bconst\b/ },
     { name: 'BOOLEAN', pattern: /\b(?:true|false)\b/ },

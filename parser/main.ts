@@ -2,7 +2,7 @@ import { Evaluate } from './evaluate.ts';
 import { Parser } from './parser.ts';
 
 const parse = () => {
-    const code = `2 + (2 != 4)`;
+    const code = `√(2 + 2 < 4 || true)`;
 
     const parser = new Parser(code);
     const program = parser.program();

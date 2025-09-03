@@ -189,18 +189,56 @@ export class Evaluate {
             const rightNumber = toNumber(right);
 
             switch (operator) {
-                case 'LT':
+                case '<':
                     return (leftNumber == null ? 0 : leftNumber) < (rightNumber == null ? 0 : rightNumber);
-                case 'GT':
+                case '>':
                     return (leftNumber == null ? 0 : leftNumber) > (rightNumber == null ? 0 : rightNumber);
-                case 'LTE':
+                case '<=':
                     return (leftNumber == null ? 0 : leftNumber) <= (rightNumber == null ? 0 : rightNumber);
-                case 'GTE':
+                case '>=':
                     return (leftNumber == null ? 0 : leftNumber) >= (rightNumber == null ? 0 : rightNumber);
             }
 
             throw new JexLangRuntimeError(`Unknown relational operator ${operator}. supported operators are: LT, GT, LTE, GTE`);
         });
+    }
+
+    private evaluateLogicalOrExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        return this.handlePromise(this.evaluateExpression(expression.left), (left) => {
+            const leftBool = left != null && left != undefined && left != 0; // remaining all truthy values
+            if (leftBool) {
+                return true; // short-circuit if left is truthy
+            }
+
+            return this.handlePromise(this.evaluateExpression(expression.right), (right) => {
+                const rightBool = right != null && right != undefined && right != 0; // remaining all truthy values
+                return leftBool || rightBool;
+            });
+        })
+    }
+
+    private evaluateLogicalAndExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        return this.handlePromise(this.evaluateExpression(expression.left), (left) => {
+            const leftBool = left != null && left != undefined && left != 0; // remaing all truthy values
+            if (!leftBool) {
+                return false; // short-circuit if left is falsy
+            }
+            return this.handlePromise(this.evaluateExpression(expression.right), (right) => {
+                const rightBool = right != null && right != undefined && right != 0; // remaining all truthy values
+                return leftBool && rightBool;
+            });
+        });
+    }
+
+    private evaluateLogicalExpression(expression: BinaryExpression): MaybePromise<JexValue> {
+        const operator = expression.operator;
+        if (operator === 'and' || operator === '&&') {
+            return this.evaluateLogicalAndExpression(expression);
+        } else if (operator === 'or' || operator === '||') {
+            return this.evaluateLogicalOrExpression(expression);
+        }
+
+        throw new JexLangRuntimeError(`Unknown logical operator ${operator}. supported operators are: and, or, &&, ||`);
     }
 
     private evaluateEqualityExpression(expression: BinaryExpression): MaybePromise<JexValue> {
@@ -232,7 +270,16 @@ export class Evaluate {
             operator === '>='
         ) {
             return this.evaluateRelationalExpression(expression);
-        } else {
+        } 
+        else if (
+            operator === 'and' ||
+            operator === 'or' ||
+            operator === '&&' ||
+            operator === '||'
+        ) {
+            return this.evaluateLogicalExpression(expression);
+        }
+         else {
             return this.evaluateMathematicalExpression(expression);
         }
     }
