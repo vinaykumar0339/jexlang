@@ -3,11 +3,11 @@ import { Parser } from './parser.ts';
 
 const parse = () => {
     const code = `
-        let x = 10
-        x = x + 20
+        let x = (10 ** 3) * (5 + 3)
+        // x = x + 20
 
-        const y = 30
-        x = y * 40
+        // const y = 30
+        // x = y * 40
     `;
 
     const parser = new Parser(code);

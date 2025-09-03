@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -12,9 +12,10 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      c. Identifiers
  *      d. Boolean Literals
  *      e. Parenthesized Expressions "(expressions)"
- * 2. Multiplication, Division, Modulo (*, /, %) (same level)
- * 3. Addition, Subtraction (+, -) (same level)
- * 4. Assignment (=) -> Lowest Precedence.
+ * 2. Exponentiation Or Power (**, ^)
+ * 3. Multiplication, Division, Modulo (*, /, %)
+ * 4. Addition, Subtraction (+, -)
+ * 5. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -100,7 +101,20 @@ export class Parser {
         return this.parseAssignmentExpression();
     }
 
-    private parseAssignmentExpression(): Statement {
+    private parsePowerExpression(): Expression {
+        let left = this.parsePrimaryExpression();
+
+        while (this.token().type === 'POWER') {
+            const operator = this.token().value;
+            this.consume();
+            const right = this.parsePrimaryExpression();
+            left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
+        }
+
+        return left;
+    }
+
+    private parseAssignmentExpression(): Expression {
         const left = this.parseAdditiveExpression();
         if (this.token().type === 'ASSIGN') {
             this.consume(); // consume '='
@@ -111,7 +125,7 @@ export class Parser {
         return left;
     }
 
-    private parseAdditiveExpression(): Statement {
+    private parseAdditiveExpression(): Expression {
         let left = this.parseMultiplicativeExpression();
 
         while (this.token().type === 'PLUS' || this.token().type === 'MINUS') {
@@ -124,8 +138,8 @@ export class Parser {
         return left;
     }
 
-    private parseMultiplicativeExpression(): Statement {
-        let left = this.parsePrimaryExpression();
+    private parseMultiplicativeExpression(): Expression {
+        let left = this.parsePowerExpression();
 
         while (
             this.token().type === 'MULTIPLY' ||
@@ -134,14 +148,14 @@ export class Parser {
         ) {
             const operator = this.token().value;
             this.consume();
-            const right = this.parsePrimaryExpression();
+            const right = this.parsePowerExpression();
             left = { kind: 'BinaryExpression', left, right, operator } as BinaryExpression;
         }
 
         return left;
     }
 
-    private parsePrimaryExpression(): Statement {
+    private parsePrimaryExpression(): Expression {
         const token = this.token();
         switch (token.type) {
             case 'NUMBER': {

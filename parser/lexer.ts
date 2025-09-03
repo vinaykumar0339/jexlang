@@ -18,6 +18,7 @@ export type TokenType =
     | 'GTE'
     | 'EQ'
     | 'NEQ'
+    | 'POWER'
     | 'PLUS'
     | 'MINUS'
     | 'MULTIPLY'
@@ -76,6 +77,7 @@ export const langRules: TokenRule[] = [
     { name: 'GTE', pattern: />=/ },
     { name: 'EQ', pattern: /==/ },
     { name: 'NEQ', pattern: /!=/ },
+    { name: 'POWER', pattern: /(\*\*)|(\^)/ },
 
     // Single Character Operators
     { name: 'PLUS', pattern: /\+/ },

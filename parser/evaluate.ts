@@ -70,6 +70,7 @@ export class Evaluate {
             return toString(left) + toString(right);
         }
 
+        // separate this into some helper functions for different type of expressions
         const leftNumber = toNumber(left);
         const rightNumber = toNumber(right);
 
@@ -90,6 +91,9 @@ export class Evaluate {
                     throw new DivisionByZeroError()
                 }
                 return leftNumber % rightNumber;
+            case '**':
+            case '^':
+                return Math.pow(leftNumber, rightNumber);
         }
 
         throw new JexLangRuntimeError(`Unknown operator ${operator}`);
