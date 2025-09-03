@@ -6,17 +6,17 @@ const parse = () => {
 
     const parser = new Parser(code);
     const program = parser.program();
-    console.log(program);
+    // console.log(program);
     
     const evaluate = new Evaluate();
 
     const result = evaluate.evaluate(program);
-    console.log(result);
+    // console.log(result);
 
 }
 
 const times: number[] = [];
-for (let i = 0; i < 1; i++) {
+for (let i = 0; i < 1000; i++) {
     const start = Date.now();
     parse();
     const end = Date.now();
