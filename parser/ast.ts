@@ -11,6 +11,8 @@ export type NodeType =
     // Expressions
     | 'UnaryExpression'
     | 'BinaryExpression'
+    | 'TernaryExpression'
+    | 'ShorthandTernaryExpression'
     | 'AssignmentExpression'
 
 export interface Statement {
@@ -57,7 +59,20 @@ export interface Identifier extends Expression {
     name: string;
 }
 
-// Literal
+export interface TernaryExpression extends Expression {
+    kind: 'TernaryExpression';
+    condition: Expression;
+    trueBranch: Expression;
+    falseBranch: Expression;
+}
+
+export interface ShorthandTernaryExpression extends Expression {
+    kind: 'ShorthandTernaryExpression';
+    condition: Expression;
+    falseBranch: Expression;
+}
+
+// ==== Literal ====
 export interface NumberLiteral extends Expression {
     kind: 'NumberLiteral';
     value: number;

@@ -2,7 +2,7 @@ import { Evaluate } from './evaluate.ts';
 import { Parser } from './parser.ts';
 
 const parse = () => {
-    const code = `√(2 + 2 < 4 || true)`;
+    const code = `(2 + 2 < 4 ? "vinay" : (false ? "kumar" : "hello"))`;
 
     const parser = new Parser(code);
     const program = parser.program();
@@ -11,12 +11,12 @@ const parse = () => {
     const evaluate = new Evaluate();
 
     const result = evaluate.evaluate(program);
-    console.log(result);
+    // console.log(result);
 
 }
 
 const times: number[] = [];
-for (let i = 0; i < 1; i++) {
+for (let i = 0; i < 10000; i++) {
     const start = Date.now();
     parse();
     const end = Date.now();

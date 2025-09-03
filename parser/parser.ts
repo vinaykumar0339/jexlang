@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -18,7 +18,8 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  * 5. Addition, Subtraction (+, -)
  * 6. Comparison (==, !=, <, >, <=, >=)
  * 7. Logical (&&, ||, and, or)
- * 8. Assignment (=) -> Lowest Precedence.
+ * 8. Ternary (condition ? exp1 : exp2)
+ * 9. Assignment (=) -> Lowest Precedence.
  */
 
 export class Parser {
@@ -137,8 +138,42 @@ export class Parser {
         return left;
     }
 
+    private parseTernaryExpression(): Expression {
+        let condition = this.parseLogicalExpression();
+
+        // If there's no question mark, just return the logical expression
+        if (this.token().type !== 'QUESTION') {
+            return condition;
+        }
+
+        this.consume(); // consume '?'
+
+        // Check for shorthand ternary (condition ? : falseBranch)
+        if (this.token().type === 'COLON') {
+            this.consume(); // consume ':'
+            const falseBranch = this.parseExpression();
+            
+            // if semicolon advance the token
+            if (this.token().type === 'SEMICOLON') {
+                this.consume();
+            }
+            return { kind: 'ShorthandTernaryExpression', condition, falseBranch } as ShorthandTernaryExpression;
+        }
+
+        // Regular ternary (condition ? trueBranch : falseBranch)
+        const trueBranch = this.parseExpression();
+        this.expect('COLON', ':');
+        const falseBranch = this.parseExpression();
+
+        // if semicolon advance the token
+        if (this.token().type === 'SEMICOLON') {
+            this.consume();
+        }
+        return { kind: 'TernaryExpression', condition, trueBranch, falseBranch } as TernaryExpression;
+    }
+
     private parseAssignmentExpression(): Expression {
-        const left = this.parseLogicalExpression();
+        const left = this.parseTernaryExpression();
         if (this.token().type === 'ASSIGN') {
             this.consume(); // consume '='
             const right = this.parseAssignmentExpression(); // Right associative (Ex: (x = y = z = 30))

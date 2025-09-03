@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, Statement, StringLiteral, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { AssignmentExpression, BinaryExpression, BooleanLiteral, Expression, Identifier, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError } from "./errors.ts";
 import { Scope } from "./scope.ts";
 import { JexValue, MaybePromise } from "./types.ts";
@@ -332,6 +332,34 @@ export class Evaluate {
         });
     }
 
+    private evaluateShorthandTernaryExpression(expression: ShorthandTernaryExpression): MaybePromise<JexValue> {
+        return this.handlePromise(this.evaluateExpression(expression.condition), (resolvedCondition) => {
+            // If values are present, return the resolved condition, null and undefined are falsy others are truthy
+            if (resolvedCondition != null && resolvedCondition != undefined) {
+                return resolvedCondition;
+            } else {
+                return this.handlePromise(this.evaluateExpression(expression.falseBranch), (resolvedFalseBranch) => {
+                    return resolvedFalseBranch;
+                });
+            }
+        });
+    }
+
+    private evaluateTernaryExpression(expression: TernaryExpression): MaybePromise<JexValue> {
+        return this.handlePromise(this.evaluateExpression(expression.condition), (resolvedCondition) => {
+            // empty array and objects are falsy
+            if (toBoolean(resolvedCondition)) {
+                return this.handlePromise(this.evaluateExpression(expression.trueBranch), (resolvedTrueBranch) => {
+                    return resolvedTrueBranch;
+                });
+            } else {
+                return this.handlePromise(this.evaluateExpression(expression.falseBranch), (resolvedFalseBranch) => {
+                    return resolvedFalseBranch;
+                });
+            }
+        });
+    }
+
     private evaluateExpression(expression: Expression): MaybePromise<JexValue> {
         if (expression.kind === 'NumberLiteral') {
             return this.evaluateNumericalExpression(expression as NumberLiteral);
@@ -349,6 +377,10 @@ export class Evaluate {
             return this.evaluateAssignmentExpression(expression as AssignmentExpression);
         } else if (expression.kind === 'UnaryExpression') {
             return this.evaluateUnaryExpression(expression as UnaryExpression);
+        } else if (expression.kind === 'TernaryExpression') {
+            return this.evaluateTernaryExpression(expression as TernaryExpression);
+        } else if (expression.kind === 'ShorthandTernaryExpression') {
+            return this.evaluateShorthandTernaryExpression(expression as ShorthandTernaryExpression);
         }
         return null;
     }
