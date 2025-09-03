@@ -34,7 +34,7 @@ export class JexEvaluator {
     this.evaluator = new Evaluate(this.globalScope, this.funcs, this.transformsMap);
   }
 
-  private parseExpression(expr: string): Program {
+  public parseExpression(expr: string): Program {
     if (this.cacheParsedTrees.has(expr) && this.cacheExpressions) {
       const cachedTree = this.cacheParsedTrees.get(expr);
       if (cachedTree) {

@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedFunctionError, UndefinedVariableError } from "./errors.ts";
 import { BUILT_IN_FUNCTIONS } from "./functions/builtin.ts";
 import { Scope } from "./scope.ts";
@@ -451,6 +451,63 @@ export class Evaluate {
         })
     }
 
+    private evaluateArrayLiteral(expression: ArrayLiteral): MaybePromise<JexValue> {
+        const elements: MaybePromise<JexValue>[] = [];
+        for (const element of expression.elements) {
+            elements.push(this.evaluateExpression(element));
+        }
+
+        return this.handlePromises(elements, (...resolvedElements) => resolvedElements);
+    }
+
+    private evaluateObjectLiteral(expression: ObjectLiteral): MaybePromise<JexValue> {
+        const properties: MaybePromise<JexValue>[] = [];
+        for (const prop of expression.properties) {
+            const computed = prop.computed;
+            if (!computed) {
+                if (prop.key.kind !== 'Identifier' && prop.key.kind !== 'StringLiteral') {
+                    throw new JexLangRuntimeError(`Invalid key of object property: ${prop.key}, expected Identifier or StringLiteral, but got ${prop.key.kind.toLowerCase()}`);
+                }
+                const key = (prop.key.kind === 'Identifier') ? (prop.key as Identifier).name : (prop.key as StringLiteral).value.slice(1, -1);
+                let property: MaybePromise<JexValue> = {};
+                if (prop.value) {
+                    property = this.handlePromise(this.evaluateExpression(prop.value), (value) => {
+                        return {
+                            [toString(key)]: value
+                        };
+                    });
+                } else {
+                    const value = this.scope.getVariable(toString(key));
+                    property = {
+                        [toString(key)]: value
+                    };
+                }
+                properties.push(property);
+            } else {
+                const property = this.handlePromise(this.evaluateExpression(prop.key), (key) => {
+                    if (prop.value) {
+                        return this.handlePromise(this.evaluateExpression(prop.value), (value) => {
+                            return {
+                                [toString(key)]: value
+                            };
+                        });
+                    }
+                    // Get if the identifier has a value
+                    const value = this.scope.getVariable(toString(key));
+                    return {
+                        [toString(key)]: value,
+                    };
+                })
+                properties.push(property);
+            }
+        }
+
+        return this.handlePromises(properties, (...resolvedProperties) => {
+            const filteredProperties = resolvedProperties.filter(prop => typeof prop === 'object' && prop != null && !Array.isArray(prop));
+            return Object.assign({}, ...filteredProperties);
+        });
+    }
+
     private evaluateExpression(expression: Expression): MaybePromise<JexValue> {
         if (expression.kind === 'NumberLiteral') {
             return this.evaluateNumericalExpression(expression as NumberLiteral);
@@ -476,6 +533,10 @@ export class Evaluate {
             return this.evaluateCallExpression(expression as CallExpression);
         } else if (expression.kind === 'MemberExpression') {
             return this.evaluateMemberExpression(expression as MemberExpression);
+        } else if (expression.kind === 'ArrayLiteral') {
+            return this.evaluateArrayLiteral(expression as ArrayLiteral);
+        } else if (expression.kind === 'ObjectLiteral') {
+            return this.evaluateObjectLiteral(expression as ObjectLiteral);
         }
         return null;
     }

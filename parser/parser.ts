@@ -1,4 +1,4 @@
-import { AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, Program, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
+import { ArrayLiteral, AssignmentExpression, BinaryExpression, BooleanLiteral, CallExpression, Expression, Identifier, MemberExpression, NullLiteral, NumberLiteral, ObjectLiteral, Program, Property, ShorthandTernaryExpression, Statement, StringLiteral, TernaryExpression, UnaryExpression, VarDeclaration } from "./ast.ts";
 import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
 
 /**
@@ -11,7 +11,10 @@ import { Token, TokenType, Lexer, langRules } from "./lexer.ts";
  *      b. String Literals
  *      c. Identifiers
  *      d. Boolean Literals
- *      e. Parenthesized Expressions "(expressions)"
+ *      e. Null Literals
+ *      f. Array Literals
+ *      g. Object Literals
+ *      h. Parenthesized Expressions "(expressions)"
  * 2. Member Access and Function Calls (obj.prop, obj[prop], func())
  * 3. Unary Operators (+, -, !, √, ++, --)
  * 4. Exponentiation Or Power and Square Root ((**, ^), √)
@@ -319,6 +322,12 @@ export class Parser {
                 this.consume();
                 return { kind: 'Identifier', name: token.value } as Identifier;
             }
+            case 'LBRACKET': {
+                return this.parseArrayLiteral();
+            }
+            case 'LBRACE': {
+                return this.parseObjectLiteral();
+            }
             case 'LPAREN': {
                 this.consume(); // consume the LPAREN
                 const expr = this.parseExpression();
@@ -328,5 +337,76 @@ export class Parser {
             default:
                 throw new Error(`Unexpected token: ${token.value} at ${token.location.line}:${token.location.column}`);
         }
+    }
+
+    private parseArrayLiteral(): ArrayLiteral {
+        this.consume(); // consume '['
+        const elements: Expression[] = [];
+
+        if (this.token().type !== 'RBRACKET') {
+            elements.push(this.parseExpression());
+            while (this.token().type === 'COMMA') {
+                this.consume(); // consume ','
+                // Allow trailing comma
+                if (this.token().type === 'RBRACKET') {
+                    break;
+                }
+                elements.push(this.parseExpression());
+            }
+        }
+
+        this.expect('RBRACKET', ']');
+        return { kind: 'ArrayLiteral', elements } as ArrayLiteral;
+    }
+
+    private parseObjectLiteral(): ObjectLiteral {
+        this.consume(); // consume '{'
+        const properties: Property[] = [];
+
+        if (this.token().type !== 'RBRACE') {
+            properties.push(this.parseProperty());
+            while (this.token().type === 'COMMA') {
+                this.consume(); // consume ','
+                // Allow trailing comma
+                if (this.token().type === 'RBRACE') {
+                    break;
+                }
+                properties.push(this.parseProperty());
+            }
+        }
+
+        this.expect('RBRACE', '}');
+        return { kind: 'ObjectLiteral', properties } as ObjectLiteral;
+    }
+
+    private parseProperty(): Property {
+        let key: Expression;
+        let computed = false;
+
+        if (this.token().type === 'LBRACKET') {
+            // Computed property: [expression]: value
+            this.consume(); // consume '['
+            key = this.parseExpression();
+            this.expect('RBRACKET', ']');
+            computed = true;
+        } else if (this.token().type === 'IDENTIFIER') {
+            // Regular property: identifier: value
+            const identifier = this.consume();
+            key = { kind: 'Identifier', name: identifier.value } as Identifier;
+        } else if (this.token().type === 'STRING') {
+            // String property: "string": value
+            const stringToken = this.consume();
+            key = { kind: 'StringLiteral', value: stringToken.value } as StringLiteral;
+        } else {
+            throw new Error(`Expected property key at ${this.token().location.line}:${this.token().location.column}`);
+        }
+
+        let value: Expression | null = null;
+        if (this.token().type === 'COLON') {
+            this.consume(); // consume ':'
+            value = this.parseExpression();
+        }
+
+        return { key, value, computed };
     }
 }

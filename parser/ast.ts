@@ -8,6 +8,8 @@ export type NodeType =
     | 'StringLiteral'
     | 'BooleanLiteral'
     | 'NullLiteral'
+    | 'ArrayLiteral'
+    | 'ObjectLiteral'
     // Expressions
     | 'UnaryExpression'
     | 'BinaryExpression'
@@ -106,4 +108,20 @@ export interface CallExpression extends Expression {
     kind: 'CallExpression';
     caller: Expression;
     arguments: Expression[];
+}
+
+export interface ArrayLiteral extends Expression {
+    kind: 'ArrayLiteral';
+    elements: Expression[];
+}
+
+export interface ObjectLiteral extends Expression {
+    kind: 'ObjectLiteral';
+    properties: Property[];
+}
+
+export interface Property {
+    key: Expression; // Can be Identifier, StringLiteral, or computed expression
+    value: Expression | null;
+    computed: boolean; // true for [key]: value, false for key: value
 }
