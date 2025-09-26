@@ -32,6 +32,9 @@ export class Scope {
         this.variables.set(name, value);
         if (isConst) {
             this.constants.add(name);
+        } else if (!isConst && this.constants.has(name) && isGlobalScope) {
+            // Delete from constants if re-declared as non-const for the same variable in the global scope.
+            this.constants.delete(name);
         }
     }
 

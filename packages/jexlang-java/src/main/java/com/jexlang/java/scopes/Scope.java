@@ -45,6 +45,9 @@ public class Scope {
         this.variables.put(name, value);
         if (isConst) {
             this.constants.add(name);
+        } else if (!isConst && this.constants.contains(name) && isGlobalScope) {
+            // Delete from constants if re-declared as non-const for the same variable in the global scope.
+            this.constants.remove(name);
         }
     }
 
