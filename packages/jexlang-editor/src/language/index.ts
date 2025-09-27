@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor';
-import { registerJexLang } from './jexlang-language';
+import { registerJexLangLanguage } from './jexlang-language';
 import { registerCompletionItemProvider } from './completion';
 import { registerHoverProvider } from './hover';
 import { registerSignatureHelpProvider } from './signature';
@@ -13,7 +13,7 @@ import { registerFoldingRangeProvider } from './folding';
  */
 export function registerJexLangFeatures(m = monaco) {
   // Basic language support
-  registerJexLang(m);
+  registerJexLangLanguage(m);
   
   // Advanced editing features
   registerCompletionItemProvider(m);

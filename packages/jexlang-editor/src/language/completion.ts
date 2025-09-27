@@ -126,6 +126,33 @@ const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },
+  { 
+    label: 'if', 
+    kind: monaco.languages.CompletionItemKind.Keyword, 
+    detail: 'If conditional statement',
+    documentation: 'Executes a block of code if the condition is true',
+    insertText: 'if',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'else', 
+    kind: monaco.languages.CompletionItemKind.Keyword, 
+    detail: 'Else conditional statement',
+    documentation: 'Executes a block of code if the condition is false',
+    insertText: 'else',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'repeat', 
+    kind: monaco.languages.CompletionItemKind.Keyword, 
+    detail: 'Repeat loop statement',
+    documentation: 'Executes a block of code multiple times based on the iterable',
+    insertText: 'repeat',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
 ];
 
 // Operators
@@ -528,9 +555,25 @@ const JEX_FUNCTIONS: monaco.languages.CompletionItem[] = [
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },
-  { 
-    label: 'last', 
-    kind: monaco.languages.CompletionItemKind.Function, 
+  {
+    label: 'push',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Adds one or more elements to the end of an array and returns the new length of the array',
+    insertText: 'push(${1:array}, ${2:element1}, ${3:element2}, ...)',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'pop',
+    kind: monaco.languages.CompletionItemKind.Function,
+    detail: 'Removes the last element from an array and returns it',
+    insertText: 'pop(${1:array}, ${2:element}, ...)',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  {
+    label: 'last',
+    kind: monaco.languages.CompletionItemKind.Function,
     detail: 'Returns the last element of an array',
     insertText: 'last(${1:array})', 
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
@@ -743,7 +786,55 @@ const JEX_SNIPPETS: monaco.languages.CompletionItem[] = [
     insertText: '${1:condition} ?: ${2:default}',
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
-  }
+  },
+  { 
+    label: 'if-statement', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'If statement',
+    insertText: 'if (${1:condition}) {\n\t${2}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'if-else-statement', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'If-else statement',
+    insertText: 'if (${1:condition}) {\n\t${2}\n} else {\n\t${3}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'if-else-if-statement', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'If-else-if-else statement',
+    insertText: 'if (${1:condition1}) {\n\t${2}\n} else if (${3:condition2}) {\n\t${4}\n} else {\n\t${5}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'repeat-loop', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Repeat loop',
+    insertText: 'repeat (${1:count}) {\n\t${2}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'repeat-array', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Repeat over array',
+    insertText: 'repeat (${1:array}) {\n\t// Access elements with $it and index with $index\n\t${2}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
+  { 
+    label: 'repeat-object', 
+    kind: monaco.languages.CompletionItemKind.Snippet, 
+    detail: 'Repeat over object',
+    insertText: 'repeat (${1:object}) {\n\t// Access keys with $key, values with $value or $it\n\t${2}\n}',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
 ];
 
 // Transform pipe snippet
