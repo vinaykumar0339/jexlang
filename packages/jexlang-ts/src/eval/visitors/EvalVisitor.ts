@@ -992,6 +992,40 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
 
         throw new JexLangSyntaxError(errorMessage, location);
     }
+
+    visitIfExpression = (ctx: JexLangParser.IfExpressionContext): MaybePromise<JexValue> => {
+        return this.handlePromise(this.visit(ctx.expressionSequence()), (condition) => {
+            // empty array and objects are falsy
+            if (toBoolean(condition)) {
+                return this.handlePromise(this.visit(ctx.block()), (result) => result);
+            }
+
+            if (ctx.elseIfStatement()) { // check for else if then execute else if
+                return this.handlePromise(this.visit(ctx.elseIfStatement()), (result) => result);
+            }
+
+            return null;
+        });
+    }
+
+    visitElseIfClause = (ctx: JexLangParser.ElseIfClauseContext): MaybePromise<JexValue> => {
+        return this.handlePromise(this.visit(ctx.expressionSequence()), (condition) => {
+            // empty array and objects are falsy
+            if (toBoolean(condition)) {
+                return this.handlePromise(this.visit(ctx.block()), (result) => result);
+            }
+
+            if (ctx.elseIfStatement()) { // check for else if then execute else if
+                return this.handlePromise(this.visit(ctx.elseIfStatement()), (result) => result);
+            }
+
+            return null;
+        });
+    }
+
+    visitElseClause = (ctx: JexLangParser.ElseClauseContext): MaybePromise<JexValue> => {
+        return this.handlePromise(this.visit(ctx.block()), (result) => result);
+    }
 }
 
 export function createDefaultFuncRegistry(): MapFuncRegistry {

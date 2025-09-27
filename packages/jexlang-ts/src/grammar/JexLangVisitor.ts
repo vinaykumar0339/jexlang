@@ -10,30 +10,33 @@ import { EmptyStatementContext } from "./JexLangParser.js";
 import { VarDeclarationContext } from "./JexLangParser.js";
 import { ExpressionStatementContext } from "./JexLangParser.js";
 import { ExpressionSequenceContext } from "./JexLangParser.js";
-import { ParenthesizedExpressionContext } from "./JexLangParser.js";
 import { ShortTernaryExpressionContext } from "./JexLangParser.js";
-import { AdditiveExpressionContext } from "./JexLangParser.js";
-import { RelationalExpressionContext } from "./JexLangParser.js";
 import { TernaryExpressionContext } from "./JexLangParser.js";
-import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { LogicalAndExpressionContext } from "./JexLangParser.js";
 import { PowerExpressionContext } from "./JexLangParser.js";
+import { LogicalOrExpressionContext } from "./JexLangParser.js";
+import { UnaryExpressionContext } from "./JexLangParser.js";
+import { FunctionCallExpressionContext } from "./JexLangParser.js";
+import { AssignmentExpressionContext } from "./JexLangParser.js";
+import { EqualityExpressionContext } from "./JexLangParser.js";
+import { MultiplicativeExpressionContext } from "./JexLangParser.js";
+import { ParenthesizedExpressionContext } from "./JexLangParser.js";
+import { IfExpressionContext } from "./JexLangParser.js";
+import { AdditiveExpressionContext } from "./JexLangParser.js";
+import { RelationalExpressionContext } from "./JexLangParser.js";
+import { BracketPropertyAssignmentContext } from "./JexLangParser.js";
 import { DotPropertyAssignmentContext } from "./JexLangParser.js";
 import { LiteralExpressionContext } from "./JexLangParser.js";
-import { LogicalOrExpressionContext } from "./JexLangParser.js";
 import { MemberDotExpressionContext } from "./JexLangParser.js";
-import { UnaryExpressionContext } from "./JexLangParser.js";
 import { MemberIndexExpressionContext } from "./JexLangParser.js";
-import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { IdentifierExpressionContext } from "./JexLangParser.js";
 import { RepeatExpressionContext } from "./JexLangParser.js";
-import { AssignmentExpressionContext } from "./JexLangParser.js";
 import { TransformExpressionContext } from "./JexLangParser.js";
 import { PrefixExpressionContext } from "./JexLangParser.js";
 import { PostfixExpressionContext } from "./JexLangParser.js";
 import { SquareRootExpressionContext } from "./JexLangParser.js";
-import { EqualityExpressionContext } from "./JexLangParser.js";
-import { MultiplicativeExpressionContext } from "./JexLangParser.js";
+import { ElseIfClauseContext } from "./JexLangParser.js";
+import { ElseClauseContext } from "./JexLangParser.js";
 import { StringLiteralContext } from "./JexLangParser.js";
 import { NumberLiteralContext } from "./JexLangParser.js";
 import { BooleanLiteralContext } from "./JexLangParser.js";
@@ -102,13 +105,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitExpressionSequence?: (ctx: ExpressionSequenceContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `ParenthesizedExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `ShortTernaryExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
@@ -116,33 +112,12 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitShortTernaryExpression?: (ctx: ShortTernaryExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `AdditiveExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitAdditiveExpression?: (ctx: AdditiveExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `RelationalExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitRelationalExpression?: (ctx: RelationalExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `TernaryExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	visitTernaryExpression?: (ctx: TernaryExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `BracketPropertyAssignment`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `LogicalAndExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
@@ -158,6 +133,83 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitPowerExpression?: (ctx: PowerExpressionContext) => Result;
 	/**
+	 * Visit a parse tree produced by the `LogicalOrExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `UnaryExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitUnaryExpression?: (ctx: UnaryExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `FunctionCallExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `AssignmentExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitAssignmentExpression?: (ctx: AssignmentExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `EqualityExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitEqualityExpression?: (ctx: EqualityExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `MultiplicativeExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitMultiplicativeExpression?: (ctx: MultiplicativeExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `ParenthesizedExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitParenthesizedExpression?: (ctx: ParenthesizedExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `IfExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIfExpression?: (ctx: IfExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `AdditiveExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitAdditiveExpression?: (ctx: AdditiveExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `RelationalExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitRelationalExpression?: (ctx: RelationalExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `BracketPropertyAssignment`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitBracketPropertyAssignment?: (ctx: BracketPropertyAssignmentContext) => Result;
+	/**
 	 * Visit a parse tree produced by the `DotPropertyAssignment`
 	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
@@ -172,13 +224,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitLiteralExpression?: (ctx: LiteralExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `LogicalOrExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitLogicalOrExpression?: (ctx: LogicalOrExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `MemberDotExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
@@ -186,26 +231,12 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitMemberDotExpression?: (ctx: MemberDotExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `UnaryExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitUnaryExpression?: (ctx: UnaryExpressionContext) => Result;
-	/**
 	 * Visit a parse tree produced by the `MemberIndexExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	visitMemberIndexExpression?: (ctx: MemberIndexExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `FunctionCallExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitFunctionCallExpression?: (ctx: FunctionCallExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `IdentifierExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
@@ -220,13 +251,6 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitRepeatExpression?: (ctx: RepeatExpressionContext) => Result;
-	/**
-	 * Visit a parse tree produced by the `AssignmentExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitAssignmentExpression?: (ctx: AssignmentExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `TransformExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
@@ -256,19 +280,19 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 */
 	visitSquareRootExpression?: (ctx: SquareRootExpressionContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `EqualityExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * Visit a parse tree produced by the `ElseIfClause`
+	 * labeled alternative in `JexLangParser.elseIfStatement`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitEqualityExpression?: (ctx: EqualityExpressionContext) => Result;
+	visitElseIfClause?: (ctx: ElseIfClauseContext) => Result;
 	/**
-	 * Visit a parse tree produced by the `MultiplicativeExpression`
-	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * Visit a parse tree produced by the `ElseClause`
+	 * labeled alternative in `JexLangParser.elseIfStatement`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitMultiplicativeExpression?: (ctx: MultiplicativeExpressionContext) => Result;
+	visitElseClause?: (ctx: ElseClauseContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `StringLiteral`
 	 * labeled alternative in `JexLangParser.literal`.

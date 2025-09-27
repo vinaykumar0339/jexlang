@@ -58,17 +58,22 @@ public class Main {
 //            );
             System.out.println(
                     evaluator.evaluate("""
-                            const number1 = 10
-                                                        
-                            const numOut = []
-                            repeat(number1) {
-                              ($index % 2 == 0) ? push(numOut, {
-                                $index,
-                                $it
-                              }) : null
-                            }
-                                                        
-                            numOut
+                            const t = true;
+                                   const f = false;
+                                   let x = if (f) {
+                                     const t2 ="sfgs"
+                                     "true"
+                                   } else if (t) {
+                                     "false"
+                                   } else if (f) {
+                                     "vinay"
+                                   } else if (f) {
+                                     "sdf3"
+                                   } else {
+                                     "sdfsdfsdsdfsdfsdfsdds"
+                                   }
+                                   
+                                   x
                             """, Map.of("currentGroupId", 5))
             );
             long endTime = System.currentTimeMillis();

@@ -55,13 +55,6 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpressionSequence(JexLangParser.ExpressionSequenceContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ParenthesizedExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitParenthesizedExpression(JexLangParser.ParenthesizedExpressionContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code ShortTernaryExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree
@@ -69,33 +62,12 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitShortTernaryExpression(JexLangParser.ShortTernaryExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code AdditiveExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAdditiveExpression(JexLangParser.AdditiveExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code RelationalExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitRelationalExpression(JexLangParser.RelationalExpressionContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code TernaryExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTernaryExpression(JexLangParser.TernaryExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code BracketPropertyAssignment}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBracketPropertyAssignment(JexLangParser.BracketPropertyAssignmentContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code LogicalAndExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
@@ -111,6 +83,83 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPowerExpression(JexLangParser.PowerExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code LogicalOrExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLogicalOrExpression(JexLangParser.LogicalOrExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code UnaryExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryExpression(JexLangParser.UnaryExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code FunctionCallExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionCallExpression(JexLangParser.FunctionCallExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code AssignmentExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignmentExpression(JexLangParser.AssignmentExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code EqualityExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEqualityExpression(JexLangParser.EqualityExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code MultiplicativeExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMultiplicativeExpression(JexLangParser.MultiplicativeExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ParenthesizedExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParenthesizedExpression(JexLangParser.ParenthesizedExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code IfExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfExpression(JexLangParser.IfExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code AdditiveExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAdditiveExpression(JexLangParser.AdditiveExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code RelationalExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRelationalExpression(JexLangParser.RelationalExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code BracketPropertyAssignment}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBracketPropertyAssignment(JexLangParser.BracketPropertyAssignmentContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code DotPropertyAssignment}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree
@@ -125,13 +174,6 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLiteralExpression(JexLangParser.LiteralExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code LogicalOrExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitLogicalOrExpression(JexLangParser.LogicalOrExpressionContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code MemberDotExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree
@@ -139,26 +181,12 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMemberDotExpression(JexLangParser.MemberDotExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code UnaryExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnaryExpression(JexLangParser.UnaryExpressionContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code MemberIndexExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitMemberIndexExpression(JexLangParser.MemberIndexExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code FunctionCallExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFunctionCallExpression(JexLangParser.FunctionCallExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code IdentifierExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
@@ -173,13 +201,6 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitRepeatExpression(JexLangParser.RepeatExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code AssignmentExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssignmentExpression(JexLangParser.AssignmentExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code TransformExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
@@ -209,19 +230,19 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSquareRootExpression(JexLangParser.SquareRootExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code EqualityExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * Visit a parse tree produced by the {@code ElseIfClause}
+	 * labeled alternative in {@link JexLangParser#elseIfStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEqualityExpression(JexLangParser.EqualityExpressionContext ctx);
+	T visitElseIfClause(JexLangParser.ElseIfClauseContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code MultiplicativeExpression}
-	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * Visit a parse tree produced by the {@code ElseClause}
+	 * labeled alternative in {@link JexLangParser#elseIfStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMultiplicativeExpression(JexLangParser.MultiplicativeExpressionContext ctx);
+	T visitElseClause(JexLangParser.ElseClauseContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code StringLiteral}
 	 * labeled alternative in {@link JexLangParser#literal}.

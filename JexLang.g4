@@ -85,6 +85,9 @@ singleExpression
     | <assoc=right> singleExpression LBRACKET expressionSequence RBRACKET ASSIGN singleExpression # BracketPropertyAssignment
     | <assoc=right> singleExpression DOT objectPropertyName ASSIGN singleExpression # DotPropertyAssignment
 
+    // Updated if expression to support full if-else-if-else chain pattern
+    | IF LPAREN expressionSequence RPAREN block elseIfStatement? # IfExpression
+
     // Repeat expression
     | REPEAT LPAREN expressionSequence RPAREN block # RepeatExpression
 
@@ -92,6 +95,11 @@ singleExpression
     | LPAREN expressionSequence RPAREN # ParenthesizedExpression
     | literal # LiteralExpression
     | IDENTIFIER # IdentifierExpression
+;
+
+elseIfStatement
+    : ELSE IF LPAREN expressionSequence RPAREN block elseIfStatement?  # ElseIfClause
+    | ELSE block                                                       # ElseClause
     ;
 
 
@@ -149,6 +157,8 @@ GLOBAL      : 'global' ;
 BOOLEAN     : 'true' | 'false' ;
 NULL        : 'null' ;
 REPEAT      : 'repeat' ;
+IF          : 'if' ;
+ELSE        : 'else' ;
 
 // Multi-character operators (ordered by length for proper tokenization)
 INCREMENT   : '++' ;

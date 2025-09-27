@@ -874,4 +874,35 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     protected JexValue defaultResult() {
         return new JexNull();
     }
+
+    @Override
+    public JexValue visitIfExpression(JexLangParser.IfExpressionContext ctx) {
+        JexValue condition = this.visit(ctx.expressionSequence());
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "if expression")) {
+            return this.visit(ctx.block());
+        } else if (ctx.elseIfStatement() != null) {
+            return this.visit(ctx.elseIfStatement());
+        }
+
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitElseIfClause(JexLangParser.ElseIfClauseContext ctx) {
+        JexValue condition = this.visit(ctx.expressionSequence());
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "if expression")) {
+            return this.visit(ctx.block());
+        } else if (ctx.elseIfStatement() != null) {
+            return this.visit(ctx.elseIfStatement());
+        }
+
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitElseClause(JexLangParser.ElseClauseContext ctx) {
+        return this.visit(ctx.block());
+    }
 }
