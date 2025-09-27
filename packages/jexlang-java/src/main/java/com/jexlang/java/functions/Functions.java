@@ -128,6 +128,22 @@ public class Functions {
                     List<JexValue> vs = ((JexArray) arr).asArray("first method");
                     return vs.isEmpty() ? new JexNull() : vs.get(0);
                 }),
+                Map.entry("push", (args) -> {
+                    JexValue arr = args[0];
+                    if (!(arr instanceof JexArray))
+                        throw new TypeMismatchError("push", "array", Utils.getJexValueType(arr));
+                    List<JexValue> vs = arr.asArray("push method");
+                    vs.addAll(List.of(Arrays.copyOfRange(args, 1, args.length)));
+                    return new JexArray(vs);
+                }),
+                Map.entry("pop", (args) -> {
+                    JexValue arr = args[0];
+                    if (!(arr instanceof JexArray))
+                        throw new TypeMismatchError("pop", "array", Utils.getJexValueType(arr));
+                    List<JexValue> vs = arr.asArray("pop method");
+                    if (vs.isEmpty()) return new JexNull();
+                    return vs.remove(vs.size() - 1);
+                }),
                 Map.entry("last", (args) -> {
                     JexValue arr = args[0];
                     if (!(arr instanceof JexArray))

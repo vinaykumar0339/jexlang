@@ -167,6 +167,13 @@ public interface JexLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIdentifierExpression(JexLangParser.IdentifierExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code RepeatExpression}
+	 * labeled alternative in {@link JexLangParser#singleExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRepeatExpression(JexLangParser.RepeatExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code AssignmentExpression}
 	 * labeled alternative in {@link JexLangParser#singleExpression}.
 	 * @param ctx the parse tree

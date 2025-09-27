@@ -269,6 +269,10 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
 
     private handleNumericRepeat(count: number, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
         const results: MaybePromise<JexValue>[] = [];
+
+        if (count < 0) {
+            throw new JexLangRuntimeError(`Cannot repeat a block negative times: ${count}`);
+        }
         
         this.scope = new Scope(this.scope, 'block');
 

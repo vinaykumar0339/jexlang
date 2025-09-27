@@ -62,6 +62,14 @@ public class Scope {
         scope.variables.put(name, value);
     }
 
+    public void declareAndAssignVariable(String name, JexValue value, boolean isConst) {
+        if (this.variables.containsKey(name)) {
+            this.assignVariable(name, value);
+        } else {
+            this.declareVariable(name, value, isConst);
+        }
+    }
+
     public Scope resolveScope(String name) {
         if (this.variables.containsKey(name)) {
             return this;

@@ -84,11 +84,16 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
 
         // Exit the program scope.
-        if (this.scope.getParentScope() != null) {
-            this.scope = this.scope.getParentScope();
-        }
+        this.setScopeToParent();
 
         return result;
+    }
+
+    private void setScopeToParent() {
+        Scope parentScope = this.scope.getParentScope();
+        if (parentScope != null) {
+            this.scope = parentScope;
+        }
     }
 
     @Override
@@ -158,9 +163,109 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
 
         // Exit the block scope.
-        if (this.scope.getParentScope() != null) {
-            this.scope = this.scope.getParentScope();
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    @Override
+    public JexValue visitRepeatExpression(JexLangParser.RepeatExpressionContext ctx) {
+        JexValue iterable = this.visit(ctx.expressionSequence());
+
+        if (iterable.isNumber()) {
+            return this.handleNumericRepeat((JexNumber) iterable, ctx.block());
+        } else if (iterable.isString()) {
+            return this.handleStringRepeat((JexString) iterable, ctx.block());
+        } else if (iterable.isArray()) {
+            return this.handleArrayRepeat((JexArray) iterable, ctx.block());
+        } else if (iterable.isObject()) {
+            return this.handleObjectRepeat((JexObject) iterable, ctx.block());
         }
+
+        return new JexNull();
+    }
+
+    private JexValue handleNumericRepeat(JexNumber number, JexLangParser.BlockContext block) {
+        int times = number.asNumber("repeat expression").intValue();
+        if (times < 0) {
+            throw new JexLangRuntimeError("Cannot repeat a block negative times: " + times);
+        }
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", JexValue.fromNumber(i), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    private JexValue handleArrayRepeat(JexArray array, JexLangParser.BlockContext block) {
+        List<JexValue> elements = array.asArray("repeat expression");
+        int times = elements.size();
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", elements.get(i), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    private JexValue handleObjectRepeat(JexObject object, JexLangParser.BlockContext block) {
+        Map<String, JexValue> properties = object.asObject("repeat expression");
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+        for (Map.Entry<String, JexValue> entry : properties.entrySet()) {
+            this.scope.declareAndAssignVariable("$key", JexValue.fromString(entry.getKey()), false);
+            this.scope.declareAndAssignVariable("$value", entry.getValue(), false);
+            this.scope.declareAndAssignVariable("$it", entry.getValue(), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    private JexValue handleStringRepeat(JexString string, JexLangParser.BlockContext block) {
+        String str = string.asString("repeat expression");
+        int times = str.length();
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", JexValue.fromString(String.valueOf(str.charAt(i))), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
 
         return result;
     }
