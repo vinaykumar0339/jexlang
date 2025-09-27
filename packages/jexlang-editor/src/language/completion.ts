@@ -126,6 +126,15 @@ const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     range: new monaco.Range(1, 1, 1, 1)
   },
+  {
+    label: 'null',
+    kind: monaco.languages.CompletionItemKind.Keyword,
+    detail: 'Null literal',
+    documentation: 'Represents the null value',
+    insertText: 'null',
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+    range: new monaco.Range(1, 1, 1, 1)
+  },
   { 
     label: 'if', 
     kind: monaco.languages.CompletionItemKind.Keyword, 
