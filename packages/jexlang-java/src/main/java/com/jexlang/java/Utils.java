@@ -43,7 +43,7 @@ public class Utils {
     public static FuncImpl n2(Binary f, String aCtx, String bCtx) {
         return (args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
-            double b = toNumber(args.length > 0 ? args[0] : JexValue.from(0), bCtx).doubleValue();
+            double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double v = f.apply(a, b);
             assertFinite("binary", v);
             return num(v);
@@ -53,8 +53,8 @@ public class Utils {
     public static FuncImpl n3(Ternary f, String aCtx, String bCtx, String cCtx) {
         return (args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
-            double b = toNumber(args.length > 0 ? args[0] : JexValue.from(0), bCtx).doubleValue();
-            double c = toNumber(args.length > 0 ? args[0] : JexValue.from(0), cCtx).doubleValue();
+            double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
+            double c = toNumber(args.length > 2 ? args[2] : JexValue.from(0), cCtx).doubleValue();
             double v = f.apply(a, b, c);
             assertFinite("ternary", v);
             return num(v);
@@ -75,6 +75,11 @@ public class Utils {
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
         if (v instanceof JexBoolean) return v.asBoolean(ctx);
+        if (v instanceof JexInteger) return v.asInteger(ctx) != 0;
+        if (v instanceof JexDouble) {
+            double d = v.asDouble(ctx);
+            return d != 0.0 && !Double.isNaN(d);
+        }
         if (v instanceof JexNumber) {
             double d = v.asNumber(ctx).doubleValue();
             return d != 0.0 && !Double.isNaN(d);
@@ -107,8 +112,8 @@ public class Utils {
                 if (!Double.isNaN(num.doubleValue())) {
                     return num;
                 }
-            } finally {
-                // Ignore any exceptions and return null
+            } catch (Exception e) {
+                // Ignore any exceptions and fall through to type mismatch error
             }
         }
         throw new TypeMismatchError("number conversion", "number", getJexValueType(value));
@@ -143,6 +148,12 @@ public class Utils {
         if (value instanceof JexString) {
             return value.asString(ctx);
         }
+        if (value instanceof JexInteger) {
+            return String.valueOf(value.asInteger(ctx));
+        }
+        if (value instanceof JexDouble) {
+            return String.valueOf(value.asDouble(ctx));
+        }
         if (value instanceof JexNumber) {
             return String.valueOf(value.asNumber(ctx));
         }
@@ -156,10 +167,18 @@ public class Utils {
                     .toList()) + "]";
         }
         if (value instanceof JexObject) {
-            return "{" +
-                value.asObject(ctx).entrySet().stream()
-                    .map(entry -> "\"" + entry.getKey() + "\": " + toString(entry.getValue(), ctx))
-                    .collect(java.util.stream.Collectors.joining(", ")) + "}";
+            StringBuilder jsonBuilder = new StringBuilder("{");
+            var entries = value.asObject(ctx).entrySet();
+            for (var iterator = entries.iterator(); iterator.hasNext(); ) {
+                var entry = iterator.next();
+                jsonBuilder.append("\"").append(entry.getKey()).append("\": ")
+                        .append("\"").append(toString(entry.getValue(), ctx)).append("\"");
+                if (iterator.hasNext()) {
+                    jsonBuilder.append(", ");
+                }
+            }
+            jsonBuilder.append("}");
+            return jsonBuilder.toString();
         }
         return value.asString(ctx);
     }
