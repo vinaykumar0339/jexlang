@@ -22,6 +22,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private final MapTransformRegistry transformRegistry;
     private Scope scope;
 
+    private Map<String, Object> programScopeContext = new HashMap<>();
 
     public EvalVisitor(
             Scope scope,
@@ -57,6 +58,10 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
     }
 
+    public void setProgramScopeContext(Map<String, Object> context) {
+        this.programScopeContext = context != null ? context : new HashMap<>();
+    }
+
     @Override
     public JexValue visit(ParseTree tree) {
         return super.visit(tree);
@@ -67,6 +72,10 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
         // create a new scope per program;
         this.scope = new Scope(this.scope, Scope.ScopeType.PROGRAM);
+        // initialize the program scope with the provided context variables
+        for (Map.Entry<String, Object> entry : this.programScopeContext.entrySet()) {
+            this.scope.declareVariable(entry.getKey(), JexValue.from(entry.getValue()), false); // create as non-const variable
+        }
 
         JexValue result = null;
 

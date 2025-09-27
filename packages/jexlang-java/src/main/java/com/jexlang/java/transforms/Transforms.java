@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.jexlang.java.Utils.*;
+import static com.jexlang.java.types.Values.doubleValue;
+import static com.jexlang.java.types.Values.integer;
 
 public class Transforms {
 
@@ -43,9 +45,9 @@ public class Transforms {
                 Map.entry("number", v -> num(toNumber(v, "number transform").doubleValue())),
                 Map.entry("string", v -> str(Utils.toString(v, "string transform"))),
                 Map.entry("boolean", v -> bool(toBoolean(v, "boolean transform"))),
-                Map.entry("int", v -> num(Math.floor(toNumber(v, "int transform").doubleValue()))),
-                Map.entry("float", v -> num(toNumber(v, "float transform").floatValue())), // alias for number
-                Map.entry("double", v -> num(toNumber(v, "double transform").doubleValue()))  // alias for number
+                Map.entry("int", v -> integer(toNumber(v, "int transform").intValue())),
+                Map.entry("float", v -> doubleValue(toNumber(v, "float transform").floatValue())), // alias for number
+                Map.entry("double", v -> doubleValue(toNumber(v, "double transform").doubleValue()))  // alias for number
         );
     }
 

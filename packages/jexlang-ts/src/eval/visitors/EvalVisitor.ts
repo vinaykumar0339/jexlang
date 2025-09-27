@@ -1,6 +1,6 @@
 import JexLangVisitor from "../../grammar/JexLangVisitor";
 import * as JexLangParser from "../../grammar/JexLangParser";
-import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise } from "../../types";
+import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise, type Context } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { createGlobalScope, toBoolean, toNumber, toString } from "../../utils";
@@ -12,6 +12,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     private funcRegistry: FuncRegistry;
     private transformRegistry: TransformRegistry;
     private scope: Scope;
+    private programScopeContext: Context = {};
 
     constructor(
         scope: Scope = createGlobalScope(),
@@ -43,6 +44,10 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         if (this.transformRegistry instanceof MapTransformRegistry) {
             this.transformRegistry.set(name, transform);
         }
+    }
+
+    public setProgramScopeContext(context: Context = {}): void {
+        this.programScopeContext = context;
     }
 
     private handlePromise<T>(value: MaybePromise<T>, handler: (resolved: T) => MaybePromise<T>): MaybePromise<T> {
@@ -110,6 +115,11 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
 
         // create a new scope for the program
         this.scope = new Scope(this.scope, 'program');
+
+        // initialize the program scope with the provided context variables
+        for (const [key, value] of Object.entries(this.programScopeContext)) {
+            this.scope.declareVariable(key, value); // create as non-const variable
+        }
 
         let result: MaybePromise<JexValue> = null;
         let hasPromise = false;

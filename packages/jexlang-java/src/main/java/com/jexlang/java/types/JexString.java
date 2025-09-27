@@ -19,12 +19,16 @@ public class JexString implements JexValue {
         return value; // Represents the string value in Java
     }
 
+    public boolean isInteger() { return false; }
+    public boolean isDouble() { return false; }
     public boolean isNumber() { return false; }
     public boolean isBoolean() { return false; }
     public boolean isString() { return true; }
     public boolean isNull() { return false; }
     public boolean isArray() { return false; }
     public boolean isObject() { return false; }
+    public Integer asInteger(String ctx) { throw JexValue.typeError("integer", ctx, this); }
+    public Double asDouble(String ctx) { throw JexValue.typeError("double", ctx, this); }
     public Number asNumber(String ctx) { throw JexValue.typeError("number", ctx, this); }
     public boolean asBoolean(String ctx) { throw JexValue.typeError("boolean", ctx, this); }
     public String asString(String ctx) { return value; }

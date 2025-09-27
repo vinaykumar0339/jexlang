@@ -3,7 +3,7 @@ import { DivisionByZeroError, JexLangRuntimeError, UndefinedFunctionError, Undef
 import { BUILT_IN_FUNCTIONS } from "./functions/builtin.ts";
 import { Scope } from "./scope.ts";
 import { BUILT_IN_TRANSFORMS } from "./transforms/builtin.ts";
-import { FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, MapTransformRegistry, MaybePromise, TransformImpl, TransformRegistry } from "./types.ts";
+import { Context, FuncImpl, FuncRegistry, JexValue, MapFuncRegistry, MapTransformRegistry, MaybePromise, TransformImpl, TransformRegistry } from "./types.ts";
 import { createGlobalScope, toBoolean, toNumber, toString } from "./utils.ts";
 
 export class Evaluate {
@@ -102,11 +102,19 @@ export class Evaluate {
         }
     }
 
-    evaluate(program: Program): MaybePromise<JexValue> {
+    evaluate(
+        program: Program,
+        programScopeVariables: Context = {}
+    ): MaybePromise<JexValue> {
 
         // create a new scope for the program
         this.scope = new Scope(this.scope, 'program');
-        
+
+        // Add program scope variables to the new scope
+        for (const [key, value] of Object.entries(programScopeVariables)) {
+            this.scope.declareVariable(key, value);
+        }
+
         let result: MaybePromise<JexValue> = null;
         let hasPromise = false;
 

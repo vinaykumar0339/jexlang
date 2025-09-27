@@ -95,6 +95,12 @@ public class Utils {
         if (value instanceof JexBoolean) {
             return value.asBoolean(ctx) ? 1 : 0;
         }
+        if (value instanceof JexInteger) {
+            return value.asInteger(ctx);
+        }
+        if (value instanceof JexDouble) {
+            return value.asDouble(ctx);
+        }
         if (value instanceof JexString) {
             try {
                 Number num = Double.parseDouble(value.asString(ctx));
@@ -106,6 +112,28 @@ public class Utils {
             }
         }
         throw new TypeMismatchError("number conversion", "number", getJexValueType(value));
+    }
+
+    public static Double toDouble(JexValue value, String ctx) {
+        Number num = toNumber(value, ctx);
+        if (num instanceof Double || num instanceof Float) {
+            return num.doubleValue();
+        } else {
+            return num.longValue() * 1.0;
+        }
+    }
+
+    public static Integer toInteger(JexValue value, String ctx) {
+        Number num = toNumber(value, ctx);
+        if (num instanceof Double || num instanceof Float) {
+            double d = num.doubleValue();
+            if (d % 1 != 0) {
+                throw new TypeMismatchError("integer conversion", "integer", "non-integer number");
+            }
+            return (int) d;
+        } else {
+            return num.intValue();
+        }
     }
 
     public static String toString(JexValue value, String ctx) {

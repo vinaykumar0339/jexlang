@@ -7,6 +7,10 @@ import com.jexlang.java.types.*;
 import java.util.*;
 import org.apache.commons.math3.util.FastMath;
 
+import static com.jexlang.java.Utils.toNumber;
+import static com.jexlang.java.types.Values.doubleValue;
+import static com.jexlang.java.types.Values.integer;
+
 public class Functions {
 
     private static double trunc(double x) {
@@ -100,9 +104,9 @@ public class Functions {
                 Map.entry("number", Utils.n1(x -> x, "number function")), // wrapper ensures toNumber semantics
                 Map.entry("string", (args) -> Utils.str(Utils.toString(args[0], "string function"))),
                 Map.entry("boolean", (args) -> Utils.bool(Utils.toBoolean(args[0], "boolean function"))),
-                Map.entry("int", Utils.n1(FastMath::floor, "int function")),
-                Map.entry("float", Utils.n1(x -> (float) x, "float function")), // alias for number
-                Map.entry("double", Utils.n1(x -> x, "double function")), // alias for number
+                Map.entry("int", (args) -> integer(toNumber(args.length > 0 ? args[0] : JexValue.from(0), "int transform").intValue())),
+                Map.entry("float", (args) -> doubleValue(toNumber(args.length > 0 ? args[0] : JexValue.from(0), "float transform").floatValue())), // alias for number
+                Map.entry("double", (args) -> doubleValue(toNumber(args.length > 0 ? args[0] : JexValue.from(0), "double transform").doubleValue())),  // alias for number
 
                 // String functions
                 Map.entry("length", (args) -> {

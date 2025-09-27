@@ -86,13 +86,20 @@ export class JexEvaluator {
     return this.cacheExpressions;
   }
 
-  evaluate(expr: string): Promise<JexValue> | JexValue {
+  evaluate(
+    expr: string,
+    programScopeContext: Context = {}
+  ): Promise<JexValue> | JexValue {
     const tree = this.parseExpression(expr);
+    // Pass the program scope context to the visitor
+    this.visitor.setProgramScopeContext(programScopeContext);
     return this.visitor.visit(tree);
   }
 
-  evaluateSync(expr: string): JexValue {
+  evaluateSync(expr: string, programScopeContext: Context = {}): JexValue {
     const tree = this.parseExpression(expr);
+    // Pass the program scope context to the visitor
+    this.visitor.setProgramScopeContext(programScopeContext);
     const result =  this.visitor.visit(tree);
     if (result instanceof Promise) {
       throw new JexLangRuntimeError("Synchronous evaluation cannot handle promises if you want generic evaluation. please use evaluate() method.");

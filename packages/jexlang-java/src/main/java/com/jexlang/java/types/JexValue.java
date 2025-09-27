@@ -2,6 +2,9 @@ package com.jexlang.java.types;
 
 
 public interface JexValue {
+
+    boolean isInteger();
+    boolean isDouble();
     boolean isNumber();
     boolean isBoolean();
     boolean isString();
@@ -13,6 +16,8 @@ public interface JexValue {
 
     Object toObject();
 
+    Integer asInteger(String context);
+    Double asDouble(String context);
     Number asNumber(String context);
     boolean asBoolean(String context);
     String asString(String context);
@@ -26,6 +31,14 @@ public interface JexValue {
 
     static JexNumber fromNumber(Number number) {
         return new JexNumber(number);
+    }
+
+    static JexInteger fromInteger(Integer number) {
+        return new JexInteger(number);
+    }
+
+    static JexDouble fromDouble(Double number) {
+        return new JexDouble(number);
     }
 
     static JexBoolean fromBoolean(boolean value) {
@@ -77,6 +90,10 @@ public interface JexValue {
     static JexValue from(Object value) {
         if (value == null) {
             return fromNull();
+        } else if (value instanceof Double) {
+            return fromDouble((Double) value);
+        } else if (value instanceof Integer) {
+            return fromInteger((Integer) value);
         } else if (value instanceof Number) {
             return fromNumber((Number) value);
         } else if (value instanceof Boolean) {
