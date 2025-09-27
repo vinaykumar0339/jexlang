@@ -75,6 +75,15 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
         if (!Array.isArray(arr)) throw new TypeMismatchError('first', 'array', getJexValueType(arr));
         return arr[0] || null;
     },
+    'push': (arr: JexValue, ...elements: JexValue[]) => {
+        if (!Array.isArray(arr)) throw new TypeMismatchError('push', 'array', getJexValueType(arr));
+        arr.push(...elements);
+        return arr;
+    },
+    'pop': (arr: JexValue) => {
+        if (!Array.isArray(arr)) throw new TypeMismatchError('pop', 'array', getJexValueType(arr)); 
+        return arr.pop() || null;
+    },
     'last': (arr: JexValue) => {
         if (!Array.isArray(arr)) throw new TypeMismatchError('last', 'array', getJexValueType(arr));
         return arr[arr.length - 1] || null;

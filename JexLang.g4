@@ -85,6 +85,9 @@ singleExpression
     | <assoc=right> singleExpression LBRACKET expressionSequence RBRACKET ASSIGN singleExpression # BracketPropertyAssignment
     | <assoc=right> singleExpression DOT objectPropertyName ASSIGN singleExpression # DotPropertyAssignment
 
+    // Repeat expression
+    | REPEAT LPAREN expressionSequence RPAREN block # RepeatExpression
+
     // Primary expressions
     | LPAREN expressionSequence RPAREN # ParenthesizedExpression
     | literal # LiteralExpression
@@ -145,6 +148,7 @@ CONST       : 'const' ;
 GLOBAL      : 'global' ;
 BOOLEAN     : 'true' | 'false' ;
 NULL        : 'null' ;
+REPEAT      : 'repeat' ;
 
 // Multi-character operators (ordered by length for proper tokenization)
 INCREMENT   : '++' ;

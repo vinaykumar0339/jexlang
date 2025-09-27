@@ -3,7 +3,7 @@ import * as JexLangParser from "../../grammar/JexLangParser";
 import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise, type Context } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
-import { createGlobalScope, toBoolean, toNumber, toString } from "../../utils";
+import { createGlobalScope, isNumeric, toBoolean, toNumber, toString } from "../../utils";
 import { DivisionByZeroError, JexLangRuntimeError, UndefinedVariableError, UndefinedFunctionError, JexLangSyntaxError, UndefinedTransformError } from "../errors/errors";
 import { Scope } from "../scopes";
 import type { ErrorNode } from "antlr4";
@@ -111,6 +111,13 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         }
     }
 
+    private setScopeToParent() {
+        const parentScope = this.scope.getParentScope();
+        if (parentScope) {
+            this.scope = parentScope;
+        }
+    }
+
     visitProgram = (ctx: JexLangParser.ProgramContext): MaybePromise<JexValue> => {
 
         // create a new scope for the program
@@ -140,19 +147,13 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         if (hasPromise) {
             return (result as Promise<JexValue>).then(resolved => {
                 // Exit the program scope
-                const parentScope = this.scope.getParentScope();
-                if (parentScope) {
-                    this.scope = parentScope;
-                }
+                this.setScopeToParent();
                 return resolved ?? null
             });
         }
 
         // Exit the program scope
-        const parentScope = this.scope.getParentScope();
-        if (parentScope) {
-            this.scope = parentScope;
-        }
+        this.setScopeToParent();
 
         return result;
     }
@@ -231,22 +232,111 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         if (hasPromise) {
             return (result as Promise<JexValue>).then(resolved => {
                 // Exit the block scope
-                const parentScope = this.scope.getParentScope();
-                if (parentScope) {
-                    this.scope = parentScope;
-                }
+                this.setScopeToParent();
                 return resolved ?? null
             });
         }
 
         // Exit the block scope
-        const parentScope = this.scope.getParentScope();
-        if (parentScope) {
-            this.scope = parentScope;
-        }
+        this.setScopeToParent();
 
         return result;
     };
+
+    visitRepeatExpression = (ctx: JexLangParser.RepeatExpressionContext): MaybePromise<JexValue> => {
+        const iterable = this.visit(ctx.expressionSequence());
+        const block = ctx.block();
+
+        return this.handlePromise(iterable, (resolvedIterable) => {
+            if (resolvedIterable == null || resolvedIterable == undefined) {
+                return null;
+            }
+            
+            // Process the iteration based on the type of iterable
+            if (isNumeric(resolvedIterable)) {
+                return this.handleNumericRepeat(toNumber(resolvedIterable), block);
+            } else if (Array.isArray(resolvedIterable)) {
+                return this.handleArrayRepeat(resolvedIterable, block);
+            } else if (typeof resolvedIterable === 'object') {
+                return this.handleObjectRepeat(resolvedIterable, block);
+            } else if (typeof resolvedIterable === 'string') {
+                return this.handleStringRepeat(resolvedIterable, block);
+            }
+            
+            return null;
+        });
+    }
+
+    private handleNumericRepeat(count: number, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
+        const results: MaybePromise<JexValue>[] = [];
+        
+        this.scope = new Scope(this.scope, 'block');
+
+        for (let i = 0; i < count; i++) {
+            this.scope.declareAndAssignVariable('$index', i);
+            this.scope.declareAndAssignVariable('$it', i);
+            results.push(this.visit(block));
+        }
+        
+        return this.handlePromises(results, (...resolvedResults) => {
+            this.setScopeToParent();
+            // Return the last evaluated result of the block
+            return resolvedResults[resolvedResults.length - 1] ?? null
+        });
+    }
+
+    private handleArrayRepeat(array: JexValue[], block: JexLangParser.BlockContext): MaybePromise<JexValue> {
+        const results: MaybePromise<JexValue>[] = [];
+        
+        this.scope = new Scope(this.scope, 'block');
+        for (let i = 0; i < array.length; i++) {
+            this.scope.declareAndAssignVariable('$index', i);
+            this.scope.declareAndAssignVariable('$it', array[i]);
+            results.push(this.visit(block));
+        }
+        
+        return this.handlePromises(results, (...resolvedResults) => {
+            this.setScopeToParent();
+            // Return the last evaluated result of the block
+            return resolvedResults[resolvedResults.length - 1] ?? null
+        });
+    }
+
+    private handleObjectRepeat(obj: Record<string, JexValue>, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
+        const results: MaybePromise<JexValue>[] = [];
+        const entries = Object.entries(obj);
+        
+        this.scope = new Scope(this.scope, 'block');
+        for (const [key, value] of entries) {
+            this.scope.declareAndAssignVariable('$key', key);
+            this.scope.declareAndAssignVariable('$it', value);
+            this.scope.declareAndAssignVariable('$value', value);
+            results.push(this.visit(block));
+        }
+        
+        return this.handlePromises(results, (...resolvedResults) => {
+            this.setScopeToParent();
+            // Return the last evaluated result of the block
+            return resolvedResults[resolvedResults.length - 1] ?? null
+        });
+    }
+
+    private handleStringRepeat(str: string, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
+        const results: MaybePromise<JexValue>[] = [];
+
+        this.scope = new Scope(this.scope, 'block');
+        for (let i = 0; i < str.length; i++) {
+            this.scope.declareAndAssignVariable('$index', i);
+            this.scope.declareAndAssignVariable('$it', str[i]);
+            results.push(this.visit(block));
+        }
+        
+        return this.handlePromises(results, (...resolvedResults) => {
+            this.setScopeToParent();
+            // Return the last evaluated result of the block
+            return resolvedResults[resolvedResults.length - 1] ?? null
+        });
+    }
 
     visitEmptyStatement = (ctx: JexLangParser.EmptyStatementContext): MaybePromise<JexValue> => {
         return null; // just return null for empty statements

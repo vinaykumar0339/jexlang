@@ -50,6 +50,14 @@ export class Scope {
         }
     }
 
+    declareAndAssignVariable(name: string, value: JexValue, isConst = false): void {
+        if (this.variables.has(name)) {
+            this.assignVariable(name, value);
+        } else {
+            this.declareVariable(name, value, isConst);
+        }
+    }
+
     getVariable(name: string): JexValue | null {
         if (this.variables.has(name)) {
             return this.variables.get(name)!;

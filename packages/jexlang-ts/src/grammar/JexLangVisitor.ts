@@ -26,6 +26,7 @@ import { UnaryExpressionContext } from "./JexLangParser.js";
 import { MemberIndexExpressionContext } from "./JexLangParser.js";
 import { FunctionCallExpressionContext } from "./JexLangParser.js";
 import { IdentifierExpressionContext } from "./JexLangParser.js";
+import { RepeatExpressionContext } from "./JexLangParser.js";
 import { AssignmentExpressionContext } from "./JexLangParser.js";
 import { TransformExpressionContext } from "./JexLangParser.js";
 import { PrefixExpressionContext } from "./JexLangParser.js";
@@ -212,6 +213,13 @@ export default class JexLangVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitIdentifierExpression?: (ctx: IdentifierExpressionContext) => Result;
+	/**
+	 * Visit a parse tree produced by the `RepeatExpression`
+	 * labeled alternative in `JexLangParser.singleExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitRepeatExpression?: (ctx: RepeatExpressionContext) => Result;
 	/**
 	 * Visit a parse tree produced by the `AssignmentExpression`
 	 * labeled alternative in `JexLangParser.singleExpression`.
