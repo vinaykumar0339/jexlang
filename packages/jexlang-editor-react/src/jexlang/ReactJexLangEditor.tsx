@@ -9,14 +9,16 @@ export const ReactJexLangEditor = ({
   context?: Context;
 }) => {
 
-  const disposeRef = useRef<() => void>(undefined);
+  const isLanguageRegisteredRef = useRef(false);
   const evaluatorRef = useRef<JexEvaluator | null>(new JexEvaluator(context));
   const [editor, setEditor] = useState<string>("");
   const [editor2, setEditor2] = useState<string>("");
   const [result, setResult] = useState<JexValue | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const onMount: OnMount = (editor, m) => {
+  const onMount: OnMount = (_, m) => {
+    if (isLanguageRegisteredRef.current) return;
+    isLanguageRegisteredRef.current = true;
     registerJexLangFeatures(m);
   };
 
@@ -44,8 +46,6 @@ export const ReactJexLangEditor = ({
 
     // register methods;
   }, [context]);
-
-  useEffect(() => () => disposeRef.current?.(), []);
 
   const validate = async (value: string) => {
     // Perform validation logic here
