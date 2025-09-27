@@ -1,8 +1,0 @@
-{
-  "require": "tsx",
-  "extensions": ["ts"],
-  "spec": "src/**/*.{spec,test}.ts",
-  "recursive": true,
-  "timeout": 5000,
-  "reporter": "spec"
-}
