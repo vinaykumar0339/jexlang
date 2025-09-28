@@ -210,18 +210,25 @@ IDENTIFIER
 
 // Strings
 STRING
-    : '"' StringChar* '"'
-    | '\'' StringChar* '\''
+    : '"' DoubleStringChar* '"'
+    | '\'' SingleStringChar* '\''
     ;
 
-fragment StringChar
-    : ~["\\\r\n]
+fragment DoubleStringChar
+    : ~["\\]        // Any character except double quote and backslash
+    | EscapeSequence
+    ;
+
+fragment SingleStringChar
+    : ~['\\]        // Any character except single quote and backslash
     | EscapeSequence
     ;
 
 fragment EscapeSequence
-    : '\\' [btnfr"'\\]
+    : '\\' [btnfr"'\\]       // Common escape sequences
     | '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+    | '\\' // Standalone backslash at end
+    | '\\' . // Allow any character to be escaped (including forward slash)
     ;
 
 fragment HexDigit

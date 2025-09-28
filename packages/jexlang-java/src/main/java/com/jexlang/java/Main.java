@@ -57,10 +57,9 @@ public class Main {
 //                                            """)
 //            );
             String code = """
-                    const t = "vinay kumar kumarvinay";
-                       t;
-                       const vsdfds = "vinay kumar";
-                       vsdfds;
+                    "vinay kumar \\u00A9kumar\\\\n"
+                                         "vinay\\t\\\\ns"
+                                         "/\\.\\.\\. \\u00A9"
                             """;
             System.out.println(
                     evaluator.evaluate(code, Map.of("currentGroupId", 5))
