@@ -5,6 +5,10 @@ import com.jexlang.java.eval.errors.TypeMismatchError;
 import com.jexlang.java.types.*;
 
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import org.apache.commons.math3.util.FastMath;
 
 import static com.jexlang.java.Utils.toNumber;
@@ -19,7 +23,7 @@ public class Functions {
     }
 
     public static Map<String, FuncImpl> makeBuiltins() {
-        return Map.ofEntries(
+        return new HashMap<>(Map.ofEntries(
                 // Math functions that work with numbers
                 Map.entry("abs", Utils.n1(FastMath::abs, "abs function")),
                 Map.entry("ceil", Utils.n1(FastMath::ceil, "ceil function")),
@@ -148,14 +152,14 @@ public class Functions {
                     JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("last", "array", Utils.getJexValueType(arr));
-                    List<JexValue> vs = ((JexArray) arr).asArray("last method");
+                    List<JexValue> vs = arr.asArray("last method");
                     return vs.isEmpty() ? new JexNull() : vs.get(vs.size() - 1);
                 }),
                 Map.entry("sum", (args) -> {
                     JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("sum", "array", Utils.getJexValueType(arr));
-                    List<JexValue> vs = ((JexArray) arr).asArray("sum method");
+                    List<JexValue> vs = arr.asArray("sum method");
                     if (vs.isEmpty()) return Utils.num(0.0);
                     double s = 0.0;
                     for (int i = 0; i < vs.size(); i++) s += Utils.toNumber(vs.get(i), "sum[" + i + "]").doubleValue();
@@ -166,14 +170,150 @@ public class Functions {
                     JexValue arr = args[0];
                     if (!(arr instanceof JexArray))
                         throw new TypeMismatchError("avg", "array", Utils.getJexValueType(arr));
-                    List<JexValue> vs = ((JexArray) arr).asArray("avg method");
+                    List<JexValue> vs = arr.asArray("avg method");
                     if (vs.isEmpty()) return new JexNull();
                     double s = 0.0;
                     for (int i = 0; i < vs.size(); i++) s += Utils.toNumber(vs.get(i), "avg[" + i + "]").doubleValue();
                     double v = s / vs.size();
                     Utils.assertFinite("avg", v);
                     return Utils.num(v);
-                }));
+                }),
+
+                // Date and time functions
+                Map.entry("now", (args) -> Utils.num(System.currentTimeMillis())),
+
+                Map.entry("today", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    cal.set(Calendar.HOUR_OF_DAY, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("date", (args) -> {
+                    if (args.length == 0) {
+                        return Utils.num(System.currentTimeMillis());
+                    }
+                    JexValue timestamp = args[0];
+                    return Utils.num(new Date(toNumber(timestamp, "date function").longValue()).getTime());
+                }),
+
+                Map.entry("year", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "year function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.YEAR));
+                }),
+
+                Map.entry("month", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "month function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.MONTH) + 1); // Calendar months are 0-based
+                }),
+
+                Map.entry("day", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "day function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.DAY_OF_MONTH));
+                }),
+
+                Map.entry("hour", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "hour function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.HOUR_OF_DAY));
+                }),
+
+                Map.entry("minute", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "minute function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.MINUTE));
+                }),
+
+                Map.entry("second", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "second function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.SECOND));
+                }),
+
+                Map.entry("weekday", (args) -> {
+                    Calendar cal = Calendar.getInstance();
+                    if (args.length > 0) {
+                        cal.setTimeInMillis(toNumber(args[0], "weekday function").longValue());
+                    }
+                    return Utils.num(cal.get(Calendar.DAY_OF_WEEK) - 1); // Calendar: 1=Sunday, 7=Saturday, we want 0-6
+                }),
+
+                Map.entry("addDays", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("addDays requires 2 arguments: timestamp, days");
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(toNumber(args[0], "addDays timestamp").longValue());
+                    cal.add(Calendar.DAY_OF_MONTH, toNumber(args[1], "addDays days").intValue());
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("addMonths", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("addMonths requires 2 arguments: timestamp, months");
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(toNumber(args[0], "addMonths timestamp").longValue());
+                    cal.add(Calendar.MONTH, toNumber(args[1], "addMonths months").intValue());
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("addYears", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("addYears requires 2 arguments: timestamp, years");
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(toNumber(args[0], "addYears timestamp").longValue());
+                    cal.add(Calendar.YEAR, toNumber(args[1], "addYears years").intValue());
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("addHours", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("addHours requires 2 arguments: timestamp, hours");
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(toNumber(args[0], "addHours timestamp").longValue());
+                    cal.add(Calendar.HOUR_OF_DAY, toNumber(args[1], "addHours hours").intValue());
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("addMinutes", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("addMinutes requires 2 arguments: timestamp, minutes");
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(toNumber(args[0], "addMinutes timestamp").longValue());
+                    cal.add(Calendar.MINUTE, toNumber(args[1], "addMinutes minutes").intValue());
+                    return Utils.num(cal.getTimeInMillis());
+                }),
+
+                Map.entry("daysBetween", (args) -> {
+                    if (args.length < 2) throw new RuntimeException("daysBetween requires 2 arguments: timestamp1, timestamp2");
+
+                    LocalDate date1 = new Date(toNumber(args[0], "daysBetween timestamp1").longValue())
+                        .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    LocalDate date2 = new Date(toNumber(args[1], "daysBetween timestamp2").longValue())
+                        .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                    return Utils.num(Math.abs(ChronoUnit.DAYS.between(date1, date2)));
+                }),
+
+                Map.entry("isLeapYear", (args) -> {
+                    if (args.length < 1) throw new RuntimeException("isLeapYear requires 1 argument: year");
+                    int year = toNumber(args[0], "isLeapYear year").intValue();
+                    return Utils.bool((year % 4 == 0 && year % 100 != 0) || year % 400 == 0);
+                }),
+
+                Map.entry("timestamp", (args) -> Utils.num((double) System.currentTimeMillis() / 1000))
+        ));
     }
 
     public static MapFuncRegistry createDefaultFuncRegistry() {

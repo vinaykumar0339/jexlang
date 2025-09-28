@@ -98,5 +98,81 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
         if (arr.length === 0) return null;
         const sum = arr.reduce((sum, val) => toNumber(sum) + toNumber(val), 0);
         return typeof sum === 'number' ? sum / arr.length : null;
-    }
+    },
+
+    // Date and time functions
+    'now': () => new Date().getTime(),
+    'today': () => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+    },
+    'date': (timestamp?: JexValue) => {
+        if (timestamp === undefined) return new Date().getTime();
+        return new Date(toNumber(timestamp)).getTime();
+    },
+    'year': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getFullYear();
+    },
+    'month': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getMonth() + 1; // JavaScript months are 0-based
+    },
+    'day': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getDate();
+    },
+    'hour': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getHours();
+    },
+    'minute': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getMinutes();
+    },
+    'second': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getSeconds();
+    },
+    'weekday': (timestamp?: JexValue) => {
+        const date = timestamp !== undefined ? new Date(toNumber(timestamp)) : new Date();
+        return date.getDay(); // 0 = Sunday, 6 = Saturday
+    },
+    'addDays': (timestamp: JexValue, days: JexValue) => {
+        const date = new Date(toNumber(timestamp));
+        date.setDate(date.getDate() + toNumber(days));
+        return date.getTime();
+    },
+    'addMonths': (timestamp: JexValue, months: JexValue) => {
+        const date = new Date(toNumber(timestamp));
+        date.setMonth(date.getMonth() + toNumber(months));
+        return date.getTime();
+    },
+    'addYears': (timestamp: JexValue, years: JexValue) => {
+        const date = new Date(toNumber(timestamp));
+        date.setFullYear(date.getFullYear() + toNumber(years));
+        return date.getTime();
+    },
+    'addHours': (timestamp: JexValue, hours: JexValue) => {
+        const date = new Date(toNumber(timestamp));
+        date.setHours(date.getHours() + toNumber(hours));
+        return date.getTime();
+    },
+    'addMinutes': (timestamp: JexValue, minutes: JexValue) => {
+        const date = new Date(toNumber(timestamp));
+        date.setMinutes(date.getMinutes() + toNumber(minutes));
+        return date.getTime();
+    },
+    'daysBetween': (timestamp1: JexValue, timestamp2: JexValue) => {
+        const date1 = new Date(toNumber(timestamp1));
+        const date2 = new Date(toNumber(timestamp2));
+        const diffTime = Math.abs(date2.getTime() - date1.getTime());
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    },
+    'isLeapYear': (year: JexValue) => {
+        const yr = toNumber(year);
+        return ((yr % 4 === 0) && (yr % 100 !== 0)) || (yr % 400 === 0);
+    },
+    'timestamp': () => Math.floor(Date.now() / 1000),
 };
