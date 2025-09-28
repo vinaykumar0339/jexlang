@@ -208,20 +208,65 @@ IDENTIFIER
     : [a-zA-Z_$] [a-zA-Z0-9_$]*
     ;
 
-// Strings
+// Strings - Updated to handle both escaped and literal newlines
 STRING
-    : '"' StringChar* '"'
-    | '\'' StringChar* '\''
+    : '"' DoubleStringCharacter* '"'
+    | '\'' SingleStringCharacter* '\''
     ;
 
-fragment StringChar
-    : ~["\\\r\n]
-    | EscapeSequence
+fragment DoubleStringCharacter
+    : ~["\\\r\n] // Regular characters
+    | EscapeSequence // Escaped sequences including \n
+    | LineContinuation // Line continuation
+    | NewLine // Actual newlines within the string
+    ;
+
+fragment SingleStringCharacter
+    : ~['\\\r\n] // Regular characters
+    | EscapeSequence // Escaped sequences including \n
+    | LineContinuation // Line continuation
+    | NewLine // Actual newlines within the string
+    ;
+
+fragment NewLine
+    : '\r\n' | '\n' | '\r'
     ;
 
 fragment EscapeSequence
-    : '\\' [btnfr"'\\]
-    | '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+    : CharacterEscapeSequence
+    | '0' // NullEscapeSequence
+    | HexEscapeSequence
+    | UnicodeEscapeSequence
+    | ExtendedUnicodeEscapeSequence
+    ;
+
+fragment CharacterEscapeSequence
+    : SingleEscapeCharacter
+    | NonEscapeCharacter
+    ;
+
+fragment SingleEscapeCharacter
+    : ['"\\bfnrtv]
+    ;
+
+fragment NonEscapeCharacter
+    : ~['"\\bfnrtv0-9xu\r\n]
+    ;
+
+fragment HexEscapeSequence
+    : 'x' HexDigit HexDigit
+    ;
+
+fragment UnicodeEscapeSequence
+    : 'u' HexDigit HexDigit HexDigit HexDigit
+    ;
+
+fragment ExtendedUnicodeEscapeSequence
+    : 'u' '{' HexDigit+ '}'
+    ;
+
+fragment LineContinuation
+    : '\\' [\r\n\u2028\u2029]+
     ;
 
 fragment HexDigit
