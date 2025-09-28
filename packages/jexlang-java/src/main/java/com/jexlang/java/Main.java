@@ -56,25 +56,14 @@ public class Main {
 //                                    name;
 //                                            """)
 //            );
+            String code = """
+                    const t = "vinay kumar kumarvinay";
+                       t;
+                       const vsdfds = "vinay kumar";
+                       vsdfds;
+                            """;
             System.out.println(
-                    evaluator.evaluate("""
-                            const t = true;
-                                   const f = false;
-                                   let x = if (f) {
-                                     const t2 ="sfgs"
-                                     "true"
-                                   } else if (t) {
-                                     "false"
-                                   } else if (f) {
-                                     "vinay"
-                                   } else if (f) {
-                                     "sdf3"
-                                   } else {
-                                     "sdfsdfsdsdfsdfsdfsdds"
-                                   }
-                                   
-                                   x
-                            """, Map.of("currentGroupId", 5))
+                    evaluator.evaluate(code, Map.of("currentGroupId", 5))
             );
             long endTime = System.currentTimeMillis();
             System.out.println("Execution time: " + (endTime - startTime) + " ms");

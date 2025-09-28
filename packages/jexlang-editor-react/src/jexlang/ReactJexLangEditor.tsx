@@ -2,6 +2,7 @@ import { Editor, type OnMount } from "@monaco-editor/react";
 import { JEX_LANGUAGE_ID, registerJexLangFeatures } from "jexlang-editor";
 import { JexEvaluator, toNumber, toString, type Context, type JexValue } from "jexlang-ts";
 import { useRef, useEffect, useState } from "react";
+import unescapeJs from 'unescape-js';
 
 export const ReactJexLangEditor = ({
   context = {},
@@ -60,15 +61,32 @@ export const ReactJexLangEditor = ({
     }
   };
 
+  useEffect(() => {
+    validate(editor);
+  }, [editor])
+
+  useEffect(() => {
+    validate(editor2);
+  }, [editor2]);
+
   const onChange = (value: string | undefined) => {
-    setEditor(value || "");
-    validate(value || "");
+    setEditor(unescapeJs(value || ""));
   };
 
   const onChange2 = (value: string | undefined) => {
-    setEditor2(value || "");
-    validate(value || "");
+    console.log(value, "before unescape");
+    console.log(unescapeJs(value || ""), "after unescape");
+    setEditor2(unescapeJs(value || ""));
   };
+
+  const displayValue = (value: JexValue): string => {
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return value.toString();
+    if (value === null || value === undefined) return "null";
+    if (Array.isArray(value)) return `[${value.map(displayValue).join(", ")}]`;
+    if (typeof value === "object") return JSON.stringify(value, null, 2);
+    return String(value);
+  }
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -76,7 +94,13 @@ export const ReactJexLangEditor = ({
         {error && <p style={{ color: "red" }}>Error: {error}</p>}
       </div>
       <div>
-        {result !== null && result !== undefined ? <pre>{JSON.stringify(result, null, 2)}</pre> : <p>No result or might be invalid syntax</p>}
+        Entered Code1: {editor}
+      </div>
+      <div>
+        Entered Code2: {editor2}
+      </div>
+      <div>
+        {result !== null && result !== undefined ? <pre>{displayValue(result)}</pre> : <p>No result or might be invalid syntax</p>}
       </div>
       <div style={{ display: "flex", height: "70%", gap: "10px" }}>
       <Editor
@@ -85,7 +109,7 @@ export const ReactJexLangEditor = ({
         defaultValue={editor}
         onChange={onChange}
         options={{
-        minimap: { enabled: false },
+          minimap: { enabled: false },
           fontLigatures: true,
           tabSize: 2,
         }}
