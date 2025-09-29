@@ -78,6 +78,7 @@ describe('utils', () => {
             expect(toNumber('0')).toBe(0);
             expect(toNumber('-10')).toBe(-10);
             expect(toNumber('  42  ')).toBe(42); // with whitespace
+            expect(toNumber('')).toBe(0); // empty string converts to 0
         });
 
         test('convert null/undefined to 0', () => {
