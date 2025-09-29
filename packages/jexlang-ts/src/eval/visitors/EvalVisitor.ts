@@ -968,7 +968,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         const location = {
             line: node.symbol?.line || 0,
             column: node.symbol?.column || 0,
-            offendingSymbol: node.getText() || null
+            offendingSymbol: node.getText() || undefined
         };
 
         let errorMessage = "Syntax error";
