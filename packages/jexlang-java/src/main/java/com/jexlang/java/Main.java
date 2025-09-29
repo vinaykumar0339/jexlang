@@ -57,9 +57,10 @@ public class Main {
 //                                            """)
 //            );
             String code = """
-                    "vinay kumar \\u00A9kumar\\\\n"
-                                         "vinay\\t\\\\ns"
-                                         "/\\.\\.\\. \\u00A9"
+                    {
+                        "version": VERSION,
+                        "__CLIENT_LANGUAGE": __CLIENT_LANGUAGE
+                    }
                             """;
             System.out.println(
                     evaluator.evaluate(code, Map.of("currentGroupId", 5))

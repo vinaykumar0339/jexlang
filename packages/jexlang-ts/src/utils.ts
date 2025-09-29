@@ -58,7 +58,6 @@ export function createGlobalScope(): Scope {
     scope.declareVariable("SQRT1_2", Math.SQRT1_2, true);
     scope.declareVariable("SQRT2", Math.SQRT2, true);
     scope.declareVariable("VERSION", packageJson.version, true);
-    scope.declareVariable("IS_JAVASCRIPT", true, true);
-    scope.declareVariable("IS_JAVA", false, true);
+    scope.declareVariable("__CLIENT_LANGUAGE", "javascript", true);
     return scope;
 }

@@ -686,8 +686,7 @@ public class UtilsTestCase {
             Assertions.assertEquals(globalScope.getVariable("SQRT2").asNumber("global"), FastMath.sqrt(2));
             Assertions.assertTrue(globalScope.getVariable("NON_EXISTENT").isNull());
             Assertions.assertEquals(Version.VERSION, globalScope.getVariable("VERSION").asString("global"));
-            Assertions.assertTrue(globalScope.getVariable("IS_JAVA").asBoolean("global"));
-            Assertions.assertFalse(globalScope.getVariable("IS_JAVASCRIPT").asBoolean("global"));
+            Assertions.assertEquals("java", globalScope.getVariable("__CLIENT_LANGUAGE").asString("global"));
         }
     }
 
