@@ -50,6 +50,10 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         this.programScopeContext = context;
     }
 
+    public resetProgramScopeContext(): void {
+        this.programScopeContext = {};
+    }
+
     private handlePromise<T>(value: MaybePromise<T>, handler: (resolved: T) => MaybePromise<T>): MaybePromise<T> {
         if (value instanceof Promise) {
             return value.then(resolved => {
@@ -148,12 +152,16 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             return (result as Promise<JexValue>).then(resolved => {
                 // Exit the program scope
                 this.setScopeToParent();
+                // Reset the program scope context
+                this.resetProgramScopeContext();
                 return resolved ?? null
             });
         }
 
         // Exit the program scope
         this.setScopeToParent();
+        // Reset the program scope context
+        this.resetProgramScopeContext();
 
         return result;
     }

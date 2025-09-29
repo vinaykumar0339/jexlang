@@ -45,6 +45,13 @@ const createStringLiteralContext = (text: string) => {
 
 describe("EvalVisitor", () => {
 
+    describe('constructor', () => {
+        it('should create an instance of EvalVisitor', () => {
+            const visitor = new EvalVisitor();
+            expect(visitor).toBeInstanceOf(EvalVisitor);
+        });
+    });
+
     describe('visitLiteralExpression', () => {
         it('should delegate to visitBooleanLiteral for boolean literals', () => {
             const visitor = new EvalVisitor();
