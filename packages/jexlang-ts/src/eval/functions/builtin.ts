@@ -55,7 +55,7 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
     'number': (x: JexValue) => toNumber(x),
     'string': (x: JexValue) => toString(x),
     'boolean': (x: JexValue) => toBoolean(x),
-    'int': (x: JexValue) => Math.floor(toNumber(x)),
+    'int': (x: JexValue) => parseInt(toString(x)),
     'float': (x: JexValue) => parseFloat(toString(x)),
     'double': (x: JexValue) => parseFloat(toString(x)),
 
