@@ -676,8 +676,8 @@ public class UtilsTestCase {
         @DisplayName("global scope contains mathematical constants")
         public void testGlobalScopeConstants() {
             var globalScope = Utils.createGlobalScope();
-            Assertions.assertEquals(globalScope.getVariable("PI").asNumber("global"), FastMath.PI);
-            Assertions.assertEquals(globalScope.getVariable("E").asNumber("global"), FastMath.E);
+            Assertions.assertEquals(FastMath.PI, globalScope.getVariable("PI").asNumber("global"));
+            Assertions.assertEquals(FastMath.E, globalScope.getVariable("E").asNumber("global"));
             Assertions.assertEquals(globalScope.getVariable("LN2").asNumber("global"), FastMath.log(2));
             Assertions.assertEquals(globalScope.getVariable("LN10").asNumber("global"), FastMath.log(10));
             Assertions.assertEquals(globalScope.getVariable("LOG2E").asNumber("global"), 1 / FastMath.log(2));
@@ -685,6 +685,9 @@ public class UtilsTestCase {
             Assertions.assertEquals(globalScope.getVariable("SQRT1_2").asNumber("global"), FastMath.sqrt(0.5));
             Assertions.assertEquals(globalScope.getVariable("SQRT2").asNumber("global"), FastMath.sqrt(2));
             Assertions.assertTrue(globalScope.getVariable("NON_EXISTENT").isNull());
+            Assertions.assertEquals(Version.VERSION, globalScope.getVariable("VERSION").asString("global"));
+            Assertions.assertTrue(globalScope.getVariable("IS_JAVA").asBoolean("global"));
+            Assertions.assertFalse(globalScope.getVariable("IS_JAVASCRIPT").asBoolean("global"));
         }
     }
 

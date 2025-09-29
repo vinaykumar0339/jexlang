@@ -330,6 +330,9 @@ public class Utils {
         scope.declareVariable("LOG10E", new JexNumber(1 / FastMath.log(10)), true);
         scope.declareVariable("SQRT1_2", new JexNumber(FastMath.sqrt(0.5)), true);
         scope.declareVariable("SQRT2", new JexNumber(FastMath.sqrt(2)), true);
+        scope.declareVariable("VERSION", new JexString(Version.VERSION), true);
+        scope.declareVariable("IS_JAVA", new JexBoolean(true), true);
+        scope.declareVariable("IS_JAVASCRIPT", new JexBoolean(false), true);
         return scope;
     }
 }

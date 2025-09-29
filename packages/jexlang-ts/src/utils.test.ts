@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { createGlobalScope, getJexValueType, isNumeric, toBoolean, toNumber, toString } from './utils';
 import { TypeMismatchError } from './eval';
+import packageJson from '../package.json';
 
 describe('utils', () => {
 
@@ -174,6 +175,9 @@ describe('utils', () => {
             expect(scope.getVariable('SQRT1_2')).toBe(Math.SQRT1_2);
             expect(scope.getVariable('SQRT2')).toBe(Math.SQRT2);
             expect(scope.getVariable('NON_EXISTENT')).toBeNull();
+            expect(scope.getVariable('VERSION')).toBe(packageJson.version);
+            expect(scope.getVariable('IS_JAVASCRIPT')).toBe(true);
+            expect(scope.getVariable('IS_JAVA')).toBe(false);
         });
     });
 });
