@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BUILT_IN_FUNCTIONS } from './builtin';
 import { TypeMismatchError } from '../errors';
-import type { JexValue } from '../../types';
 
 describe('BUILT_IN_FUNCTIONS', () => {
     beforeEach(() => {
@@ -402,11 +401,11 @@ describe('BUILT_IN_FUNCTIONS', () => {
         });
 
         it('should get today timestamp', () => {
-            const result = BUILT_IN_FUNCTIONS.today();
             const date = new Date();
             date.setHours(0, 0, 0, 0);
-            const expected = date.getTime();
-            expect(result).toBe(expected);
+            vi.setSystemTime(date);
+            const result = BUILT_IN_FUNCTIONS.today();
+            expect(result).toBe(date.getTime());
         });
 
         it('should create date timestamp', () => {
