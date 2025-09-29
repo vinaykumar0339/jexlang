@@ -43,7 +43,7 @@ export class TypeMismatchError extends JexLangRuntimeError {
 export interface SyntaxErrorLocation {
   line: number;
   column: number;
-  offendingSymbol: string | null;
+  offendingSymbol?: string;
 }
 
 export class JexLangSyntaxError extends JexLangRuntimeError {
