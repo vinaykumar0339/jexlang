@@ -90,6 +90,10 @@ public class Scope {
         }
     }
 
+    public Map<String, JexValue> getAllVariables() {
+        return variables;
+    }
+
     public JexValue getVariable(String name) {
         if (this.variables.containsKey(name)) {
             return this.variables.get(name);

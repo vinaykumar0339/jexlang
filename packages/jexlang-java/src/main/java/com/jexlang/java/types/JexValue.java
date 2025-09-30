@@ -106,6 +106,6 @@ public interface JexValue {
             return fromObject(value);
         }
         throw new IllegalArgumentException("Unsupported type: " + value.getClass().getName() + "Supported types are: null, Number, Boolean, String, List, Map" );
-    }
+}
 }
 

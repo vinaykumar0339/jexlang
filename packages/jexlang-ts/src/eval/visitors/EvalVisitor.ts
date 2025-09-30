@@ -54,6 +54,11 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         this.programScopeContext = {};
     }
 
+    public getGlobalScopeVariables(): Record<string, JexValue> {
+        const globalScope = this.scope.resolveScopeByType('global');
+        return globalScope ? globalScope.getAllVariables() : {};
+    }
+
     private handlePromise<T>(value: MaybePromise<T>, handler: (resolved: T) => MaybePromise<T>): MaybePromise<T> {
         if (value instanceof Promise) {
             return value.then(resolved => {

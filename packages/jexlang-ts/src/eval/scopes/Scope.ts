@@ -89,6 +89,14 @@ export class Scope {
         return null;
     }
 
+    getAllVariables(): Record<string, JexValue> {
+        const vars: Record<string, JexValue> = {};
+        for (const [key, value] of this.variables.entries()) {
+            vars[key] = value;
+        }
+        return vars;
+    }
+
     hasVariable(name: string): boolean {
         return this.resolveScope(name) !== null && this.variables.has(name) !== undefined;
     }

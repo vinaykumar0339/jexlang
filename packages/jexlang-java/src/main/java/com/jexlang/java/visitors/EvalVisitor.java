@@ -62,6 +62,18 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         this.programScopeContext = context != null ? context : new HashMap<>();
     }
 
+    public void resetProgramScopeContext() {
+        this.programScopeContext = null;
+    }
+
+    public Map<String, JexValue> getGlobalScopeVariables() {
+        Scope globalScope = this.scope.resolveScope(Scope.ScopeType.GLOBAL);
+        if (globalScope != null) {
+            return globalScope.getAllVariables();
+        }
+        return null;
+    }
+
     @Override
     public JexValue visit(ParseTree tree) {
         return super.visit(tree);
@@ -85,6 +97,8 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
         // Exit the program scope.
         this.setScopeToParent();
+        // Reset the program scope context
+        this.resetProgramScopeContext();
 
         return result;
     }

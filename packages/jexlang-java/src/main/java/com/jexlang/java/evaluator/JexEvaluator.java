@@ -38,6 +38,14 @@ public class JexEvaluator {
         return jexContext;
     }
 
+    private Map<String, Object> convertJexValueToContext(Map<String, JexValue> jexValueMap) {
+        Map<String, Object> context = new HashMap<>();
+        for  (Map.Entry<String, JexValue> entry : jexValueMap.entrySet()) {
+            context.put(entry.getKey(), entry.getValue().toObject());
+        }
+        return context;
+    }
+
     private void addAllContextValuesIntoGlobalScope(Map<String, JexValue> context) {
         if (context != null) {
             for (Map.Entry<String, JexValue> entry : context.entrySet()) {
@@ -142,6 +150,14 @@ public class JexEvaluator {
             return value.toObject();
         }
         return null;
+    }
+
+    public Map<String, Object> getGlobalScopeVariables() {
+        Map<String, JexValue> globalVariables = this.evalVisitor.getGlobalScopeVariables();
+        if (globalVariables != null) {
+            return this.convertJexValueToContext(globalVariables);
+        }
+        return Map.of();
     }
 
     public void addFunction(String name, FuncImpl function) {

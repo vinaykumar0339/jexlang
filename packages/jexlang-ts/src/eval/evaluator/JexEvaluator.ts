@@ -134,6 +134,10 @@ export class JexEvaluator {
     return value;
   }
 
+  getGlobalScopeVariables(): Record<string, JexValue> {
+    return this.visitor.getGlobalScopeVariables();
+  }
+
   addFunction(name: string, func: FuncImpl): void {
     this.funcs[name] = func;
     this.visitor.addFunction(name, func);
