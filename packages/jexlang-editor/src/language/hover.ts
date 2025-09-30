@@ -4,6 +4,12 @@ import { JEX_LANGUAGE_ID } from './jexlang-language';
 // Documentation for keywords
 const KEYWORD_DOCS: Record<string, string> = {
   'let': 'Declares a variable in the current scope.\n\n```\nlet variableName = expression;\n```',
+  'const': 'Declares a constant variable in the current scope. Its value cannot be reassigned.\n\n```\nconst constantName = expression;\n```',
+  'if': 'Starts a conditional block that executes if the condition is true.\n\n```\nif (condition) {\n  // code to execute if condition is true\n}\n```',
+  'else': 'Defines an alternative block of code to execute if the preceding `if` condition is false.\n\n```\nif (condition) {\n  // code if true\n} else {\n  // code if false\n}\n```',
+  'repeat': 'Starts a loop that repeats a block of code a specified number of times.\n\n```\nrepeat (count) {\n  // code to repeat\n}\n```',
+  'global': 'Declares a variable in the global scope, accessible from anywhere in the expression.\n\n```\nglobal const variableName = expression;\n```',
+  'null': 'Literal representing a null value.',
   'true': 'Boolean literal representing the true value.',
   'false': 'Boolean literal representing the false value.',
 };
@@ -17,7 +23,9 @@ const GLOBAL_VAR_DOCS: Record<string, string> = {
   'LOG2E': 'Mathematical constant representing the base-2 logarithm of E, approximately 1.442.',
   'LOG10E': 'Mathematical constant representing the base-10 logarithm of E, approximately 0.434.',
   'SQRT1_2': 'Mathematical constant representing the square root of 1/2, approximately 0.707.',
-  'SQRT2': 'Mathematical constant representing the square root of 2, approximately 1.414.'
+  'SQRT2': 'Mathematical constant representing the square root of 2, approximately 1.414.',
+  'VERSION': 'String representing the current version of the JexLang interpreter.',
+  '__CLIENT_LANGUAGE': 'String indicating the client language environment, e.g., "javascript", "java".',
 };
 
 // Documentation for operators
