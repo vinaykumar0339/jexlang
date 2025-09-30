@@ -8,27 +8,27 @@ JexLang addresses the common need for runtime-evaluated expressions and formulas
 
 ### Key Use Cases
 
-#### Formula Frameworks
-- **Dynamic Business Rules**: Store validation rules, pricing calculations, and discount logic as expressions that can be updated without code changes
-- **Custom Formulas**: Allow end-users to define their own formulas (like in spreadsheet applications) that can be safely parsed and executed
-- **Configurable Workflows**: Define conditional steps and branching logic with expressions that business users can understand and modify
+#### Form and Field Logic
+- **Field Validation Rules**: Define complex validation rules that can be evaluated client-side or server-side
+- **Conditional Field Visibility**: Show or hide fields based on values of other fields
+- **Cross-Field Dependencies**: Auto-populate or modify fields based on changes to related fields
+- **Custom Error Messages**: Generate dynamic error messages based on field values
 
-#### Mobile Applications
-- **Client-Side Validation**: Run lightweight validation logic directly on mobile devices before server submission
-- **Conditional UI Rendering**: Control which UI components to show based on dynamic expressions
-- **Feature Flags with Conditions**: Enable features based on complex conditions (user properties, device capabilities, etc.)
-- **Offline Formula Calculation**: Perform calculations locally when connectivity is unavailable
+#### Business Rules Engine
+- **Quote Calculations**: Implement configurable pricing and quoting formulas that business users can update
+- **Eligibility Rules**: Define complex criteria for product eligibility, discounts, or service tiers
+- **Approval Workflows**: Create conditional approval paths based on dynamic business criteria
+- **Rating Engines**: Build insurance or credit scoring systems with modifiable calculation logic
 
-#### Backend Services (Node.js)
-- **API Response Transformation**: Define transformations for API responses without modifying service code
-- **Dynamic Query Building**: Create complex database queries based on stored expressions
-- **Content Filtering**: Apply configurable rules to filter content based on user permissions or preferences
-- **Scheduled Evaluations**: Run periodic evaluations with expressions stored in configuration
+#### Configuration-Driven Features
+- **Feature Flags with Conditions**: Enable features based on complex user attributes or environmental factors
+- **A/B Test Rules**: Define sophisticated test segmentation without code changes
+- **Personalization Logic**: Tailor content based on user behavior using configurable rules
 
-#### Low-Code/No-Code Platforms
-- **Customization Layer**: Provide expression capabilities for users to extend platform functionality
-- **Integration Logic**: Define how data should be transformed when moving between systems
-- **Conditional Automation**: Control when automated processes should execute based on data conditions
+#### Cross-Platform Consistency
+- **Shared Validation Logic**: Use the same rules across web, mobile, and backend systems
+- **Platform-Agnostic Rules**: Write once, run in JavaScript, Java, and other supported languages
+- **Consistent Calculation Results**: Ensure identical outputs across different environments
 
 ### Advantages Over Alternatives
 
