@@ -617,6 +617,7 @@ Transforms can be applied using the pipe operator (`|`) to modify values:
 JexLang is available in multiple language implementations:
 
 - [JavaScript/TypeScript Implementation](./packages/jexlang-ts/README.md)
+- [Java Implementation](./packages/jexlang-java/README.md)
 
 ## License
 
