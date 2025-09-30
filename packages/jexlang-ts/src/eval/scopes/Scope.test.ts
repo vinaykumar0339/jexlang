@@ -191,6 +191,48 @@ describe('Scope', () => {
         });
     });
 
+    describe('getAllVariables', () => {
+        it('should return empty object when scope has no variables', () => {
+            const emptyScope = new Scope();
+            expect(emptyScope.getAllVariables()).toEqual({});
+        });
+
+        it('should return all variables from current scope', () => {
+            const testScope = new Scope();
+            testScope.declareVariable('x', 42);
+            testScope.declareVariable('y', 'hello');
+            testScope.declareVariable('z', true);
+
+            const allVars = testScope.getAllVariables();
+            expect(allVars).toEqual({
+                x: 42,
+                y: 'hello',
+                z: true
+            });
+        });
+
+        it('should only include variables from the current scope', () => {
+            const parentScope = new Scope();
+            const childScope = new Scope(parentScope);
+            
+            parentScope.declareVariable('parentVar', 'parent');
+            childScope.declareVariable('childVar', 'child');
+            
+            expect(parentScope.getAllVariables()).toEqual({ parentVar: 'parent' });
+            expect(childScope.getAllVariables()).toEqual({ childVar: 'child' });
+        });
+
+        it('should reflect updated variable values', () => {
+            const testScope = new Scope();
+            testScope.declareVariable('counter', 1);
+            
+            expect(testScope.getAllVariables()).toEqual({ counter: 1 });
+            
+            testScope.assignVariable('counter', 2);
+            expect(testScope.getAllVariables()).toEqual({ counter: 2 });
+        });
+    });
+
     describe('complex scenarios', () => {
         it('should handle nested scopes correctly', () => {
             const globalScope = new Scope(null, 'global');
