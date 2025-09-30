@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as JexLangParser from "../../grammar/JexLangParser";
 import { EvalVisitor } from "./EvalVisitor";
+import { BUILT_IN_FUNCTIONS } from "../functions";
+import { BUILT_IN_TRANSFORMS } from "../transforms";
 
 function createJexLangParserContext<T>(overrides: Partial<T> = {}): T {
   // Create a dummy object with no prototype to mimic context instance
@@ -49,6 +51,73 @@ describe("EvalVisitor", () => {
         it('should create an instance of EvalVisitor', () => {
             const visitor = new EvalVisitor();
             expect(visitor).toBeInstanceOf(EvalVisitor);
+        });
+
+        it('should have properly set the default constructor parameters', () => {
+            const visitor = new EvalVisitor();
+            const globalScopeVars = visitor.getGlobalScopeVariables();
+            expect(globalScopeVars).toEqual({
+                PI: Math.PI,
+                E: Math.E,
+                LN2: Math.LN2,
+                LN10: Math.LN10,
+                LOG2E: Math.LOG2E,
+                LOG10E: Math.LOG10E,
+                SQRT1_2: Math.SQRT1_2,
+                SQRT2: Math.SQRT2,
+                VERSION: expect.any(String),
+                __CLIENT_LANGUAGE: "javascript"
+            });
+
+            // Check if built-in functions are registered
+            for (const func in BUILT_IN_FUNCTIONS) {
+                expect(visitor.hasFunction(func)).toBe(true);
+            }
+
+            // Check if built-in transforms are registered
+            for (const transform in BUILT_IN_TRANSFORMS) {
+                expect(visitor.hasTransform(transform)).toBe(true);
+            }
+        });
+
+        it('should properly add custom functions and transforms', () => {
+            // Add new function and check it is available
+            const visitor = new EvalVisitor();
+            visitor.addFunction("testFunc", () => "test");
+            expect(visitor.hasFunction("testFunc")).toBe(true);
+
+            // Add new transform and check it is available
+            visitor.addTransform("testTransform", (input) => input);
+            expect(visitor.hasTransform("testTransform")).toBe(true);
+        })
+
+        it('should properly set the functions and transforms from constructor parameters', () => {
+            const customFunc = (x: any) => x;
+            const customTransform = (input: any) => input;
+
+            const visitor = new EvalVisitor(
+                undefined,
+                { "customFunc": customFunc },
+                { "customTransform": customTransform }
+            );
+
+            expect(visitor.hasFunction("customFunc")).toBe(true);
+            expect(visitor.hasTransform("customTransform")).toBe(true);
+        });
+
+        it('should initialize programScopeContext to an empty object', () => {
+            const visitor = new EvalVisitor();
+            expect(visitor.getProgramScopeContext()).toEqual({});
+        });
+
+        it('should set and reset programScopeContext correctly', () => {
+            const visitor = new EvalVisitor();
+            const context = { key: "value" };
+            visitor.setProgramScopeContext(context);
+            expect(visitor.getProgramScopeContext()).toEqual(context);
+
+            visitor.resetProgramScopeContext();
+            expect(visitor.getProgramScopeContext()).toEqual({});
         });
     });
 

@@ -40,6 +40,34 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         }
     }
 
+    public getAllFunctions(): Record<string, FuncImpl> {
+        if (this.funcRegistry instanceof MapFuncRegistry) {
+            return this.funcRegistry.getAll();
+        }
+        return {};
+    }
+
+    public hasFunction(name: string): boolean {
+        if (this.funcRegistry instanceof MapFuncRegistry) {
+            return this.funcRegistry.has(name);
+        }
+        return false;
+    }
+
+    public getAllTransforms(): Record<string, TransformImpl> {
+        if (this.transformRegistry instanceof MapTransformRegistry) {
+            return this.transformRegistry.getAll();
+        }
+        return {};
+    }
+
+    public hasTransform(name: string): boolean {
+        if (this.transformRegistry instanceof MapTransformRegistry) {
+            return this.transformRegistry.has(name);
+        }
+        return false;
+    }
+
     public addTransform(name: string, transform: TransformImpl): void {
         if (this.transformRegistry instanceof MapTransformRegistry) {
             this.transformRegistry.set(name, transform);
@@ -48,6 +76,10 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
 
     public setProgramScopeContext(context: Context = {}): void {
         this.programScopeContext = context;
+    }
+
+    public getProgramScopeContext(): Context {
+        return this.programScopeContext;
     }
 
     public resetProgramScopeContext(): void {
