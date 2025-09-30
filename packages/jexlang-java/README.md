@@ -345,7 +345,3 @@ public class PricingEngineDemo {
     }
 }
 ```
-
-## License
-
-MIT License
