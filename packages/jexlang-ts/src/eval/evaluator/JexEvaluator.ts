@@ -150,6 +150,22 @@ export class JexEvaluator {
     }
   }
 
+  getAllFunctions(): Record<string, FuncImpl> {
+    return this.visitor.getAllFunctions();
+  }
+
+  hasFunction(name: string): boolean {
+    return this.visitor.hasFunction(name);
+  }
+
+  getAllTransforms(): Record<string, TransformImpl> {
+    return this.visitor.getAllTransforms();
+  }
+  
+  hasTransform(name: string): boolean {
+    return this.visitor.hasTransform(name);
+  }
+
   addTransform(name: string, transform: TransformImpl): void {
     this.transformsMap[name] = transform;
     this.visitor.addTransform(name, transform);

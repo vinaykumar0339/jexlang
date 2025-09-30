@@ -165,6 +165,22 @@ public class JexEvaluator {
         evalVisitor.addFunction(name, function);
     }
 
+    public Map<String, FuncImpl> getAllFunctions() {
+        return this.evalVisitor.getAllFunctions();
+    }
+
+    public boolean hasFunction(String name) {
+        return this.evalVisitor.hasFunction(name);
+    }
+
+    public Map<String, TransformImpl> getAllTransforms() {
+        return this.evalVisitor.getAllTransforms();
+    }
+
+    public boolean hasTransform(String name) {
+        return this.evalVisitor.hasTransform(name);
+    }
+
     public void addTransform(String name, TransformImpl transform) {
         transformMap.put(name, transform);
         evalVisitor.addTransform(name, transform);

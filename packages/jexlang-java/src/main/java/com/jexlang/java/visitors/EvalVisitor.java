@@ -52,6 +52,34 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
     }
 
+    public Map<String, FuncImpl> getAllFunctions() {
+        if (this.funcRegistry != null) {
+            return this.funcRegistry.getAll();
+        }
+        return Map.of();
+    }
+
+    public boolean hasFunction(String name) {
+        if (this.funcRegistry != null) {
+            return this.funcRegistry.has(name);
+        }
+        return false;
+    }
+
+    public Map<String, TransformImpl> getAllTransforms() {
+        if (this.transformRegistry != null) {
+            return this.transformRegistry.getAll();
+        }
+        return Map.of();
+    }
+
+    public boolean hasTransform(String name) {
+        if (this.transformRegistry != null) {
+            return this.transformRegistry.has(name);
+        }
+        return false;
+    }
+
     public void addTransform(String name, TransformImpl fn) {
         if (this.transformRegistry != null) {
             this.transformRegistry.set(name, fn);
@@ -60,6 +88,10 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
     public void setProgramScopeContext(Map<String, Object> context) {
         this.programScopeContext = context != null ? context : new HashMap<>();
+    }
+
+    public Map<String, Object> getProgramScopeContext() {
+        return programScopeContext;
     }
 
     public void resetProgramScopeContext() {
