@@ -14,7 +14,6 @@ import com.jexlang.java.transforms.Transforms;
 import com.jexlang.java.types.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -23,6 +22,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private final MapTransformRegistry transformRegistry;
     private Scope scope;
 
+    private Map<String, Object> programScopeContext = new HashMap<>();
 
     public EvalVisitor(
             Scope scope,
@@ -31,7 +31,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     ) {
         super();
 
-        this.scope = scope;
+        this.scope = Objects.requireNonNullElseGet(scope, Utils::createGlobalScope);
 
         Map<String, FuncImpl> funcHashMap = new HashMap<>(Functions.makeBuiltins());
         if (funcsMap != null) {
@@ -52,10 +52,58 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
     }
 
+    public Map<String, FuncImpl> getAllFunctions() {
+        if (this.funcRegistry != null) {
+            return this.funcRegistry.getAll();
+        }
+        return Map.of();
+    }
+
+    public boolean hasFunction(String name) {
+        if (this.funcRegistry != null) {
+            return this.funcRegistry.has(name);
+        }
+        return false;
+    }
+
+    public Map<String, TransformImpl> getAllTransforms() {
+        if (this.transformRegistry != null) {
+            return this.transformRegistry.getAll();
+        }
+        return Map.of();
+    }
+
+    public boolean hasTransform(String name) {
+        if (this.transformRegistry != null) {
+            return this.transformRegistry.has(name);
+        }
+        return false;
+    }
+
     public void addTransform(String name, TransformImpl fn) {
         if (this.transformRegistry != null) {
             this.transformRegistry.set(name, fn);
         }
+    }
+
+    public void setProgramScopeContext(Map<String, Object> context) {
+        this.programScopeContext = context != null ? context : new HashMap<>();
+    }
+
+    public Map<String, Object> getProgramScopeContext() {
+        return programScopeContext;
+    }
+
+    public void resetProgramScopeContext() {
+        this.programScopeContext = null;
+    }
+
+    public Map<String, JexValue> getGlobalScopeVariables() {
+        Scope globalScope = this.scope.resolveScope(Scope.ScopeType.GLOBAL);
+        if (globalScope != null) {
+            return globalScope.getAllVariables();
+        }
+        return null;
     }
 
     @Override
@@ -67,7 +115,11 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitProgram(JexLangParser.ProgramContext ctx) {
 
         // create a new scope per program;
-        this.scope = new Scope(this.scope);
+        this.scope = new Scope(this.scope, Scope.ScopeType.PROGRAM);
+        // initialize the program scope with the provided context variables
+        for (Map.Entry<String, Object> entry : this.programScopeContext.entrySet()) {
+            this.scope.declareVariable(entry.getKey(), JexValue.from(entry.getValue()), false); // create as non-const variable
+        }
 
         JexValue result = null;
 
@@ -76,482 +128,211 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
 
         // Exit the program scope.
-        if (this.scope.getParentScope() != null) {
-            this.scope = this.scope.getParentScope();
-        }
+        this.setScopeToParent();
+        // Reset the program scope context
+        this.resetProgramScopeContext();
 
         return result;
     }
 
+    private void setScopeToParent() {
+        Scope parentScope = this.scope.getParentScope();
+        if (parentScope != null) {
+            this.scope = parentScope;
+        }
+    }
+
     @Override
     public JexValue visitStatement(JexLangParser.StatementContext ctx) {
-        if (ctx.assignment() != null) {
-            return this.visit(ctx.assignment());
-        } else if (ctx.expression() != null) {
-            return this.visit(ctx.expression());
-        } else if (ctx.propertyAssignment() != null) {
-            return this.visit(ctx.propertyAssignment());
-        } else if (ctx.localDeclaration() != null) {
-            return this.visit(ctx.localDeclaration());
+        if (ctx.varDeclaration() != null) {
+            return this.visit(ctx.varDeclaration());
+        } else if (ctx.block() != null) {
+            return this.visit(ctx.block());
+        } else if (ctx.expressionStatement() != null) {
+            return this.visit(ctx.expressionStatement());
+        } else if (ctx.emptyStatement() != null) {
+            return this.visit(ctx.emptyStatement());
         }
 
         return new JexNull();
     }
 
     @Override
-    public JexValue visitLocalDeclaration(JexLangParser.LocalDeclarationContext ctx) {
-        String variableName = ctx.IDENTIFIER().getText();
-        JexValue value = this.visit(ctx.expression());
+    public JexValue visitVarDeclaration(JexLangParser.VarDeclarationContext ctx) {
+        String varName = ctx.IDENTIFIER().getText();
+        JexValue varValue = ctx.singleExpression() != null ? this.visit(ctx.singleExpression()) : new JexNull();
+        boolean isConst = ctx.CONST() != null;
+        boolean isGlobal = ctx.GLOBAL() != null;
+        Scope globalScope = this.scope.resolveScope(Scope.ScopeType.GLOBAL);
+        if (isGlobal && globalScope != null) { // if variable declared as global scope then declare in global scope
+            globalScope.declareVariable(varName, varValue, isConst);
+            return varValue;
+        }
+        this.scope.declareVariable(varName, varValue, isConst); // otherwise in current scope
+        return varValue;
+    }
 
-        if (value == null) {
-            value = new JexNull(); // Default to JexNull if no value is provided
+    @Override
+    public JexValue visitLiteralExpression(JexLangParser.LiteralExpressionContext ctx) {
+        return this.visit(ctx.literal());
+    }
+
+    @Override
+    public JexValue visitBooleanLiteral(JexLangParser.BooleanLiteralContext ctx) {
+        return JexValue.fromBoolean(Boolean.parseBoolean(ctx.getText()));
+    }
+
+    @Override
+    public JexValue visitNumberLiteral(JexLangParser.NumberLiteralContext ctx) {
+        return JexValue.fromNumber(Utils.toNumber(new JexString(ctx.getText()), "number literal"));
+    }
+
+    @Override
+    public JexValue visitStringLiteral(JexLangParser.StringLiteralContext ctx) {
+        return new JexString(ctx.getText().substring(1, ctx.getText().length() - 1)); // Remove quotes.
+    }
+
+    @Override
+    public JexValue visitNullLiteral(JexLangParser.NullLiteralContext ctx) {
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitBlock(JexLangParser.BlockContext ctx) {
+        // Create a new scope for the block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = null;
+
+        for (int i = 0; i < ctx.statement().size(); i++) {
+            result = this.visit(ctx.statement(i));
         }
 
-        this.scope.declareVariable(variableName, value, false);
-        return value;
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
     }
 
     @Override
-    public JexValue visitAssignment(JexLangParser.AssignmentContext ctx) {
-        String variableName = ctx.IDENTIFIER().getText();
-        JexValue value = this.visit(ctx.expression());
+    public JexValue visitRepeatExpression(JexLangParser.RepeatExpressionContext ctx) {
+        JexValue iterable = this.visit(ctx.expressionSequence());
 
-        Scope resolvedScope = this.scope.resolveScope(variableName);
-        if (resolvedScope != null) {
-            resolvedScope.assignVariable(variableName, value);
-        } else {
-            // if not found, declare in the current scope
-            this.scope.declareVariable(variableName, value, false);
-        }
-        return value;
-    }
-
-    @Override
-    public JexValue visitPowerExpression(JexLangParser.PowerExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        JexValue right = this.visit(ctx.expression(1));
-        return new JexNumber(Math.pow(Utils.toNumber(left, "PowerExpression").doubleValue(),
-                Utils.toNumber(right, "PowerExpression").doubleValue()));
-    }
-
-    @Override
-    public JexValue visitSquareRootExpression(JexLangParser.SquareRootExpressionContext ctx) {
-        JexValue value = this.visit(ctx.expression());
-
-        Number number = Utils.toNumber(value, "SquareRootExpression");
-
-        if (Double.isNaN(number.doubleValue())) {
-            throw new JexLangRuntimeError("Cannot calculate square root of non-numeric value: " + value);
+        if (iterable.isNumber()) {
+            return this.handleNumericRepeat((JexNumber) iterable, ctx.block());
+        } else if (iterable.isString()) {
+            return this.handleStringRepeat((JexString) iterable, ctx.block());
+        } else if (iterable.isArray()) {
+            return this.handleArrayRepeat((JexArray) iterable, ctx.block());
+        } else if (iterable.isObject()) {
+            return this.handleObjectRepeat((JexObject) iterable, ctx.block());
         }
 
-        if (number.doubleValue() < 0) {
-            throw new JexLangRuntimeError("Cannot calculate square root of negative number: " + number);
+        return new JexNull();
+    }
+
+    private JexValue handleNumericRepeat(JexNumber number, JexLangParser.BlockContext block) {
+        int times = number.asNumber("repeat expression").intValue();
+        if (times < 0) {
+            throw new JexLangRuntimeError("Cannot repeat a block negative times: " + times);
         }
 
-        return new JexNumber(Math.sqrt(number.doubleValue()));
-    }
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
 
-    @Override
-    public JexValue visitUnaryMinusExpression(JexLangParser.UnaryMinusExpressionContext ctx) {
-        return new JexNumber(-Utils.toNumber(this.visit(ctx.expression()), "UnaryMinusExpression").doubleValue());
-    }
+        JexValue result = new JexNull();
 
-    @Override
-    public JexValue visitUnaryPlusExpression(JexLangParser.UnaryPlusExpressionContext ctx) {
-        return new JexNumber(Utils.toNumber(this.visit(ctx.expression()), "UnaryPlusExpression").doubleValue());
-    }
-
-    @Override
-    public JexValue visitMulDivModExpression(JexLangParser.MulDivModExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        JexValue right = this.visit(ctx.expression(1));
-        String operator = ctx.getChild(1).getText();
-
-        double leftValue = Utils.toNumber(left, "MulDivModExpression").doubleValue();
-        double rightValue = Utils.toNumber(right, "MulDivModExpression").doubleValue();
-
-        return switch (operator) {
-            case "*" -> new JexNumber(leftValue * rightValue);
-            case "/" -> {
-                if (rightValue == 0) {
-                    throw new DivisionByZeroError();
-                }
-                yield new JexNumber(leftValue / rightValue);
-            }
-            case "%" -> {
-                if (rightValue == 0) {
-                    throw new DivisionByZeroError();
-                }
-                yield new JexNumber(leftValue % rightValue);
-            }
-            default -> throw new JexLangRuntimeError("Unknown operator: " + operator);
-        };
-    }
-
-    @Override
-    public JexValue visitAddSubExpression(JexLangParser.AddSubExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        JexValue right = this.visit(ctx.expression(1));
-        String operator = ctx.getChild(1).getText();
-
-        // Handle string concatenation for +
-        if (operator.equals("+") && (left.isString() || right.isString())) {
-            String leftStr = Utils.toString(left, "AddSubExpression");
-            String rightStr = Utils.toString(right, "AddSubExpression");
-            return new JexString(leftStr + rightStr);
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", JexValue.fromNumber(i), false);
+            result = this.visit(block);
         }
 
-        double leftValue = Utils.toNumber(left, "AddSubExpression").doubleValue();
-        double rightValue = Utils.toNumber(right, "AddSubExpression").doubleValue();
+        // Exit the block scope.
+        this.setScopeToParent();
 
-        return switch (operator) {
-            case "+" -> new JexNumber(leftValue + rightValue);
-            case "-" -> new JexNumber(leftValue - rightValue);
-            default -> throw new JexLangRuntimeError("Unknown operator: " + operator);
-        };
+        return result;
+    }
+
+    private JexValue handleArrayRepeat(JexArray array, JexLangParser.BlockContext block) {
+        List<JexValue> elements = array.asArray("repeat expression");
+        int times = elements.size();
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", elements.get(i), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    private JexValue handleObjectRepeat(JexObject object, JexLangParser.BlockContext block) {
+        Map<String, JexValue> properties = object.asObject("repeat expression");
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+        for (Map.Entry<String, JexValue> entry : properties.entrySet()) {
+            this.scope.declareAndAssignVariable("$key", JexValue.fromString(entry.getKey()), false);
+            this.scope.declareAndAssignVariable("$value", entry.getValue(), false);
+            this.scope.declareAndAssignVariable("$it", entry.getValue(), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
+    }
+
+    private JexValue handleStringRepeat(JexString string, JexLangParser.BlockContext block) {
+        String str = string.asString("repeat expression");
+        int times = str.length();
+
+        // Create a new scope for the repeat block
+        this.scope = new Scope(this.scope, Scope.ScopeType.BLOCK);
+
+        JexValue result = new JexNull();
+
+        for (int i = 0; i < times; i++) {
+            this.scope.declareAndAssignVariable("$index", JexValue.fromNumber(i), false);
+            this.scope.declareAndAssignVariable("$it", JexValue.fromString(String.valueOf(str.charAt(i))), false);
+            result = this.visit(block);
+        }
+
+        // Exit the block scope.
+        this.setScopeToParent();
+
+        return result;
     }
 
     @Override
-    public JexValue visitComparatorExpression(JexLangParser.ComparatorExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        JexValue right = this.visit(ctx.expression(1));
-        String operator = ctx.getChild(1).getText();
-
-
-        return switch (operator) {
-            case "<" -> new JexBoolean(Utils.isLessThan(left, right, false));
-            case "<=" -> new JexBoolean(Utils.isLessThan(left, right, true));
-            case ">" -> new JexBoolean(Utils.isGreaterThan(left, right, false));
-            case ">=" -> new JexBoolean(Utils.isGreaterThan(left, right, true));
-            case "==" -> new JexBoolean(Utils.isEqual(left, right));
-            case "!=" -> new JexBoolean(!Utils.isEqual(left, right));
-            default -> throw new JexLangRuntimeError("Unknown operator: " + operator);
-        };
+    public JexValue visitEmptyStatement(JexLangParser.EmptyStatementContext ctx) {
+        return new JexNull();
     }
 
     @Override
-    public JexValue visitParenthesizedExpression(JexLangParser.ParenthesizedExpressionContext ctx) {
-        return this.visit(ctx.expression());
+    public JexValue visitExpressionStatement(JexLangParser.ExpressionStatementContext ctx) {
+        return this.visit(ctx.expressionSequence());
     }
 
     @Override
-    public JexValue visitFunctionCallExpression(JexLangParser.FunctionCallExpressionContext ctx) {
-        return this.visit(ctx.functionCall());
-    }
-
-    @Override
-    public JexValue visitVariableExpression(JexLangParser.VariableExpressionContext ctx) {
-        String variableName = ctx.IDENTIFIER().getText();
-
-        Scope resolvedScope = this.scope.resolveScope(variableName);
-        if (resolvedScope != null) {
-            return resolvedScope.getVariable(variableName);
+    public JexValue visitExpressionSequence(JexLangParser.ExpressionSequenceContext ctx) {
+        JexValue result = null;
+        for (JexLangParser.SingleExpressionContext exp: ctx.singleExpression()) {
+            result = this.visit(exp);
         }
-
-        throw new UndefinedVariableError(variableName);
-    }
-
-    @Override
-    public JexValue visitNumberExpression(JexLangParser.NumberExpressionContext ctx) {
-        String numberText = ctx.NUMBER().getText();
-        try {
-            return new JexNumber(Double.parseDouble(numberText));
-        } catch (NumberFormatException e) {
-            throw new JexLangRuntimeError("Invalid number format: " + numberText);
-        }
-    }
-
-    @Override
-    public JexValue visitFunctionCall(JexLangParser.FunctionCallContext ctx) {
-        String functionName = ctx.IDENTIFIER().getText();
-
-        if (!this.funcRegistry.has(functionName)) {
-            throw new UndefinedFunctionError(functionName);
-        }
-
-        ArrayList<JexValue> args = new ArrayList<>();
-
-        if (ctx.argumentList() != null) {
-            JexValue argList = this.visit(ctx.argumentList());
-            if (argList instanceof JexArray) {
-                args.addAll(argList.asArray("FunctionCall"));
-            } else {
-                throw new JexLangRuntimeError("Expected argument list to be an array, got: " + Utils.getJexValueType(argList));
-            }
-        }
-
-        try {
-            return this.funcRegistry.call(functionName, args.toArray(new JexValue[0]));
-        } catch (Exception e) {
-            throw new JexLangRuntimeError("Error calling function '" + functionName + "': " + e.getMessage());
-        }
-    }
-
-    @Override
-    public JexValue visitArgumentList(JexLangParser.ArgumentListContext ctx) {
-        ArrayList<JexValue> args = new ArrayList<>();
-
-        for (JexLangParser.ExpressionContext exprCtx : ctx.expression()) {
-            JexValue argValue = this.visit(exprCtx);
-            args.add(argValue);
-        }
-
-        return new JexArray(args);
-    }
-
-    @Override
-    public JexValue visitStringExpression(JexLangParser.StringExpressionContext ctx) {
-        String stringValue = ctx.STRING().getText();
-        // Remove surrounding quotes
-        stringValue = stringValue.substring(1, stringValue.length() - 1);
-        return new JexString(stringValue);
-    }
-
-    @Override
-    public JexValue visitDotPropertyAccessExpression(JexLangParser.DotPropertyAccessExpressionContext ctx) {
-        JexValue object = this.visit(ctx.expression());
-        String prop = ctx.IDENTIFIER().getText();
-        if (object.isObject()) {
-            Map<String, JexValue> jexObject = object.asObject("DotPropertyAccessExpression");
-            return jexObject.getOrDefault(prop, new JexNull());
-        } else {
-            return new JexNull();
-        }
-    }
-
-    @Override
-    public JexValue visitDotPropertyAssignment(JexLangParser.DotPropertyAssignmentContext ctx) {
-        JexValue object = this.visit(ctx.expression(0));
-        String prop = ctx.IDENTIFIER().getText();
-        JexValue value = this.visit(ctx.expression(1));
-
-        if (object.isObject()) {
-            Map<String, JexValue> jexObject = object.asObject("DotPropertyAssignment");
-            jexObject.put(prop, value);
-            return value;
-        } else {
-            return new JexNull();
-        }
-
-    }
-
-    @Override
-    public JexValue visitBracketPropertyAccessExpression(JexLangParser.BracketPropertyAccessExpressionContext ctx) {
-        JexValue object = this.visit(ctx.expression(0));
-        JexValue prop = this.visit(ctx.expression(1));
-
-        // For Object Type
-        if (object.isObject()) {
-            Map<String, JexValue> jexObject = object.asObject("BracketPropertyAccessExpression");
-            jexObject.put(Utils.toString(prop, "BracketPropertyAccessExpression"), new JexNull());
-        } else if (object.isArray()) {
-            List<JexValue> jexArray = object.asArray("BracketPropertyAccessExpression");
-            if (prop.isNumber()) {
-                int index = Utils.toNumber(prop, "BracketPropertyAccessExpression").intValue();
-                int normalizedIndex = index < 0 ? jexArray.size() + index : index;
-                if (normalizedIndex >= 0 && normalizedIndex < jexArray.size()) {
-                    return jexArray.get(index);
-                } else {
-                    return new JexNull(); // Out of bounds access
-                }
-            } else {
-                return new JexNull(); // Non-numeric index access
-            }
-        } else {
-            return new JexNull();
-        }
-
-        return new JexNull(); // If object is not an array or object, return null
-    }
-
-    @Override
-    public JexValue visitBracketPropertyAssignment(JexLangParser.BracketPropertyAssignmentContext ctx) {
-        JexValue object = this.visit(ctx.expression(0));
-        JexValue prop = this.visit(ctx.expression(1));
-        JexValue value = this.visit(ctx.expression(2));
-
-        // For Object Type
-        if (object.isObject()) {
-            Map<String, JexValue> jexObject = object.asObject("BracketPropertyAssignment");
-            jexObject.put(Utils.toString(prop, "BracketPropertyAssignment"), value);
-            return value;
-        } else if (object.isArray()) {
-            List<JexValue> jexArray = object.asArray("BracketPropertyAssignment");
-            if (prop.isNumber()) {
-                int index = Utils.toNumber(prop, "BracketPropertyAssignment").intValue();
-                int normalizedIndex = index < 0 ? jexArray.size() + index : index;
-                if (normalizedIndex >= 0 && normalizedIndex < jexArray.size()) {
-                    jexArray.set(normalizedIndex, value);
-                    return value;
-                } else {
-                    return new JexNull(); // Out of bounds access
-                }
-            } else {
-                return new JexNull(); // Non-numeric index access
-            }
-        }
-
-        return new JexNull(); // If object is not an array or object, return null
-    }
-
-    @Override
-    public JexValue visitPrefixIncrementExpression(JexLangParser.PrefixIncrementExpressionContext ctx) {
-        JexLangParser.ExpressionContext exprCtx = ctx.expression();
-        if (!(exprCtx instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
-        }
-
-        String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
-        Number currentValue = null;
-
-        if (this.scope.hasVariable((variableName))) {
-            JexValue value = this.scope.getVariable(variableName);
-            currentValue = Utils.toNumber(value, "PrefixIncrementExpression");
-            Number newValue = currentValue.doubleValue() + 1;
-            this.scope.assignVariable(variableName, new JexNumber(newValue));
-            return new JexNumber(newValue);
-        }
-
-        throw new UndefinedVariableError(variableName);
-    }
-
-    @Override
-    public JexValue visitPrefixDecrementExpression(JexLangParser.PrefixDecrementExpressionContext ctx) {
-        JexLangParser.ExpressionContext exprCtx = ctx.expression();
-        if (!(exprCtx instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
-        }
-
-        String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
-        Number currentValue = null;
-
-        if (this.scope.hasVariable((variableName))) {
-            JexValue value = this.scope.getVariable(variableName);
-            currentValue = Utils.toNumber(value, "PrefixDecrementExpression");
-            Number newValue = currentValue.doubleValue() - 1;
-            this.scope.assignVariable(variableName, new JexNumber(newValue));
-            return new JexNumber(newValue);
-        }
-
-        throw new UndefinedVariableError(variableName);
-    }
-
-    @Override
-    public JexValue visitPostfixIncrementExpression(JexLangParser.PostfixIncrementExpressionContext ctx) {
-        JexLangParser.ExpressionContext exprCtx = ctx.expression();
-        if (!(exprCtx instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Increment operator can only be applied to variables");
-        }
-
-        String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
-        Number currentValue = null;
-
-        if (this.scope.hasVariable((variableName))) {
-            JexValue value = this.scope.getVariable(variableName);
-            currentValue = Utils.toNumber(value, "PostfixIncrementExpression");
-            Number newValue = currentValue.doubleValue() + 1;
-            this.scope.assignVariable(variableName, new JexNumber(newValue));
-            return new JexNumber(currentValue.doubleValue()); // Return old value
-        }
-
-        throw new UndefinedVariableError(variableName);
-    }
-
-    @Override
-    public JexValue visitPostfixDecrementExpression(JexLangParser.PostfixDecrementExpressionContext ctx) {
-        JexLangParser.ExpressionContext exprCtx = ctx.expression();
-        if (!(exprCtx instanceof JexLangParser.VariableExpressionContext)) {
-            throw new JexLangRuntimeError("Decrement operator can only be applied to variables");
-        }
-
-        String variableName = ((JexLangParser.VariableExpressionContext) exprCtx).IDENTIFIER().getText();
-        Number currentValue = null;
-
-        if (this.scope.hasVariable((variableName))) {
-            JexValue value = this.scope.getVariable(variableName);
-            currentValue = Utils.toNumber(value, "PostfixDecrementExpression");
-            Number newValue = currentValue.doubleValue() - 1;
-            this.scope.assignVariable(variableName, new JexNumber(newValue));
-            return new JexNumber(currentValue.doubleValue()); // Return old value
-        }
-
-        throw new UndefinedVariableError(variableName);
-    }
-
-    @Override
-    public JexValue visitTernaryExpression(JexLangParser.TernaryExpressionContext ctx) {
-        JexValue condition = this.visit(ctx.expression(0));
-        JexValue trueExpr = this.visit(ctx.expression(1));
-        JexValue falseExpr = this.visit(ctx.expression(2));
-
-        if (condition instanceof JexBoolean) {
-            return condition.asBoolean("TernaryExpression") ? trueExpr : falseExpr;
-        }
-
-        // If condition is not a boolean, treat it as truthy / falsy
-        return !(condition instanceof JexNull) ? trueExpr : falseExpr;
-    }
-
-    @Override
-    public JexValue visitShortTernaryExpression(JexLangParser.ShortTernaryExpressionContext ctx) {
-        JexValue condition = this.visit(ctx.expression(0));
-        JexValue falseExpr = this.visit(ctx.expression(1));
-        return !(condition instanceof JexNull) ? condition : falseExpr;
-    }
-
-    @Override
-    public JexValue visitBooleanExpression(JexLangParser.BooleanExpressionContext ctx) {
-        return new JexBoolean(Boolean.parseBoolean(ctx.BOOLEAN().getText()));
-    }
-
-    @Override
-    public JexValue visitObjectLiteral(JexLangParser.ObjectLiteralContext ctx) {
-        Map<String, JexValue> obj = new HashMap<>();
-
-        for (int i = 0; i < ctx.getChildCount(); i++) {
-            JexValue value = this.visit(ctx.getChild(i));
-            if (value != null && value.isObject()) {
-                obj.putAll(value.asObject("ObjectLiteral"));
-            }
-        }
-
-        return new JexObject(obj);
-    }
-
-    @Override
-    public JexValue visitObjectProperty(JexLangParser.ObjectPropertyContext ctx) {
-        Map<String, JexValue> obj = new HashMap<>(Map.ofEntries());
-        String key = null;
-        if (ctx.IDENTIFIER() != null) {
-            String idText = ctx.IDENTIFIER().getText();
-            Scope resolvedScope = this.scope.resolveScope(idText);
-            if (resolvedScope != null) {
-                JexValue keyValue = resolvedScope.getVariable(idText);
-                if (keyValue != null) {
-                    key = Utils.toString(keyValue, "ObjectProperty");
-                }
-            } else {
-                key = idText; // Use the identifier as the key if not found in context or scope
-            }
-        } else if (ctx.STRING() != null) {
-            // Use the string literal as the key
-            key = ctx.STRING().getText();
-            key = key.substring(1, key.length() - 1);
-        }
-
-        // lets not consider the empty strings and null keys
-        if (key != null && !key.isEmpty()) {
-            JexValue value = this.visit(ctx.expression());
-            // Default to JexNull if no value is provided
-            obj.put(key, Objects.requireNonNullElseGet(value, JexNull::new));
-        }
-
-        return new JexObject(obj);
-    }
-
-    @Override
-    public JexValue visitObjectLiteralExpression(JexLangParser.ObjectLiteralExpressionContext ctx) {
-        return this.visit(ctx.objectLiteral());
+        return result != null ? result : new JexNull();
     }
 
     @Override
@@ -561,65 +342,537 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
     @Override
     public JexValue visitArrayLiteral(JexLangParser.ArrayLiteralContext ctx) {
-        ArrayList<JexValue> elements = new ArrayList<>();
+        List<JexValue> elements = new ArrayList<>();
+        for (JexLangParser.ArrayElementContext exprCtx : ctx.arrayElement()) {
+            elements.add(this.visit(exprCtx));
+        }
+        return JexValue.fromArray(elements);
+    }
 
-        for (int i = 0; i < ctx.expression().size(); i++) {
-            ParseTree child = ctx.expression(i);
-            JexValue element = this.visit(child);
-            elements.add(element);
+    @Override
+    public JexValue visitArrayElement(JexLangParser.ArrayElementContext ctx) {
+        return this.visit(ctx.singleExpression());
+    }
+
+    @Override
+    public JexValue visitObjectLiteralExpression(JexLangParser.ObjectLiteralExpressionContext ctx) {
+        return this.visit(ctx.objectLiteral());
+    }
+
+    @Override
+    public JexValue visitObjectLiteral(JexLangParser.ObjectLiteralContext ctx) {
+        Map<String, JexValue> properties = new HashMap<>();
+        for (JexLangParser.ObjectPropertyContext propCtx : ctx.objectProperty()) {
+            JexValue prop = this.visit(propCtx);
+            if (prop.isObject()) {
+                properties.putAll(prop.asObject("object literal"));
+            } // ignore if the response is not and object.
+        }
+        return JexValue.fromObject(properties);
+    }
+
+    @Override
+    public JexValue visitPropertyExpressionObjectProperty(JexLangParser.PropertyExpressionObjectPropertyContext ctx) {
+        JexValue propertyName = this.visit(ctx.objectPropertyName());
+        JexValue propertyValue = this.visit(ctx.singleExpression());
+        return new JexObject(Map.of(Utils.toString(propertyName, "property expression object property"), propertyValue));
+    }
+
+    @Override
+    public JexValue visitComputedPropertyExpressionObjectProperty(JexLangParser.ComputedPropertyExpressionObjectPropertyContext ctx) {
+        JexValue propertyName = this.visit(ctx.singleExpression(0));
+        JexValue propertyValue = this.visit(ctx.singleExpression(1));
+        return new JexObject(Map.of(Utils.toString(propertyName, "computed property expression object property"), propertyValue));
+    }
+
+    @Override
+    public JexValue visitShorthandPropertyExpressionObjectProperty(JexLangParser.ShorthandPropertyExpressionObjectPropertyContext ctx) {
+        String propertyName = ctx.IDENTIFIER().getText();
+        JexValue propertyValue = this.scope.getVariable(propertyName);
+        return new JexObject(Map.of(propertyName, propertyValue)); // don't throw any error if it didn't find the variable just set the null value
+    }
+
+    @Override
+    public JexValue visitObjectPropertyName(JexLangParser.ObjectPropertyNameContext ctx) {
+        if (ctx.STRING() != null) {
+            return  new JexString(ctx.getText().substring(1, ctx.getText().length() - 1)); // Remove quotes.
         }
 
-        return new JexArray(elements);
+        return new JexString(ctx.getText()); // Return string representation of the identifier or number
+    }
+
+    @Override
+    public JexValue visitIdentifierExpression(JexLangParser.IdentifierExpressionContext ctx) {
+        String identifier = ctx.IDENTIFIER().getText();
+        if (this.scope.hasVariable(identifier)) {
+            return this.scope.getVariable(identifier);
+        }
+        throw new UndefinedVariableError(identifier);
+    }
+
+    @Override
+    public JexValue visitParenthesizedExpression(JexLangParser.ParenthesizedExpressionContext ctx) {
+        return this.visit(ctx.expressionSequence());
+    }
+
+    @Override
+    public JexValue visitAssignmentExpression(JexLangParser.AssignmentExpressionContext ctx) {
+        String varName = ctx.IDENTIFIER().getText();
+        JexValue varValue = this.visit(ctx.singleExpression());
+        this.scope.assignVariable(varName, varValue);
+        return varValue;
+    }
+
+    @Override
+    public JexValue visitBracketPropertyAssignment(JexLangParser.BracketPropertyAssignmentContext ctx) {
+        JexValue objectValue = this.visit(ctx.singleExpression(0));
+        JexValue propertyKey = this.visit(ctx.singleExpression(1));
+        JexValue propertyValue = this.visit(ctx.singleExpression(2));
+
+        if (objectValue != null && objectValue.isObject()) {
+            Map<String, JexValue> obj = objectValue.asObject("bracket property assignment");
+            obj.put(Utils.toString(propertyKey, "bracket property assignment"), propertyValue);
+            return JexValue.fromObject(obj);
+        } else if (objectValue != null && objectValue.isArray()) {
+            JexValue[] obj = objectValue.asArray("bracket property assignment").toArray(new JexValue[0]);
+            Number indexNumber = Utils.toNumber(propertyKey, "bracket property assignment");
+            int normalizedIndex = Double.isNaN(indexNumber.doubleValue()) ? -1 : indexNumber.intValue();
+            if (normalizedIndex < 0) {
+                normalizedIndex = obj.length + normalizedIndex; // Handle negative indices
+            }
+            if (normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                obj[normalizedIndex] = propertyValue;
+                return JexValue.fromArray(Arrays.asList(obj));
+            }
+            return new JexNull(); // if out of bounds just return JexNull, don't throw any errors.
+        } else {
+            throw new JexLangRuntimeError("Cannot assign property to non-object/non-array in bracket property assignment");
+        }
+    }
+
+    @Override
+    public JexValue visitDotPropertyAssignment(JexLangParser.DotPropertyAssignmentContext ctx) {
+        JexValue objectValue = this.visit(ctx.singleExpression(0));
+        JexValue propertyName = this.visit(ctx.objectPropertyName());
+        JexValue propertyValue = this.visit(ctx.singleExpression(1));
+
+        if (objectValue != null && objectValue.isObject()) {
+            Map<String, JexValue> obj = objectValue.asObject("dot property assignment");
+            obj.put(Utils.toString(propertyName, "dot property assignment"), propertyValue);
+            return JexValue.fromObject(obj);
+        } else if (objectValue != null && objectValue.isArray()) {
+            JexValue[] obj = objectValue.asArray("dot property assignment").toArray(new JexValue[0]);
+            Number indexNumber = Utils.toNumber(propertyName, "dot property assignment");
+            int normalizedIndex = Double.isNaN(indexNumber.doubleValue()) ? -1 : indexNumber.intValue();
+            if (normalizedIndex < 0) {
+                normalizedIndex = obj.length + normalizedIndex; // Handle negative indices
+            }
+            if (normalizedIndex >= 0 && normalizedIndex < obj.length) {
+                obj[normalizedIndex] = propertyValue;
+                return JexValue.fromArray(Arrays.asList(obj));
+            }
+            return new JexNull(); // if out of bounds just return JexNull, don't throw any errors.
+        } else {
+            throw new JexLangRuntimeError("Cannot assign property to non-object/non-array in dot property assignment");
+        }
+    }
+
+    @Override
+    public JexValue visitTernaryExpression(JexLangParser.TernaryExpressionContext ctx) {
+        JexValue condition = this.visit(ctx.singleExpression(0));
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "ternary expression")) {
+            return this.visit(ctx.singleExpression(1));
+        } else {
+            return this.visit(ctx.singleExpression(2));
+        }
+    }
+
+    @Override
+    public JexValue visitShortTernaryExpression(JexLangParser.ShortTernaryExpressionContext ctx) {
+        JexValue condition = this.visit(ctx.singleExpression(0));
+        // If values are present, return the resolved condition, null is falsy others are truthy
+        if (condition != null && !condition.isNull()) {
+            return condition;
+        } else {
+            return this.visit(ctx.singleExpression(1));
+        }
     }
 
     @Override
     public JexValue visitTransformExpression(JexLangParser.TransformExpressionContext ctx) {
-        JexValue input = this.visit(ctx.expression());
+        JexValue input = this.visit(ctx.singleExpression());
         String transformName = ctx.IDENTIFIER().getText();
 
         if (this.transformRegistry.has(transformName)) {
-            try {
-                return this.transformRegistry.transform(transformName, input);
-            } catch (Exception e) {
-                throw new JexLangRuntimeError("Error applying transform '" + transformName + "': " + e.getMessage());
-            }
+            return this.transformRegistry.transform(transformName, input);
         }
 
-        // Fall back to function registry
+        // if transform not found lets check in functions
         if (this.funcRegistry.has(transformName)) {
-            ArrayList<JexValue> args = new ArrayList<>();
-            args.add(input);
-            try {
-                return this.funcRegistry.call(transformName, args.toArray(new JexValue[0]));
-            } catch (Exception e) {
-                throw new JexLangRuntimeError("Error calling function '" + transformName + "': " + e.getMessage());
-            }
+            return this.funcRegistry.call(transformName, input);
         }
 
         throw new UndefinedTransformError(transformName);
+    }
 
+    @Override
+    public JexValue visitPowerExpression(JexLangParser.PowerExpressionContext ctx) {
+        JexValue left = this.visit(ctx.singleExpression(0));
+        JexValue right = this.visit(ctx.singleExpression(1));
+
+        Number base = Utils.toNumber(left, "power expression");
+        Number exponent = Utils.toNumber(right, "power expression");
+
+        return JexValue.fromNumber(Math.pow(base.doubleValue(), exponent.doubleValue()));
+    }
+
+    @Override
+    public JexValue visitMultiplicativeExpression(JexLangParser.MultiplicativeExpressionContext ctx) {
+        JexValue left = this.visit(ctx.singleExpression(0));
+        JexValue right = this.visit(ctx.singleExpression(1));
+
+        Number leftNum = Utils.toNumber(left, "multiplicative expression");
+        Number rightNum = Utils.toNumber(right, "multiplicative expression");
+
+        if (ctx.MULTIPLY() != null) {
+            return new JexNumber(leftNum.doubleValue() * rightNum.doubleValue());
+        } else if (ctx.DIVIDE() != null) {
+            if (rightNum.doubleValue() == 0) {
+                throw new DivisionByZeroError();
+            }
+            return new JexNumber(leftNum.doubleValue() / rightNum.doubleValue());
+        } else if (ctx.MODULO() != null) {
+            if (rightNum.doubleValue() == 0) {
+                throw new DivisionByZeroError();
+            }
+            return new JexNumber(leftNum.doubleValue() % rightNum.doubleValue());
+        }
+
+        throw new JexLangRuntimeError("Unknown multiplicative operator " + ctx.getChild(1).getText());
+    }
+
+    @Override
+    public JexValue visitAdditiveExpression(JexLangParser.AdditiveExpressionContext ctx) {
+        JexValue left = this.visit(ctx.singleExpression(0));
+        JexValue right = this.visit(ctx.singleExpression(1));
+
+        if (ctx.PLUS() != null) {
+            // If either operand is a string, perform string concatenation
+            if (left.isString() || right.isString()) {
+                return JexValue.fromString(Utils.toString(left, "additive expression") + Utils.toString(right, "additive expression"));
+            }
+
+            Number leftNum = Utils.toNumber(left, "additive expression");
+            Number rightNum = Utils.toNumber(right, "additive expression");
+            return JexValue.fromNumber(leftNum.doubleValue() + rightNum.doubleValue());
+        } else if (ctx.MINUS() != null) {
+            Number leftNum = Utils.toNumber(left, "additive expression");
+            Number rightNum = Utils.toNumber(right, "additive expression");
+            return JexValue.fromNumber(leftNum.doubleValue() - rightNum.doubleValue());
+        }
+
+        throw new JexLangRuntimeError("Unknown additive operator " + ctx.getChild(1).getText());
+    }
+
+    @Override
+    public JexValue visitRelationalExpression(JexLangParser.RelationalExpressionContext ctx) {
+        JexValue left = this.visit(ctx.singleExpression(0));
+        JexValue right = this.visit(ctx.singleExpression(1));
+
+        if (ctx.LT() != null) {
+            return new JexBoolean(Utils.isLessThan(left, right, false));
+        } else if (ctx.GT() != null) {
+            return new JexBoolean(Utils.isGreaterThan(left, right, false));
+        } else if (ctx.LTE() != null) {
+            return new JexBoolean(Utils.isLessThan(left, right, true));
+        } else if (ctx.GTE() != null) {
+            return new JexBoolean(Utils.isGreaterThan(left, right, true));
+        }
+
+        throw new JexLangRuntimeError("Unknown relational operator " + ctx.getChild(1).getText());
+    }
+
+    @Override
+    public JexValue visitEqualityExpression(JexLangParser.EqualityExpressionContext ctx) {
+        JexValue left = this.visit(ctx.singleExpression(0));
+        JexValue right = this.visit(ctx.singleExpression(1));
+
+        if (ctx.EQ() != null) {
+            return new JexBoolean(Utils.isEqual(left, right));
+        } else if (ctx.NEQ() != null) {
+            return new JexBoolean(!Utils.isEqual(left, right));
+        }
+
+        throw new JexLangRuntimeError("Unknown equality operator " + ctx.getChild(1).getText());
     }
 
     @Override
     public JexValue visitLogicalAndExpression(JexLangParser.LogicalAndExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        if (left instanceof JexBoolean && !left.asBoolean("LogicalAndExpression")) {
-            return left; // Short-circuit if left is false
+        if (ctx.AND() != null) {
+            JexValue left = this.visit(ctx.singleExpression(0));
+            boolean leftBoolean = left != null && !left.isNull() && (left.isNumber() && left.asNumber("logical AND expression").doubleValue() != 0 && (left.isBoolean() && left.asBoolean("logical or expression"))); // remaining all truthy values.
+            if (!leftBoolean) { // short-circuit if left is falsy
+                return new JexBoolean(false);
+            }
+            JexValue right = this.visit(ctx.singleExpression(1));
+            boolean rightBool = right != null && !right.isNull() && (right.isNumber() && right.asNumber("logical AND expression").doubleValue() != 0 && (right.isBoolean() && right.asBoolean("logical or expression"))); // remaining all truthy values.
+            return new JexBoolean(rightBool);
         }
 
-        // Evaluate right only if left is true
-        return this.visit(ctx.expression(1));
+        throw new JexLangRuntimeError("Unknown logical operator " + ctx.getChild(1).getText());
     }
 
     @Override
     public JexValue visitLogicalOrExpression(JexLangParser.LogicalOrExpressionContext ctx) {
-        JexValue left = this.visit(ctx.expression(0));
-        if (left instanceof JexBoolean && left.asBoolean("LogicalOrExpression")) {
-            return left; // Short-circuit if left is true
+        if (ctx.OR() != null) {
+            JexValue left = this.visit(ctx.singleExpression(0));
+            boolean leftBoolean = left != null && !left.isNull() && (left.isNumber() && left.asNumber("logical OR expression").doubleValue() != 0) && (left.isBoolean() && left.asBoolean("logical or expression")); // remaining all truthy values.
+            if (leftBoolean) { // short-circuit if left is truthy
+                return new JexBoolean(true);
+            }
+            JexValue right = this.visit(ctx.singleExpression(1));
+            boolean rightBool = right != null && !right.isNull() && (right.isNumber() && right.asNumber("logical OR expression").doubleValue() != 0 && (right.isBoolean() && right.asBoolean("logical or expression"))); // remaining all truthy values.
+            return new JexBoolean(rightBool);
         }
 
-        // Evaluate right only if left is false
-        return this.visit(ctx.expression(1));
+        throw new JexLangRuntimeError("Unknown logical operator " + ctx.getChild(1).getText());
+    }
+
+    @Override
+    public JexValue visitUnaryExpression(JexLangParser.UnaryExpressionContext ctx) {
+        JexValue value = this.visit(ctx.singleExpression());
+
+        if (ctx.MINUS() != null) {
+            return JexValue.fromNumber(-Utils.toNumber(value, "unary expression").doubleValue());
+        } else if (ctx.PLUS() != null) {
+            return JexValue.fromNumber(+Utils.toNumber(value, "unary expression").doubleValue());
+        }
+
+        throw new JexLangRuntimeError("Unknown unary operator " + ctx.getChild(0).getText());
+    }
+
+    @Override
+    public JexValue visitSquareRootExpression(JexLangParser.SquareRootExpressionContext ctx) {
+        JexValue value = this.visit(ctx.singleExpression());
+        Number number = Utils.toNumber(value, "square root expression");
+        if (number.doubleValue() < 0) {
+            throw new JexLangRuntimeError("Cannot compute square root of negative number");
+        }
+        return JexValue.fromNumber(Math.sqrt(number.doubleValue()));
+    }
+
+    @Override
+    public JexValue visitMemberDotExpression(JexLangParser.MemberDotExpressionContext ctx) {
+        JexValue obj = this.visit(ctx.singleExpression());
+        JexValue propertyName = this.visit(ctx.objectPropertyName());
+        if (propertyName != null && !propertyName.isString()) {
+            throw new JexLangRuntimeError("Invalid property name: " + propertyName);
+        }
+        if (obj != null && obj.isObject() && propertyName != null) {
+            return obj.asObject("member dot expression").getOrDefault(propertyName.asString("member dot expression"), new JexNull());
+        }
+
+        return new JexNull(); // don't throw any error if the object is null or not an object just return null to further chain.
+    }
+
+    @Override
+    public JexValue visitMemberIndexExpression(JexLangParser.MemberIndexExpressionContext ctx) {
+        JexValue obj = this.visit(ctx.singleExpression());
+        JexValue propertyKey = this.visit(ctx.expressionSequence());
+        if (obj != null && obj.isObject()) {
+            return obj.asObject("member index expression").getOrDefault(Utils.toString(propertyKey, "member index expression"), new JexNull());
+        } else if (obj != null && obj.isArray()) {
+            Number indexNumber = Utils.toNumber(propertyKey, "member index expression");
+            int normalizedIndex = Double.isNaN(indexNumber.doubleValue()) ? -1 : indexNumber.intValue();
+            if (normalizedIndex < 0) {
+                normalizedIndex = obj.asArray("member index expression").size() + normalizedIndex; // Handle negative indices
+            }
+            if (normalizedIndex >= 0 && normalizedIndex < obj.asArray("member index expression").size()) {
+                return obj.asArray("member index expression").get(normalizedIndex);
+            }
+        }
+        return new JexNull(); // don't throw any error if the object is null or not an object/array just return null to further chain.
+    }
+
+    @Override
+    public JexValue visitFunctionCallExpression(JexLangParser.FunctionCallExpressionContext ctx) {
+        String functionName = ctx.IDENTIFIER().getText();
+
+        // check function is available or not
+        if (!this.funcRegistry.has(functionName)) {
+            throw new UndefinedFunctionError(functionName);
+        }
+
+        List<JexValue> args = new ArrayList<>();
+        if (ctx.arguments() != null) {
+            JexValue arguments = this.visit(ctx.arguments());
+            if (arguments != null && arguments.isArray()) {
+                args = arguments.asArray("function call arguments");
+            }
+        }
+
+        return this.funcRegistry.call(functionName, args.toArray(new JexValue[0]));
+    }
+
+    @Override
+    public JexValue visitArguments(JexLangParser.ArgumentsContext ctx) {
+        List<JexValue> args = new ArrayList<>();
+        for (JexLangParser.ArgumentContext exprCtx : ctx.argument()) {
+            args.add(this.visit(exprCtx));
+        }
+        return JexValue.fromArray(args);
+    }
+
+    @Override
+    public JexValue visitArgument(JexLangParser.ArgumentContext ctx) {
+        if (ctx.singleExpression() != null) {
+            return this.visit(ctx.singleExpression());
+        } else if (ctx.IDENTIFIER() != null) {
+            String identifier = ctx.IDENTIFIER().getText();
+            if (this.scope.hasVariable(identifier)) {
+                return this.scope.getVariable(identifier);
+            }
+            throw new UndefinedVariableError(identifier);
+        }
+
+        throw new JexLangRuntimeError("Unknown argument type: " + ctx.getText());
+    }
+
+    @Override
+    public JexValue visitPrefixExpression(JexLangParser.PrefixExpressionContext ctx) {
+        JexLangParser.SingleExpressionContext expr = ctx.singleExpression();
+
+        // Handle identifier expression (variables)
+        if (expr instanceof JexLangParser.IdentifierExpressionContext) {
+            String varName = ((JexLangParser.IdentifierExpressionContext) expr).IDENTIFIER().getText();
+            if (!this.scope.hasVariable(varName)) {
+                throw new UndefinedVariableError(varName);
+            }
+
+            JexValue value = this.scope.getVariable(varName);
+            Number numberValue = Utils.toNumber(value, "prefix expression");
+            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
+            this.scope.assignVariable(varName, newValue);
+            return newValue;
+        }
+        // Handle property access expression (obj.pro or obj[prop])
+        else if (expr instanceof JexLangParser.MemberDotExpressionContext) {
+            JexValue object = this.visit(((JexLangParser.MemberDotExpressionContext) expr).singleExpression());
+            JexValue propertyName = this.visit(((JexLangParser.MemberDotExpressionContext) expr).objectPropertyName());
+            if (object == null || !object.isObject()) {
+                throw new JexLangRuntimeError("Cannot use prefix operator on a non-object property");
+            }
+            Number currentValue = Utils.toNumber(object.asObject("prefix expression").getOrDefault(propertyName.asString("prefix expression"), new JexNull()), "prefix expression");
+            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+            object.asObject("prefix expression").put(propertyName.asString("prefix expression"), newValue);
+            return newValue;
+        } else if (expr instanceof JexLangParser.MemberIndexExpressionContext) {
+            JexValue object = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).singleExpression());
+            JexValue propertyKey = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).expressionSequence());
+            if (object != null && object.isArray()) {
+                List<JexValue> array = object.asArray("prefix expression");
+                Number indexNumber = Utils.toNumber(propertyKey, "prefix expression");
+                int normalizedIndex = Double.isNaN(indexNumber.doubleValue()) ? -1 : indexNumber.intValue();
+                if (normalizedIndex < 0) {
+                    normalizedIndex = array.size() + normalizedIndex; // Handle negative indices
+                }
+                if (normalizedIndex >= 0 && normalizedIndex < array.size()) {
+                    Number currentValue = Utils.toNumber(array.get(normalizedIndex), "prefix expression");
+                    JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                    array.set(normalizedIndex, newValue);
+                    return newValue;
+                } else {
+                    throw new JexLangRuntimeError("Array index out of bounds in prefix expression");
+                }
+            } else if (object != null && object.isObject()) {
+                String key = Utils.toString(propertyKey, "prefix expression");
+                Number currentValue = Utils.toNumber(object.asObject("prefix expression").getOrDefault(key, new JexNull()), "prefix expression");
+                JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                object.asObject("prefix expression").put(key, newValue);
+                return newValue;
+            }
+        } else {
+            // For other expressions, we'll just calculate but not store
+            JexValue value = this.visit(expr);
+            Number number = Utils.toNumber(value, "prefix expression");
+            if (ctx.DECREMENT() != null) {
+                return new JexNumber(number.doubleValue() - 1);
+            } else if (ctx.INCREMENT() != null) {
+                return new JexNumber(number.doubleValue() + 1);
+            }
+            return new JexNull();
+        }
+
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitPostfixExpression(JexLangParser.PostfixExpressionContext ctx) {
+        JexLangParser.SingleExpressionContext expr = ctx.singleExpression();
+
+        // Handle identifier expression (variables)
+        if (expr instanceof JexLangParser.IdentifierExpressionContext) {
+            String varName = ((JexLangParser.IdentifierExpressionContext) expr).IDENTIFIER().getText();
+            if (!this.scope.hasVariable(varName)) {
+                throw new UndefinedVariableError(varName);
+            }
+
+            JexValue value = this.scope.getVariable(varName);
+            Number numberValue = Utils.toNumber(value, "postfix expression");
+            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
+            this.scope.assignVariable(varName, newValue);
+            return value; // return the original value before increment/decrement
+        }
+        // Handle property access expressions (obj.prop and obj[prop])
+        else if (expr instanceof JexLangParser.MemberDotExpressionContext) {
+            JexValue object = this.visit(((JexLangParser.MemberDotExpressionContext) expr).singleExpression());
+            JexValue propertyName = this.visit(((JexLangParser.MemberDotExpressionContext) expr).objectPropertyName());
+            if (object == null || !object.isObject()) {
+                throw new JexLangRuntimeError("Cannot use postfix operator on a non-object property");
+            }
+            Number currentValue = Utils.toNumber(object.asObject("postfix expression").getOrDefault(propertyName.asString("postfix expression"), new JexNull()), "postfix expression");
+            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+            object.asObject("postfix expression").put(propertyName.asString("postfix expression"), newValue);
+            return new JexNumber(currentValue); // return the original value before increment/decrement
+        } else if (expr instanceof JexLangParser.MemberIndexExpressionContext) {
+            JexValue object = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).singleExpression());
+            JexValue propertyKey = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).expressionSequence());
+            if (object != null && object.isArray()) {
+                List<JexValue> array = object.asArray("postfix expression");
+                Number indexNumber = Utils.toNumber(propertyKey, "postfix expression");
+                int normalizedIndex = Double.isNaN(indexNumber.doubleValue()) ? -1 : indexNumber.intValue();
+                if (normalizedIndex < 0) {
+                    normalizedIndex = array.size() + normalizedIndex; // Handle negative indices
+                }
+                if (normalizedIndex >= 0 && normalizedIndex < array.size()) {
+                    Number currentValue = Utils.toNumber(array.get(normalizedIndex), "postfix expression");
+                    JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                    array.set(normalizedIndex, newValue);
+                    return new JexNumber(currentValue); // return the original value before increment/decrement
+                } else {
+                    throw new JexLangRuntimeError("Array index out of bounds in postfix expression");
+                }
+            } else if (object != null && object.isObject()) {
+                String key = Utils.toString(propertyKey, "postfix expression");
+                Number currentValue = Utils.toNumber(object.asObject("postfix expression").getOrDefault(key, new JexNull()), "postfix expression");
+                JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                object.asObject("postfix expression").put(key, newValue);
+                return new JexNumber(currentValue); // return the original value before increment/decrement
+            }
+        } else {
+            // For other expressions, we'll just calculate but not store
+            JexValue value = this.visit(expr);
+            Number number = Utils.toNumber(value, "postfix expression");
+            if (ctx.DECREMENT() != null) {
+                return new JexNumber(number.doubleValue() - 1);
+            } else if (ctx.INCREMENT() != null) {
+                return new JexNumber(number.doubleValue() + 1);
+            }
+            return new JexNull();
+        }
+
+        return new JexNull();
     }
 
     @Override
@@ -666,5 +919,36 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     protected JexValue defaultResult() {
         return new JexNull();
+    }
+
+    @Override
+    public JexValue visitIfExpression(JexLangParser.IfExpressionContext ctx) {
+        JexValue condition = this.visit(ctx.expressionSequence());
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "if expression")) {
+            return this.visit(ctx.block());
+        } else if (ctx.elseIfStatement() != null) {
+            return this.visit(ctx.elseIfStatement());
+        }
+
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitElseIfClause(JexLangParser.ElseIfClauseContext ctx) {
+        JexValue condition = this.visit(ctx.expressionSequence());
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "if expression")) {
+            return this.visit(ctx.block());
+        } else if (ctx.elseIfStatement() != null) {
+            return this.visit(ctx.elseIfStatement());
+        }
+
+        return new JexNull();
+    }
+
+    @Override
+    public JexValue visitElseClause(JexLangParser.ElseClauseContext ctx) {
+        return this.visit(ctx.block());
     }
 }

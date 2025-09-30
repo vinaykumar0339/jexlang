@@ -1,28 +1,40 @@
 import type { JexValue } from "../../types";
 import { JexLangRuntimeError } from "../errors";
 
+export type ScopeType = 'global' | 'program' | 'block';
+
 export class Scope {
-    private parentScope?: Scope;
+    private parentScope: Scope | null = null;
     private variables: Map<string, JexValue>;
     private constants: Set<string>;
+    private scopeType: ScopeType;
 
-    constructor(parentScope?: Scope) {
+    constructor(parentScope: Scope | null = null, scopeType: ScopeType = 'program') {
         this.parentScope = parentScope;
         this.variables = new Map<string, JexValue>();
         this.constants = new Set<string>();
+        this.scopeType = scopeType;
     }
 
-    getParentScope(): Scope | undefined {
+    getParentScope(): Scope | null {
         return this.parentScope;
     }
 
-    declareVariable(name: string, value: JexValue, isConst = false): void {
-        if (this.variables.has(name)) {
+    declareVariable(
+        name: string, 
+        value: JexValue, 
+        isConst = false,
+    ): void {
+        const isGlobalScope = this.scopeType === 'global';
+        if (this.variables.has(name) && !isGlobalScope) { // global variables can be re-declared in the global scope.
             throw new JexLangRuntimeError(`Variable '${name}' is already declared.`);
         }
         this.variables.set(name, value);
         if (isConst) {
             this.constants.add(name);
+        } else if (!isConst && this.constants.has(name) && isGlobalScope) {
+            // Delete from constants if re-declared as non-const for the same variable in the global scope.
+            this.constants.delete(name);
         }
     }
 
@@ -35,6 +47,14 @@ export class Scope {
             scope.variables.set(name, value);
         } else {
             throw new JexLangRuntimeError(`Variable '${name}' is not declared.`);
+        }
+    }
+
+    declareAndAssignVariable(name: string, value: JexValue, isConst = false): void {
+        if (this.variables.has(name)) {
+            this.assignVariable(name, value);
+        } else {
+            this.declareVariable(name, value, isConst);
         }
     }
 
@@ -58,6 +78,23 @@ export class Scope {
             return this.parentScope.resolveScope(name);
         }
         return null;
+    }
+
+    resolveScopeByType(type: ScopeType): Scope | null {
+        if (this.scopeType === type) {
+            return this;
+        } else if (this.parentScope) {
+            return this.parentScope.resolveScopeByType(type);
+        }
+        return null;
+    }
+
+    getAllVariables(): Record<string, JexValue> {
+        const vars: Record<string, JexValue> = {};
+        for (const [key, value] of this.variables.entries()) {
+            vars[key] = value;
+        }
+        return vars;
     }
 
     hasVariable(name: string): boolean {

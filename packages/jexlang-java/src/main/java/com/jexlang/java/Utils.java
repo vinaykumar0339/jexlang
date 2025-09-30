@@ -43,7 +43,7 @@ public class Utils {
     public static FuncImpl n2(Binary f, String aCtx, String bCtx) {
         return (args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
-            double b = toNumber(args.length > 0 ? args[0] : JexValue.from(0), bCtx).doubleValue();
+            double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double v = f.apply(a, b);
             assertFinite("binary", v);
             return num(v);
@@ -53,18 +53,12 @@ public class Utils {
     public static FuncImpl n3(Ternary f, String aCtx, String bCtx, String cCtx) {
         return (args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
-            double b = toNumber(args.length > 0 ? args[0] : JexValue.from(0), bCtx).doubleValue();
-            double c = toNumber(args.length > 0 ? args[0] : JexValue.from(0), cCtx).doubleValue();
+            double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
+            double c = toNumber(args.length > 2 ? args[2] : JexValue.from(0), cCtx).doubleValue();
             double v = f.apply(a, b, c);
             assertFinite("ternary", v);
             return num(v);
         };
-    }
-
-    public static void checkTrigDomain(String name, double x) {
-        if ("asin".equals(name) || "acos".equals(name)) {
-            if (x < -1.0 || x > 1.0) throw new RuntimeException(name + " domain error: expected x in [-1, 1], got " + x);
-        }
     }
 
     public static void checkPositive(String name, double x, boolean allowZero) {
@@ -81,6 +75,11 @@ public class Utils {
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
         if (v instanceof JexBoolean) return v.asBoolean(ctx);
+        if (v instanceof JexInteger) return v.asInteger(ctx) != 0;
+        if (v instanceof JexDouble) {
+            double d = v.asDouble(ctx);
+            return d != 0.0 && !Double.isNaN(d);
+        }
         if (v instanceof JexNumber) {
             double d = v.asNumber(ctx).doubleValue();
             return d != 0.0 && !Double.isNaN(d);
@@ -101,17 +100,45 @@ public class Utils {
         if (value instanceof JexBoolean) {
             return value.asBoolean(ctx) ? 1 : 0;
         }
+        if (value instanceof JexInteger) {
+            return value.asInteger(ctx);
+        }
+        if (value instanceof JexDouble) {
+            return value.asDouble(ctx);
+        }
         if (value instanceof JexString) {
             try {
                 Number num = Double.parseDouble(value.asString(ctx));
                 if (!Double.isNaN(num.doubleValue())) {
                     return num;
                 }
-            } finally {
-                // Ignore any exceptions and return null
+            } catch (Exception e) {
+                // Ignore any exceptions and fall through to type mismatch error
             }
         }
         throw new TypeMismatchError("number conversion", "number", getJexValueType(value));
+    }
+
+    public static Double toDouble(JexValue value, String ctx) {
+        Number num = toNumber(value, ctx);
+        if (num instanceof Double || num instanceof Float) {
+            return num.doubleValue();
+        } else {
+            return num.longValue() * 1.0;
+        }
+    }
+
+    public static Integer toInteger(JexValue value, String ctx) {
+        Number num = toNumber(value, ctx);
+        if (num instanceof Double || num instanceof Float) {
+            double d = num.doubleValue();
+            if (d % 1 != 0) {
+                throw new TypeMismatchError("integer conversion", "integer", "non-integer number");
+            }
+            return (int) d;
+        } else {
+            return num.intValue();
+        }
     }
 
     public static String toString(JexValue value, String ctx) {
@@ -120,6 +147,12 @@ public class Utils {
         }
         if (value instanceof JexString) {
             return value.asString(ctx);
+        }
+        if (value instanceof JexInteger) {
+            return String.valueOf(value.asInteger(ctx));
+        }
+        if (value instanceof JexDouble) {
+            return String.valueOf(value.asDouble(ctx));
         }
         if (value instanceof JexNumber) {
             return String.valueOf(value.asNumber(ctx));
@@ -134,10 +167,18 @@ public class Utils {
                     .toList()) + "]";
         }
         if (value instanceof JexObject) {
-            return "{" +
-                value.asObject(ctx).entrySet().stream()
-                    .map(entry -> "\"" + entry.getKey() + "\": " + toString(entry.getValue(), ctx))
-                    .collect(java.util.stream.Collectors.joining(", ")) + "}";
+            StringBuilder jsonBuilder = new StringBuilder("{");
+            var entries = value.asObject(ctx).entrySet();
+            for (var iterator = entries.iterator(); iterator.hasNext(); ) {
+                var entry = iterator.next();
+                jsonBuilder.append("\"").append(entry.getKey()).append("\": ")
+                        .append("\"").append(toString(entry.getValue(), ctx)).append("\"");
+                if (iterator.hasNext()) {
+                    jsonBuilder.append(", ");
+                }
+            }
+            jsonBuilder.append("}");
+            return jsonBuilder.toString();
         }
         return value.asString(ctx);
     }
@@ -278,11 +319,8 @@ public class Utils {
     }
 
     public static Scope createGlobalScope() {
-        Scope scope = new Scope(null);
+        Scope scope = new Scope(null, Scope.ScopeType.GLOBAL);
         // Add built-in functions and variables to the global scope
-        scope.declareVariable("true", new JexBoolean(true), true);
-        scope.declareVariable("false", new JexBoolean(false), true);
-        scope.declareVariable("null", new JexNull(), true);
 
         scope.declareVariable("PI", new JexNumber(FastMath.PI), true);
         scope.declareVariable("E", new JexNumber(FastMath.E), true);
@@ -292,6 +330,8 @@ public class Utils {
         scope.declareVariable("LOG10E", new JexNumber(1 / FastMath.log(10)), true);
         scope.declareVariable("SQRT1_2", new JexNumber(FastMath.sqrt(0.5)), true);
         scope.declareVariable("SQRT2", new JexNumber(FastMath.sqrt(2)), true);
+        scope.declareVariable("VERSION", new JexString(Version.VERSION), true);
+        scope.declareVariable("__CLIENT_LANGUAGE", new JexString("java"), true);
         return scope;
     }
 }

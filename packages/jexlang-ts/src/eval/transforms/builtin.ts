@@ -50,7 +50,20 @@ export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {
   string: (val) => {
     return toString(val);
   },
+
   boolean: (val) => {
     return toBoolean(val);
   },
+
+  int: (val) => {
+    return Math.floor(toNumber(val));
+  },
+
+  float: (val) => {
+    return parseFloat(toString(val));
+  },
+
+  double: (val) => {
+    return parseFloat(toString(val));
+  }
 };

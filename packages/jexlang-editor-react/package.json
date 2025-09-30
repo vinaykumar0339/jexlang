@@ -11,15 +11,17 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "jexlang-editor": "link:../../../../../Library/pnpm/global/5/node_modules/jexlang-editor",
-    "jexlang-ts": "link:../../../../../Library/pnpm/global/5/node_modules/jexlang-ts",
+    "jexlang-editor": "workspace:*",
+    "jexlang-ts": "workspace:*",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "unescape-js": "^1.1.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
+    "@types/unescape-js": "^1.0.3",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",

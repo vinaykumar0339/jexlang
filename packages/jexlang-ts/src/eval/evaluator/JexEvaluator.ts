@@ -86,13 +86,20 @@ export class JexEvaluator {
     return this.cacheExpressions;
   }
 
-  evaluate(expr: string): Promise<JexValue> | JexValue {
+  evaluate(
+    expr: string,
+    programScopeContext: Context = {}
+  ): Promise<JexValue> | JexValue {
     const tree = this.parseExpression(expr);
+    // Pass the program scope context to the visitor
+    this.visitor.setProgramScopeContext(programScopeContext);
     return this.visitor.visit(tree);
   }
 
-  evaluateSync(expr: string): JexValue {
+  evaluateSync(expr: string, programScopeContext: Context = {}): JexValue {
     const tree = this.parseExpression(expr);
+    // Pass the program scope context to the visitor
+    this.visitor.setProgramScopeContext(programScopeContext);
     const result =  this.visitor.visit(tree);
     if (result instanceof Promise) {
       throw new JexLangRuntimeError("Synchronous evaluation cannot handle promises if you want generic evaluation. please use evaluate() method.");
@@ -127,6 +134,10 @@ export class JexEvaluator {
     return value;
   }
 
+  getGlobalScopeVariables(): Record<string, JexValue> {
+    return this.visitor.getGlobalScopeVariables();
+  }
+
   addFunction(name: string, func: FuncImpl): void {
     this.funcs[name] = func;
     this.visitor.addFunction(name, func);
@@ -137,6 +148,22 @@ export class JexEvaluator {
     for (const [name, func] of Object.entries(funcs)) {
       this.visitor.addFunction(name, func);
     }
+  }
+
+  getAllFunctions(): Record<string, FuncImpl> {
+    return this.visitor.getAllFunctions();
+  }
+
+  hasFunction(name: string): boolean {
+    return this.visitor.hasFunction(name);
+  }
+
+  getAllTransforms(): Record<string, TransformImpl> {
+    return this.visitor.getAllTransforms();
+  }
+  
+  hasTransform(name: string): boolean {
+    return this.visitor.hasTransform(name);
   }
 
   addTransform(name: string, transform: TransformImpl): void {

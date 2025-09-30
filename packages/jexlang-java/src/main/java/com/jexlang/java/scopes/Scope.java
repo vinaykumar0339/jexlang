@@ -1,22 +1,34 @@
 package com.jexlang.java.scopes;
 
 import com.jexlang.java.eval.errors.JexLangRuntimeError;
+import com.jexlang.java.types.JexNull;
 import com.jexlang.java.types.JexValue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class Scope {
+
+    public enum ScopeType {
+        GLOBAL,
+        PROGRAM,
+        BLOCK
+    }
+
     private final Scope parentScope;
 
     private final Map<String, JexValue> variables;
     private final Set<String> constants;
+    private final ScopeType scopeType;
 
     public Scope(
-            Scope parentScope
+            Scope parentScope,
+            ScopeType scopeType
     ) {
         this.parentScope = parentScope;
+        this.scopeType = Objects.requireNonNullElse(scopeType, ScopeType.PROGRAM);
         this.variables = new HashMap<>();
         this.constants = new java.util.HashSet<>();
     }
@@ -26,12 +38,16 @@ public class Scope {
     }
 
     public void declareVariable(String name, JexValue value, boolean isConst) {
-        if (this.variables.containsKey(name)) {
+        boolean isGlobalScope = this.scopeType == ScopeType.GLOBAL;
+        if (this.variables.containsKey(name) && !isGlobalScope) { // global variables can be re-declared in the global scope.
             throw new JexLangRuntimeError("Variable '" + name + "' is already declared.");
         }
         this.variables.put(name, value);
         if (isConst) {
             this.constants.add(name);
+        } else if (!isConst && this.constants.contains(name) && isGlobalScope) {
+            // Delete from constants if re-declared as non-const for the same variable in the global scope.
+            this.constants.remove(name);
         }
     }
 
@@ -46,6 +62,14 @@ public class Scope {
         scope.variables.put(name, value);
     }
 
+    public void declareAndAssignVariable(String name, JexValue value, boolean isConst) {
+        if (this.variables.containsKey(name)) {
+            this.assignVariable(name, value);
+        } else {
+            this.declareVariable(name, value, isConst);
+        }
+    }
+
     public Scope resolveScope(String name) {
         if (this.variables.containsKey(name)) {
             return this;
@@ -54,6 +78,20 @@ public class Scope {
         } else {
             return null;
         }
+    }
+
+    public Scope resolveScope(ScopeType scopeType) {
+        if (this.scopeType == scopeType) {
+            return this;
+        } else if (this.parentScope != null) {
+            return this.parentScope.resolveScope(scopeType);
+        } else {
+            return null;
+        }
+    }
+
+    public Map<String, JexValue> getAllVariables() {
+        return variables;
     }
 
     public JexValue getVariable(String name) {
@@ -66,7 +104,7 @@ public class Scope {
             return this.parentScope.getVariable(name);
         }
 
-        return null;
+        return new JexNull();
     }
 
     public boolean hasVariable(String name) {

@@ -38,6 +38,14 @@ public class JexEvaluator {
         return jexContext;
     }
 
+    private Map<String, Object> convertJexValueToContext(Map<String, JexValue> jexValueMap) {
+        Map<String, Object> context = new HashMap<>();
+        for  (Map.Entry<String, JexValue> entry : jexValueMap.entrySet()) {
+            context.put(entry.getKey(), entry.getValue().toObject());
+        }
+        return context;
+    }
+
     private void addAllContextValuesIntoGlobalScope(Map<String, JexValue> context) {
         if (context != null) {
             for (Map.Entry<String, JexValue> entry : context.entrySet()) {
@@ -107,7 +115,15 @@ public class JexEvaluator {
     }
 
     public Object evaluate(String expr) {
+        return evaluate(expr, Map.ofEntries());
+    }
+
+    public Object evaluate(
+            String expr,
+            Map<String, Object> programScopeVariables
+    ) {
         JexLangParser.ProgramContext programContext = parseExpression(expr);
+        evalVisitor.setProgramScopeContext(programScopeVariables);
         JexValue value = evalVisitor.visit(programContext);
         if (value != null) {
             return value.toObject();
@@ -136,9 +152,33 @@ public class JexEvaluator {
         return null;
     }
 
+    public Map<String, Object> getGlobalScopeVariables() {
+        Map<String, JexValue> globalVariables = this.evalVisitor.getGlobalScopeVariables();
+        if (globalVariables != null) {
+            return this.convertJexValueToContext(globalVariables);
+        }
+        return Map.of();
+    }
+
     public void addFunction(String name, FuncImpl function) {
         funcsMap.put(name, function);
         evalVisitor.addFunction(name, function);
+    }
+
+    public Map<String, FuncImpl> getAllFunctions() {
+        return this.evalVisitor.getAllFunctions();
+    }
+
+    public boolean hasFunction(String name) {
+        return this.evalVisitor.hasFunction(name);
+    }
+
+    public Map<String, TransformImpl> getAllTransforms() {
+        return this.evalVisitor.getAllTransforms();
+    }
+
+    public boolean hasTransform(String name) {
+        return this.evalVisitor.hasTransform(name);
     }
 
     public void addTransform(String name, TransformImpl transform) {

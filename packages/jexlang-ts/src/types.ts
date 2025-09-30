@@ -25,6 +25,9 @@ export class MapFuncRegistry implements FuncRegistry {
       for (const [k, v] of Object.entries(init)) this.map.set(k, v);
     }
   }
+  getAll(): Record<string, FuncImpl> {
+    return Object.fromEntries(this.map);
+  }
   set(name: string, fn: FuncImpl) {
     this.map.set(name, fn);
     return this;
@@ -45,6 +48,9 @@ export class MapTransformRegistry implements TransformRegistry {
     if (init) {
       for (const [k, v] of Object.entries(init)) this.map.set(k, v);
     }
+  }
+  getAll(): Record<string, TransformImpl> {
+    return Object.fromEntries(this.map);
   }
   set(name: string, fn: TransformImpl) {
     this.map.set(name, fn);

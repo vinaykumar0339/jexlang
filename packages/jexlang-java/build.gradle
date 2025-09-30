@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.jexlang.java'
-version = '0.1.0'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -22,4 +22,43 @@ dependencies {
 
 test {
     useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+def generatedVersionDir = layout.buildDirectory.dir("generated/version")
+
+tasks.register("generateVersionFile") {
+    def outputDir = generatedVersionDir.get().asFile
+    inputs.property("version", project.version)
+    outputs.dir(outputDir)
+
+    doLast {
+        def versionFile = new File(outputDir, "com/jexlang/java/Version.java")
+        versionFile.parentFile.mkdirs()
+        versionFile.text = """
+            package com.jexlang.java;
+
+            public class Version {
+                public static final String VERSION = "${project.version}";
+            }
+        """.stripIndent()
+    }
+}
+
+// Hook generated source into the main source set
+sourceSets {
+    main {
+        java {
+            srcDir generatedVersionDir
+        }
+    }
+}
+
+// Make Java compile depend on generation
+tasks.named("compileJava") {
+    dependsOn("generateVersionFile")
 }

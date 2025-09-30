@@ -1,6 +1,7 @@
 import { Scope } from "./eval";
 import { TypeMismatchError } from "./eval/errors/errors";
 import type { JexValue } from "./types";
+import packageJson from '../package.json';
 
 // Utility functions for type checking and conversion
 export function getJexValueType(value: JexValue): string {
@@ -45,11 +46,8 @@ export function toString(value: JexValue): string {
 }
 
 export function createGlobalScope(): Scope {
-    const scope = new Scope();
+    const scope = new Scope(null, 'global');
     // Add built-in functions and variables to the global scope
-    scope.declareVariable("true", true, true);
-    scope.declareVariable("false", false, true);
-    scope.declareVariable("null", null, true);
 
     scope.declareVariable("PI", Math.PI, true);
     scope.declareVariable("E", Math.E, true);
@@ -59,5 +57,7 @@ export function createGlobalScope(): Scope {
     scope.declareVariable("LOG10E", Math.LOG10E, true);
     scope.declareVariable("SQRT1_2", Math.SQRT1_2, true);
     scope.declareVariable("SQRT2", Math.SQRT2, true);
+    scope.declareVariable("VERSION", packageJson.version, true);
+    scope.declareVariable("__CLIENT_LANGUAGE", "javascript", true);
     return scope;
 }
