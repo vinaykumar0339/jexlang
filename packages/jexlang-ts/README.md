@@ -1,0 +1,870 @@
+# JexLang
+
+JexLang is a lightweight expression language designed for embedding expressions and simple logic in applications. This document provides examples of JexLang syntax and features.
+
+## Why JexLang?
+
+JexLang addresses the common need for runtime-evaluated expressions and formulas in modern applications. Instead of hardcoding business logic, JexLang enables dynamic expressions that can be stored, modified, and evaluated without redeployment.
+
+### Key Use Cases
+
+#### Formula Frameworks
+- **Dynamic Business Rules**: Store validation rules, pricing calculations, and discount logic as expressions that can be updated without code changes
+- **Custom Formulas**: Allow end-users to define their own formulas (like in spreadsheet applications) that can be safely parsed and executed
+- **Configurable Workflows**: Define conditional steps and branching logic with expressions that business users can understand and modify
+
+#### Mobile Applications
+- **Client-Side Validation**: Run lightweight validation logic directly on mobile devices before server submission
+- **Conditional UI Rendering**: Control which UI components to show based on dynamic expressions
+- **Feature Flags with Conditions**: Enable features based on complex conditions (user properties, device capabilities, etc.)
+- **Offline Formula Calculation**: Perform calculations locally when connectivity is unavailable
+
+#### Backend Services (Node.js)
+- **API Response Transformation**: Define transformations for API responses without modifying service code
+- **Dynamic Query Building**: Create complex database queries based on stored expressions
+- **Content Filtering**: Apply configurable rules to filter content based on user permissions or preferences
+- **Scheduled Evaluations**: Run periodic evaluations with expressions stored in configuration
+
+#### Low-Code/No-Code Platforms
+- **Customization Layer**: Provide expression capabilities for users to extend platform functionality
+- **Integration Logic**: Define how data should be transformed when moving between systems
+- **Conditional Automation**: Control when automated processes should execute based on data conditions
+
+### Advantages Over Alternatives
+
+- **Security**: Safer than eval()-based solutions, with controlled execution environments
+- **Performance**: Lightweight parser and interpreter optimized for frequent evaluations
+- **Type Safety**: Optional type checking for expressions to catch errors early
+- **Readability**: Syntax familiar to developers and approachable to technical business users
+- **Extensibility**: Easy to add custom functions and operators for domain-specific needs
+- **Cross-Platform**: Same expressions work across frontend, backend, and mobile environments
+
+## Basic Syntax
+
+### Variable Declaration
+
+```js
+// Using let (mutable)
+let x = 10;
+let name = "John";
+
+// Using const (immutable)
+const PI = 3.14159;
+
+// Global variables
+global let counter = 0;
+```
+
+#### Constants
+
+Constants in JexLang are immutable variables that cannot be reassigned or redeclared:
+
+```js
+// Declare a constant
+const PI = 3.14159;
+
+// Error: Cannot reassign a constant
+PI = 3.0;     // Runtime error: "Variable 'PI' is a constant and cannot be re-declared or modified"
+
+// Error: Cannot redeclare a constant
+const PI = 3; // Runtime error: "Cannot redeclare constant 'PI'"
+
+// Error: Cannot convert a constant to a mutable variable
+let PI = 3;   // Runtime error: "Cannot redeclare constant 'PI'"
+
+// Constants are block-scoped
+if (true) {
+  const local = 100;  // Only available inside this block
+}
+// local is not available here
+```
+
+#### Scope Rules
+
+JexLang has three types of variable scope:
+
+- **Block scope**: Variables are only accessible within their containing block `{...}`
+- **Program scope**: Variables declared at the program level are accessible throughout the program
+- **Global scope**: Variables declared with `global` keyword are accessible across multiple evaluations
+
+### Data Types
+
+```js
+// Numbers
+let integer = 42;
+let decimal = 3.14;
+let scientific = 1.2e3;  // 1200
+
+// Strings
+let singleQuoted = 'Hello';
+let doubleQuoted = "World";
+
+// Booleans
+let isTrue = true;
+let isFalse = false;
+
+// Null
+let empty = null;
+
+// Arrays
+let numbers = [1, 2, 3, 4, 5];
+let mixed = [1, "two", true, null];
+
+// Objects
+let person = {
+  name: "Jane",
+  age: 25,
+  address: {
+    city: "New York",
+    zip: 10001
+  }
+};
+```
+
+## Operators
+
+### Arithmetic Operators
+
+```js
+// Basic arithmetic
+let sum = 5 + 3;        // 8
+let difference = 10 - 4; // 6
+let product = 3 * 4;     // 12
+let quotient = 10 / 2;   // 5
+let remainder = 10 % 3;  // 1
+
+// Exponentiation
+let squared = 3 ** 2;    // 9
+let cubed = 2 ^ 3;       // 8
+
+// Square root
+let sqrtValue = √25;     // 5
+let sqrtValue2 = sqrt(25); // 5
+
+// Increment/Decrement
+let a = 5;
+a++;                    // 6
+let b = 10;
+--b;                    // 9
+```
+
+### Comparison Operators
+
+```js
+let x = 5;
+let y = 10;
+
+x == 5;                // true
+x != y;                // true
+x < y;                 // true
+y > x;                 // true
+x <= 5;                // true
+y >= 10;               // true
+```
+
+### Logical Operators
+
+```js
+// Using && or 'and'
+(x > 0) && (y < 20);   // true
+(x > 0) and (y < 20);  // true
+
+// Using || or 'or'
+(x > 10) || (y > 5);   // true
+(x > 10) or (y > 5);   // true
+```
+
+### Assignment
+
+```js
+let x = 5;
+
+// Object property assignment
+person.age = 26;
+person["name"] = "Jane Doe";
+
+// Array element assignment
+numbers[0] = 99;  // Modify first element
+
+// Note: Assignments to out-of-bounds indexes don't throw errors
+// but won't modify the array
+numbers[100] = 5;  // No effect if array length < 100
+
+// To add elements to the end of an array, use push instead
+push(numbers, 10, 20, 30);
+```
+
+## Control Structures
+
+### Conditional Statements
+
+```js
+if (x > 10) {
+  // Code to execute if x > 10
+}
+
+if (y < 5) {
+  // Code to execute if y < 5
+} else {
+  // Code to execute otherwise
+}
+
+if (x == 1) {
+  // Code for x == 1
+} else if (x == 2) {
+  // Code for x == 2
+} else {
+  // Default code
+}
+```
+
+### Loops
+
+JexLang provides a versatile `repeat` loop that can iterate over different types of values:
+
+```js
+// Repeat a specified number of times
+repeat(5) {
+  // Code to repeat 5 times
+  // $index contains the current iteration (0 to 4)
+  // $it contains the same value as $index
+}
+
+// Repeat over array elements
+let fruits = ["apple", "banana", "cherry"];
+repeat(fruits) {
+  // Code executed for each element
+  // $index contains the current index (0 to 2)
+  // $it contains the current element ("apple", "banana", "cherry")
+}
+
+// Repeat over object properties
+let person = { name: "John", age: 30, city: "New York" };
+repeat(person) {
+  // Code executed for each property
+  // $key contains the property name ("name", "age", "city")
+  // $value contains the property value ("John", 30, "New York")
+  // $it contains the same as $value
+}
+
+// Repeat over string characters
+let text = "Hello";
+repeat(text) {
+  // Code executed for each character
+  // $index contains the character position (0 to 4)
+  // $it contains the current character ("H", "e", "l", "l", "o")
+}
+```
+
+#### Loop Variables
+
+During each iteration, JexLang automatically defines special variables:
+
+| Variable | Description |
+|----------|-------------|
+| `$index` | Current iteration index (0-based) for arrays, strings, and numeric loops |
+| `$it`    | Current item being processed (array element, object value, string character, or numeric index) |
+| `$key`   | Property name (only available when iterating over objects) |
+| `$value` | Property value (only available when iterating over objects, same as `$it`) |
+
+#### Examples
+
+```js
+// Sum numbers in an array
+let numbers = [1, 2, 3, 4, 5];
+let sum = 0;
+repeat(numbers) {
+  sum = sum + $it;
+}
+// sum is now 15
+
+// Build a formatted string from object properties
+let data = { name: "Alice", age: 28, country: "Canada" };
+let result = "";
+repeat(data) {
+  result = result + $key + ": " + $value + "\n";
+}
+// result is "name: Alice\nage: 28\ncountry: Canada\n"
+
+// Count occurrences of a character
+let message = "hello world";
+let countL = 0;
+repeat(message) {
+  if ($it == "l") {
+    countL = countL + 1;
+  }
+}
+// countL is 3
+```
+
+## Advanced Features
+
+### Ternary Operator
+
+```js
+// Standard ternary
+let result = x > 5 ? "Greater" : "Less or equal";
+
+// Short ternary (Elvis operator)
+let defaultName = userName ?: "Guest";
+```
+
+### Member Access
+
+```js
+// Dot notation
+let city = person.address.city;
+
+// Bracket notation
+let age = person["age"];
+
+// Handle possible null values with ternary
+let zipCode = person.address ? person.address.zip : null;
+let firstItem = array.length > 0 ? array[0] : null;
+```
+
+### Function Calls
+
+```js
+// Simple function call
+let result = calculate(10, 20);
+
+// Function with object argument
+validatePerson({name: "John", age: 30});
+```
+
+### Pipe Operator (Transforms)
+
+```js
+// Transform a value through a function
+let upperName = "john" | toUpperCase;  // "JOHN"
+
+// Chain transformations
+let result = 5 | double | increment;  // Equivalent to increment(double(5))
+```
+
+## Truthy and Falsy Values
+
+In JexLang, values are automatically converted to booleans in conditional contexts (like `if` statements, ternary operators, and logical operators). Understanding which values are considered "truthy" and which are "falsy" is important for writing correct expressions.
+
+### Falsy Values
+
+The following values are considered **falsy** (evaluate to `false` in conditional contexts):
+
+- `false`
+- `0` (zero)
+- `""` (empty string)
+- `null`
+- `undefined`
+- `[]` (empty array)
+- `{}` (empty object)
+- `NaN`
+
+### Truthy Values
+
+All other values are considered **truthy** (evaluate to `true` in conditional contexts):
+
+- `true`
+- Any non-zero number (both positive and negative)
+- Any non-empty string
+- Any array with elements
+- Any object with properties
+- Function references
+
+### Examples
+
+```js
+// Falsy examples
+if (0) { /* Not executed */ }
+if ("") { /* Not executed */ }
+if (null) { /* Not executed */ }
+if ([]) { /* Not executed */ }
+if ({}) { /* Not executed */ }
+
+// Truthy examples
+if (1) { /* Executed */ }
+if (-1) { /* Executed */ }
+if ("hello") { /* Executed */ }
+if ([1, 2, 3]) { /* Executed */ }
+if ({ name: "John" }) { /* Executed */ }
+
+// Common patterns
+let username = "";
+let defaultName = username ? username : "Guest";  // "Guest"
+let displayName = username || "Guest";  // "Guest"
+
+let count = 5;
+let message = count ? "Items: " + count : "No items";  // "Items: 5"
+```
+
+### Boolean Conversion
+
+You can explicitly convert values to booleans using the `boolean()` function:
+
+```js
+boolean(0);       // false
+boolean("");      // false
+boolean(null);    // false
+boolean([]);      // false
+boolean({});      // false
+boolean("0");     // true (non-empty string)
+boolean(42);      // true
+boolean("false"); // true (non-empty string)
+```
+
+## Global Variables
+
+JexLang provides several built-in global variables that are available by default in any expression:
+
+| Variable | Description | Value |
+|----------|-------------|-------|
+| `PI` | Mathematical constant pi | 3.141592653589793 |
+| `E` | Mathematical constant e | 2.718281828459045 |
+| `LN2` | Natural logarithm of 2 | 0.6931471805599453 |
+| `LN10` | Natural logarithm of 10 | 2.302585092994046 |
+| `LOG2E` | Base-2 logarithm of e | 1.4426950408889634 |
+| `LOG10E` | Base-10 logarithm of e | 0.4342944819032518 |
+| `SQRT1_2` | Square root of 1/2 | 0.7071067811865476 |
+| `SQRT2` | Square root of 2 | 1.4142135623730951 |
+| `VERSION` | JexLang version | Current version string |
+| `__CLIENT_LANGUAGE` | Implementation language | "javascript" |
+
+These constants can be used directly in expressions:
+
+```js
+// Calculate area of a circle
+let radius = 5;
+let area = PI * radius * radius;  // 78.53981633974483
+
+// Use mathematical constants
+let value = E * 2;  // 5.436563656918090
+```
+
+## Built-in Functions
+
+JexLang provides a rich set of built-in functions that can be called directly in your expressions:
+
+### Mathematical Functions
+
+```js
+// Basic math operations
+abs(-5);             // 5
+ceil(4.2);           // 5
+clamp(15, 0, 10);    // 10 (value constrained between min and max)
+floor(4.8);          // 4
+lerp(0, 10, 0.5);    // 5 (linear interpolation)
+max(3, 7, 2);        // 7
+min(3, 7, 2);        // 2
+pow(2, 3);           // 8
+random();            // Random number between 0 and 1
+round(4.5);          // 5
+sign(-5);            // -1
+sqrt(25);            // 5
+trunc(4.9);          // 4
+
+// Trigonometric functions
+acos(1);             // 0
+asin(0);             // 0
+atan(1);             // ~0.785
+atan2(1, 1);         // ~0.785 (arctangent of y/x)
+cos(0);              // 1
+deg(Math.PI);        // 180 (radians to degrees)
+rad(180);            // 3.14... (degrees to radians)
+sin(Math.PI/2);      // 1
+tan(Math.PI/4);      // ~1
+
+// Exponential and logarithmic
+cbrt(27);            // 3
+exp(1);              // 2.718... (e^1)
+log(Math.E);         // 1 (natural logarithm)
+log10(100);          // 2 (base-10 logarithm)
+log2(8);             // 3 (base-2 logarithm)
+
+// Hyperbolic functions
+acosh(1);            // 0
+asinh(0);            // 0
+atanh(0);            // 0
+cosh(1);             // ~1.543
+sinh(1);             // ~1.175
+tanh(1);             // ~0.762
+```
+
+### Type Conversion Functions
+
+```js
+boolean(1);          // true
+double("1e3");       // 1000
+float("42.9");       // 42.9
+int("42.9");         // 42
+number("42");        // 42
+string(42);          // "42"
+```
+
+### String Functions
+
+```js
+capitalize("hello world");  // "Hello World"
+length("hello");     // 5
+lower("HELLO");      // "hello"
+trim("  hello  ");   // "hello"
+upper("hello");      // "HELLO"
+```
+
+### Array Functions
+
+```js
+// Creating and accessing arrays
+array(1, 2, 3);      // [1, 2, 3]
+first([1, 2, 3]);    // 1
+last([1, 2, 3]);     // 3
+
+// Modifying arrays
+push(arr, 3, 4);     // [1, 2, 3, 4]
+pop(arr);            // 4 (arr is now [1, 2, 3])
+
+// Calculations with arrays
+avg([1, 2, 3, 4]);   // 2.5
+sum([1, 2, 3, 4]);   // 10
+```
+
+### Date and Time Functions
+
+```js
+// Current date/time
+date();              // Current timestamp
+date(1654022400000); // Convert timestamp to standardized date value
+now();               // Current timestamp in milliseconds
+timestamp();         // Current timestamp in seconds (Unix timestamp)
+today();             // Timestamp at midnight today
+
+// Date components
+day();               // Current day of month
+hour();              // Current hour
+minute();            // Current minute
+month();             // Current month (1-12)
+second();            // Current second
+weekday();           // Current day of week (0-6, 0 is Sunday)
+year();              // Current year
+
+// Date arithmetic
+addDays(today(), 5);       // Date 5 days from today
+addHours(date(), 3);       // Date 3 hours from now
+addMinutes(date(), 30);    // Date 30 minutes from now
+addMonths(today(), 1);     // Date 1 month from today
+addYears(today(), 1);      // Date 1 year from today
+daysBetween(today(), addDays(today(), 10)); // 10
+
+// Date utilities
+isLeapYear(2024);    // true
+```
+
+## Built-in Transforms
+
+Transforms can be applied using the pipe operator (`|`) to modify values:
+
+### String Transforms
+
+```js
+"hello world" | upper;          // "HELLO WORLD"
+"HELLO WORLD" | lower;          // "hello world"
+"hello world" | capitalize;     // "Hello World"
+"  hello  " | trim;             // "hello"
+```
+
+### Numeric Transforms
+
+```js
+-5 | abs;                       // 5
+4.8 | floor;                    // 4
+4.2 | ceil;                     // 5
+4.5 | round;                    // 5
+```
+
+### Type Transforms
+
+```js
+"42" | number;                  // 42
+42 | string;                    // "42"
+1 | boolean;                    // true
+"42.9" | int;                   // 42
+"42.9" | float;                 // 42.9
+```
+
+### Measurement Transforms
+
+```js
+"hello" | length;               // 5
+[1, 2, 3] | length;             // 3
+{a: 1, b: 2} | length;          // 2
+```
+
+### Chain Transforms
+
+```js
+// You can chain multiple transforms
+"  hello world  " | trim | capitalize;            // "Hello World"
+123.456 | round | string | upper;                 // "123"
+
+// Transform with function equivalent
+"hello" | upper;                // Same as upper("hello")
+3.7 | round;                    // Same as round(3.7)
+```
+
+## Using JexLang in Your Application
+
+### Quick Start
+
+Here's a complete example showing how to use JexLang in your application:
+
+```typescript
+import { JexEvaluator } from 'jexlang-ts';
+
+// Create an evaluator instance
+const evaluator = new JexEvaluator();
+
+// Define some expressions
+const expression1 = 'let x = 10; x * 2';
+const expression2 = 'PI * radius * radius';
+
+// Evaluate a simple expression
+const result1 = evaluator.evaluate(expression1);
+console.log('Result 1:', result1);  // 20
+
+// Evaluate with context variables
+const result2 = evaluator.evaluate(expression2, { radius: 5 });
+console.log('Result 2:', result2);  // ~78.54
+```
+
+### Initialization Options
+
+You can initialize JexLang with custom context, functions, and transforms:
+
+```typescript
+// Initial context values, functions, and transforms
+const initialContext = {
+  user: { name: 'Alice', isAdmin: true },
+  items: [1, 2, 3, 4, 5]
+};
+
+const customFunctions = {
+  greet: (name) => `Hello, ${name}!`,
+  double: (x) => x * 2
+};
+
+const customTransforms = {
+  reversed: (str) => String(str).split('').reverse().join('')
+};
+
+// Create an evaluator with initial values
+const evaluator = new JexEvaluator(
+  initialContext,
+  customFunctions,
+  customTransforms
+);
+
+// Now you can use these in expressions
+evaluator.evaluate('greet(user.name)');  // "Hello, Alice!"
+evaluator.evaluate('items | sum');       // 15
+evaluator.evaluate('"hello" | reversed'); // "olleh"
+```
+
+### Global vs Program Context
+
+JexLang offers two types of context for variables:
+
+1. **Global Context**: Persists across multiple evaluations
+2. **Program Context**: Only available for a single evaluation
+
+```typescript
+// Create an evaluator
+const evaluator = new JexEvaluator();
+
+// Set global context values (persist across evaluations)
+evaluator.setContextValue('taxRate', 0.07);
+evaluator.setContextValue('company', 'Acme Corp');
+
+// These can be used in any evaluation
+evaluator.evaluate('company + " tax rate: " + (taxRate * 100) + "%"');
+// Returns: "Acme Corp tax rate: 7%"
+
+// Program context is passed directly to evaluate method
+const result1 = evaluator.evaluate('price * (1 + taxRate)', { price: 100 });
+// Returns: 107
+
+const result2 = evaluator.evaluate('price * (1 + taxRate)', { price: 200 });
+// Returns: 214
+
+// Program context overrides global context for that evaluation
+const result3 = evaluator.evaluate('price * (1 + taxRate)', { 
+  price: 100, 
+  taxRate: 0.05  // Overrides global taxRate just for this call
+});
+// Returns: 105
+```
+
+### Constant Variables
+
+You can declare constant variables that cannot be modified:
+
+```typescript
+// Create an evaluator
+const evaluator = new JexEvaluator();
+
+// Set immutable constants
+evaluator.declareContextValue('API_URL', 'https://api.example.com', true);
+evaluator.declareContextValue('MAX_ITEMS', 100, true);
+
+// Attempt to modify will cause runtime error
+try {
+  evaluator.evaluate('API_URL = "https://newapi.example.com"');
+} catch (error) {
+  console.error(error.message);
+  // "Variable 'API_URL' is a constant and cannot be re-declared or modified."
+}
+```
+
+### Expression Caching
+
+For performance optimization, you can enable expression caching:
+
+```typescript
+// Enable caching for frequently used expressions
+evaluator.setCacheExpressions(true);
+
+// First evaluation will parse and cache
+const result1 = evaluator.evaluate('x * x + y * y', { x: 3, y: 4 });
+
+// Subsequent evaluations of the same expression will use the cached parse tree
+const result2 = evaluator.evaluate('x * x + y * y', { x: 5, y: 12 });
+
+// Clear cache if needed
+evaluator.clearCachedParsedExpressions();
+
+// Disable caching
+evaluator.setCacheExpressions(false);
+```
+
+### Complete Application Example
+
+Here's a more complete example showing how JexLang can be integrated into a real application:
+
+```typescript
+import { JexEvaluator } from 'jexlang-ts';
+
+class PricingEngine {
+  private evaluator: JexEvaluator;
+  
+  constructor() {
+    // Initialize the evaluator with base context and functions
+    this.evaluator = new JexEvaluator(
+      // Initial context
+      {
+        baseDiscountRate: 0.05,
+        taxRate: 0.07
+      },
+      // Custom functions
+      {
+        calculateShipping: (distance, weight) => {
+          return Math.max(5, distance * 0.01 + weight * 0.5);
+        },
+        isHoliday: (date) => {
+          // Holiday detection logic here
+          return false;
+        }
+      }
+    );
+    
+    // Enable caching for performance
+    this.evaluator.setCacheExpressions(true);
+  }
+  
+  calculatePrice(product, user, promoCode) {
+    // Set up the program context for this specific calculation
+    const context = {
+      product: product,
+      user: user,
+      promoCode: promoCode,
+      today: new Date()
+    };
+    
+    // Use the pricing formula (stored elsewhere, could be from database)
+    const pricingFormula = `
+      // Start with base price
+      let price = product.basePrice;
+      
+      // Apply quantity discounts
+      if (product.quantity > 10) {
+        price = price * 0.9;
+      }
+      
+      // Apply user-specific discounts
+      let userDiscount = user.isPremium ? 0.1 : 0;
+      if (user.membershipYears > 2) {
+        userDiscount = userDiscount + 0.02 * user.membershipYears;
+      }
+      
+      // Apply promo code if valid
+      let promoDiscount = 0;
+      if (promoCode && today < date(promoCode.expiryDate)) {
+        promoDiscount = promoCode.discountRate;
+      }
+      
+      // Calculate final price with all discounts
+      let discountedPrice = price * (1 - Math.max(userDiscount, promoDiscount));
+      
+      // Add shipping
+      let shippingCost = calculateShipping(user.distanceKm, product.weightKg);
+      
+      // Add tax
+      let finalPrice = (discountedPrice + shippingCost) * (1 + taxRate);
+      
+      // Holiday special
+      if (isHoliday(today)) {
+        finalPrice = finalPrice * 0.95;
+      }
+      
+      // Return result object
+      {
+        subtotal: price,
+        discount: price - discountedPrice,
+        shipping: shippingCost,
+        tax: (discountedPrice + shippingCost) * taxRate,
+        total: finalPrice
+      }
+    `;
+    
+    // Evaluate the pricing formula with the context
+    return this.evaluator.evaluate(pricingFormula, context);
+  }
+  
+  updateTaxRate(newRate) {
+    // Update global context values as needed
+    this.evaluator.setContextValue('taxRate', newRate);
+  }
+}
+
+// Usage
+const engine = new PricingEngine();
+
+const product = {
+  basePrice: 99.99,
+  quantity: 5,
+  weightKg: 2.5
+};
+
+const user = {
+  name: "Alice",
+  isPremium: true,
+  membershipYears: 3,
+  distanceKm: 50
+};
+
+const promoCode = {
+  code: "SUMMER2023",
+  discountRate: 0.15,
+  expiryDate: new Date(2023, 8, 30).getTime()
+};
+
+const priceBreakdown = engine.calculatePrice(product, user, promoCode);
+console.log(priceBreakdown);
+```
