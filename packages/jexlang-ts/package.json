@@ -1,7 +1,7 @@
 {
   "name": "jexlang-ts",
-  "private": true,
   "version": "1.0.0",
+  "description": "A lightweight expression language for JavaScript and TypeScript",
   "type": "module",
   "files": [
     "dist"
@@ -21,7 +21,28 @@
     "dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "expression",
+    "language",
+    "evaluator",
+    "parser",
+    "formula",
+    "rule-engine",
+    "javascript",
+    "typescript"
+  ],
+  "author": "JexLang Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vinaykumar0339/jexlang.git"
+  },
+  "homepage": "https://github.com/vinaykumar0339/jexlang",
+  "bugs": {
+    "url": "https://github.com/vinaykumar0339/jexlang/issues"
   },
   "devDependencies": {
     "tsup": "8.5.0",
