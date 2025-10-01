@@ -114,31 +114,6 @@ const languageConfiguration: monaco.languages.LanguageConfiguration = {
         { open: "'", close: "'" }
     ],
     wordPattern: /[a-zA-Z_][a-zA-Z0-9_]*/,
-    
-    // Add indentation rules for control structures
-    indentationRules: {
-        increaseIndentPattern: /^\s*(if|else|repeat)\b[^{;]*{\s*$/,
-        decreaseIndentPattern: /^\s*}/
-    },
-    
-    // Enhance bracket matching to better support if/else/repeat blocks
-    onEnterRules: [
-        {
-            // After an opening brace of a block, increase indentation
-            beforeText: /^\s*(if|else|repeat)\b[^{;]*{\s*$/,
-            action: { indentAction: monaco.languages.IndentAction.Indent }
-        },
-        {
-            // After any opening brace, increase indentation
-            beforeText: /^\s*{$/,
-            action: { indentAction: monaco.languages.IndentAction.Indent }
-        },
-        {
-            // When writing a closing brace, maintain indentation
-            beforeText: /^\s*}$/,
-            action: { indentAction: monaco.languages.IndentAction.None }
-        }
-    ],
 };
 
 export function registerJexLangLanguage(m = monaco) {

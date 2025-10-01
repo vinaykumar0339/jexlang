@@ -35,4 +35,12 @@ export function registerJexLangFeatures(m = monaco) {
 }
 
 // Re-export the JEX_LANGUAGE_ID
-export { JEX_LANGUAGE_ID } from './jexlang-language';
+export { JEX_LANGUAGE_ID, registerJexLangLanguage } from './jexlang-language';
+
+export { registerCompletionItemProvider, registerCustomCompletions } from './completion';
+export { registerHoverProvider } from './hover';
+export { registerSignatureHelpProvider } from './signature';
+export { registerDiagnostics } from './diagnostics';
+export { registerFormattingProvider } from './formatting';
+export { registerSymbolProvider } from './symbols';
+export { registerFoldingRangeProvider } from './folding';

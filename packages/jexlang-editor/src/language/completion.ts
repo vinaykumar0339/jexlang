@@ -1,6 +1,55 @@
 import * as monaco from 'monaco-editor';
 import { JEX_LANGUAGE_ID } from './jexlang-language';
 
+// Storage for custom completions
+const CUSTOM_COMPLETIONS: {
+  variables: monaco.languages.CompletionItem[];
+  functions: monaco.languages.CompletionItem[];
+  transforms: monaco.languages.CompletionItem[];
+  keywords: monaco.languages.CompletionItem[];
+  snippets: monaco.languages.CompletionItem[];
+} = {
+  variables: [],
+  functions: [],
+  transforms: [],
+  keywords: [],
+  snippets: []
+};
+
+/**
+ * Allows users to register custom completions for JexLang
+ * @param type The type of completion to register
+ * @param items Array of completion items
+ */
+export function registerCustomCompletions(
+  type: 'variable' | 'function' | 'transform' | 'keyword' | 'snippet',
+  items: Omit<monaco.languages.CompletionItem, 'range'>[]
+) {
+  const completionItems = items.map(item => ({
+    ...item,
+    range: new monaco.Range(1, 1, 1, 1) // Default range, will be updated during completion
+  }));
+
+  switch (type) {
+    case 'variable':
+      CUSTOM_COMPLETIONS.variables.push(...completionItems);
+      break;
+    case 'function':
+      CUSTOM_COMPLETIONS.functions.push(...completionItems);
+      break;
+    case 'transform':
+      CUSTOM_COMPLETIONS.transforms.push(...completionItems);
+      break;
+    case 'keyword':
+      CUSTOM_COMPLETIONS.keywords.push(...completionItems);
+      break;
+    case 'snippet':
+      CUSTOM_COMPLETIONS.snippets.push(...completionItems);
+      break;
+  }
+}
+
+// Existing code...
 const GLOBAL_VARIABLES: monaco.languages.CompletionItem[] = [
   {
     label: 'PI',
@@ -915,7 +964,10 @@ export function registerCompletionItemProvider(m = monaco) {
       
       if (isPipeContext && !isInString) {
         // After a pipe, only show transforms
-        suggestions = [...JEX_TRANSFORMS];
+        suggestions = [
+          ...JEX_TRANSFORMS,
+          ...CUSTOM_COMPLETIONS.transforms // Add custom transforms
+        ];
         
         // Add visual indicators in the completion list labels but REMOVE pipe from insertText
         suggestions = suggestions.map(item => ({
@@ -957,6 +1009,7 @@ export function registerCompletionItemProvider(m = monaco) {
           return { 
             suggestions: [
               ...GLOBAL_VARIABLES,
+              ...CUSTOM_COMPLETIONS.variables, // Add custom variables
               ...suggestions,
             ]
           };
@@ -965,10 +1018,14 @@ export function registerCompletionItemProvider(m = monaco) {
         // Normal context, show all suggestions
         suggestions = [
           ...GLOBAL_VARIABLES,
+          ...CUSTOM_COMPLETIONS.variables, // Add custom variables
           ...JEX_KEYWORDS,
+          ...CUSTOM_COMPLETIONS.keywords, // Add custom keywords
           ...JEX_OPERATORS,
           ...JEX_FUNCTIONS,
-          ...JEX_SNIPPETS
+          ...CUSTOM_COMPLETIONS.functions, // Add custom functions
+          ...JEX_SNIPPETS,
+          ...CUSTOM_COMPLETIONS.snippets // Add custom snippets
         ];
       }
 
