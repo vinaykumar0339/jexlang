@@ -144,7 +144,7 @@ const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
     range: new monaco.Range(1, 1, 1, 1)
   },
   { 
-    label: 'global', 
+    label: 'global let', 
     kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Global Let Variable declaration',
     documentation: 'Declares a new global variable',
     insertText: 'global let',
@@ -152,7 +152,7 @@ const JEX_KEYWORDS: monaco.languages.CompletionItem[] = [
     range: new monaco.Range(1, 1, 1, 1)
   },
   { 
-    label: 'global', 
+    label: 'global const', 
     kind: monaco.languages.CompletionItemKind.Keyword, detail: 'Global var Variable declaration',
     documentation: 'Declares a new global const variable',
     insertText: 'global const',
@@ -904,6 +904,14 @@ JEX_SNIPPETS.push({
   insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
   range: new monaco.Range(1, 1, 1, 1)
 });
+
+export function getAllAvailableFunctions() {
+  return JEX_FUNCTIONS.map(f => f.label);
+}
+
+export function getAllAvailableTransforms() {
+  return JEX_TRANSFORMS.map(f => f.label);
+}
 
 /**
  * Register completion item provider for JexLang
