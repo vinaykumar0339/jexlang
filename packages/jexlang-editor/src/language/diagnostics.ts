@@ -22,7 +22,7 @@ const BUILT_IN_TRANSFORMS = [
 ];
 
 // Keywords in the language
-const KEYWORDS = ['let', 'true', 'false'];
+const KEYWORDS = ['global', 'let', 'const', 'true', 'false', 'null', 'if', 'else', 'repeat'];
 
 interface JexDiagnosticInfo {
   message: string;
@@ -37,10 +37,8 @@ interface JexDiagnosticInfo {
  * Register diagnostics provider for JexLang
  */
 export function registerDiagnostics(m = monaco) {
-  // Listen for changes in the model content
-  m.editor.onDidCreateModel((model) => {
+  m.editor.getModels().forEach(model => {
     if (model.getLanguageId() === JEX_LANGUAGE_ID) {
-      // Initial validation
       validateModel(model, m);
       
       // Validate on content change
