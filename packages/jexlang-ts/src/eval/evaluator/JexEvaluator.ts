@@ -126,6 +126,36 @@ export class JexEvaluator {
     this.globalScope.declareVariable(key, value, isConst);
   }
 
+  setContextOrDeclareContextValue(
+    key: string, 
+    value: JexValue,
+    isConst = false
+  ): void {
+    this.context[key] = value;
+    if (this.globalScope.hasVariable(key)) {
+      this.globalScope.assignVariable(key, value);
+    } else {
+      this.globalScope.declareVariable(key, value, isConst);
+    }
+  }
+
+  resetContext(): void {
+    this.context = {};
+    this.globalScope = createGlobalScope();
+    this.addAllContextValuesIntoGlobalScope(this.context);
+    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+  }
+
+  resetFunctions(): void {
+    this.funcs = {};
+    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+  }
+
+  resetTransforms(): void {
+    this.transformsMap = {};
+    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+  }
+
   getContextValue(key: string): JexValue {
     const value = this.context[key];
     if (value === undefined) {
@@ -150,6 +180,11 @@ export class JexEvaluator {
     }
   }
 
+  removeFunction(name: string): void {
+    delete this.funcs[name];
+    this.visitor.removeFunction(name);
+  }
+
   getAllFunctions(): Record<string, FuncImpl> {
     return this.visitor.getAllFunctions();
   }
@@ -169,6 +204,11 @@ export class JexEvaluator {
   addTransform(name: string, transform: TransformImpl): void {
     this.transformsMap[name] = transform;
     this.visitor.addTransform(name, transform);
+  }
+
+  removeTransform(name: string): void {
+    delete this.transformsMap[name];
+    this.visitor.removeTransform(name);
   }
 
   addTransforms(transforms: Record<string, TransformImpl>): void {

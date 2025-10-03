@@ -22,8 +22,8 @@ public class JexEvaluator {
     private final Map<String, FuncImpl> funcsMap;
     private final Map<String, TransformImpl> transformMap;
 
-    private final Scope globalScope = Utils.createGlobalScope();
-    private final EvalVisitor evalVisitor;
+    private Scope globalScope = Utils.createGlobalScope();
+    private EvalVisitor evalVisitor;
     private final JexLangErrorListener errorListener;
     private final Map<String, JexLangParser.ProgramContext> cacheParsedTrees = new HashMap<>();
     private boolean cacheExpressions = false;
@@ -142,6 +142,34 @@ public class JexEvaluator {
         this.context.put(name, jexValue);
         this.globalScope.declareVariable(name, jexValue, isConst);
         return jexValue;
+    }
+
+    public JexValue setContextOrDeclareContextValue(String name, Object value, boolean isConst) {
+        JexValue jexValue = JexValue.from(value);
+        this.context.put(name, jexValue);
+        if (this.globalScope.hasVariable(name)) {
+            this.globalScope.assignVariable(name, jexValue);
+        } else {
+            this.globalScope.declareVariable(name, jexValue, isConst);
+        }
+        return jexValue;
+    }
+
+    public void resetContext() {
+        this.context.clear();
+        this.globalScope = Utils.createGlobalScope();
+        addAllContextValuesIntoGlobalScope(this.context);
+        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
+    }
+
+    public void resetFunctions() {
+        this.funcsMap.clear();
+        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
+    }
+
+    public void resetTransforms() {
+        this.transformMap.clear();
+        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
     }
 
     public Object getContextValue(String name) {

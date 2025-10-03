@@ -30,7 +30,9 @@ export class MapFuncRegistry implements FuncRegistry {
   }
   set(name: string, fn: FuncImpl) {
     this.map.set(name, fn);
-    return this;
+  }
+  remove(name: string) {
+    this.map.delete(name);
   }
   has(name: string) {
     return this.map.has(name);
@@ -54,7 +56,9 @@ export class MapTransformRegistry implements TransformRegistry {
   }
   set(name: string, fn: TransformImpl) {
     this.map.set(name, fn);
-    return this;
+  }
+  remove(name: string) {
+    this.map.delete(name);
   }
   has(name: string) {
     return this.map.has(name);

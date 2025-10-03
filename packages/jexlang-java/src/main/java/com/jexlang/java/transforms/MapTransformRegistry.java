@@ -14,6 +14,7 @@ public final class MapTransformRegistry implements TransformRegistry {
     public void set(String name, TransformImpl fn) { map.put(name, fn); }
     public Map<String, TransformImpl> getAll() { return map; }
     public boolean has(String name) { return map.containsKey(name); }
+    public void remove(String name) { map.remove(name); }
     public JexValue transform(String name, JexValue input) {
         TransformImpl f = map.get(name);
         if (f == null) throw new RuntimeException("Unknown transform: " + name);

@@ -2,7 +2,7 @@
 
 This package provides a TypeScript implementation of JexLang, a lightweight expression language designed for embedding expressions and simple logic in applications.
 
-For comprehensive documentation on JexLang syntax and features, please see the [main JexLang documentation](../../README.md).
+For comprehensive documentation on JexLang syntax and features, please see the [JexLang documentation on GitHub](https://github.com/vinaykumar0339/jexlang#readme).
 
 ## Using JexLang in Your Application
 

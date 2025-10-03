@@ -1,28 +1,9 @@
 import * as monaco from 'monaco-editor';
 import { JEX_LANGUAGE_ID } from './jexlang-language';
-
-// List of built-in functions from builtin.ts
-const BUILT_IN_FUNCTIONS = [
-  'abs', 'ceil', 'floor', 'round', 'trunc',
-  'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
-  'exp', 'log', 'log10', 'log2', 'sqrt', 'cbrt',
-  'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
-  'min', 'max', 'pow', 'random', 'sign',
-  'deg', 'rad', 'clamp', 'lerp',
-  'number', 'string', 'boolean',
-  'length', 'upper', 'lower', 'trim',
-  'array', 'first', 'last', 'sum', 'avg'
-];
-
-// List of built-in transforms from transforms/builtin.ts
-const BUILT_IN_TRANSFORMS = [
-  'upper', 'lower', 'capitalize', 'trim',
-  'abs', 'floor', 'ceil', 'round',
-  'length', 'number', 'string', 'boolean'
-];
+import { getAllAvailableFunctions, getAllAvailableTransforms } from './completion';
 
 // Keywords in the language
-const KEYWORDS = ['let', 'true', 'false'];
+const KEYWORDS = ['global', 'let', 'const', 'true', 'false', 'null', 'if', 'else', 'repeat'];
 
 interface JexDiagnosticInfo {
   message: string;
@@ -37,10 +18,8 @@ interface JexDiagnosticInfo {
  * Register diagnostics provider for JexLang
  */
 export function registerDiagnostics(m = monaco) {
-  // Listen for changes in the model content
-  m.editor.onDidCreateModel((model) => {
+  m.editor.getModels().forEach(model => {
     if (model.getLanguageId() === JEX_LANGUAGE_ID) {
-      // Initial validation
       validateModel(model, m);
       
       // Validate on content change
@@ -64,9 +43,8 @@ function validateModel(model: monaco.editor.ITextModel, m = monaco) {
     
     // Check for basic syntax errors
     checkBasicSyntax(text, diagnostics);
-    
-    // Check for variable declarations and usage
-    checkVariables(text, diagnostics);
+
+    // TODO: Check for variable declarations and usage
     
     // Check function calls
     checkFunctionCalls(text, diagnostics);
@@ -217,46 +195,6 @@ function checkBasicSyntax(text: string, diagnostics: JexDiagnosticInfo[]) {
 }
 
 /**
- * Check for variable declaration and usage issues
- */
-function checkVariables(text: string, diagnostics: JexDiagnosticInfo[]) {
-  // Extract variable declarations with regex
-  const varDeclarationRegex = /let\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([^;]*)/g;
-  const declarations: { name: string, position: number }[] = [];
-  let match;
-  
-  while ((match = varDeclarationRegex.exec(text)) !== null) {
-    declarations.push({ name: match[1], position: match.index });
-  }
-  
-  // Check for duplicate variable declarations
-  const uniqueVars = new Set<string>();
-  for (const decl of declarations) {
-    if (uniqueVars.has(decl.name)) {
-      // Find the line and column of the duplicate declaration
-      const priorText = text.substring(0, decl.position);
-      const lines = priorText.split('\n');
-      const lineNumber = lines.length;
-      const column = lines[lines.length - 1].indexOf('let ') + 4;
-      
-      diagnostics.push({
-        message: `Variable '${decl.name}' is already declared`,
-        startLineNumber: lineNumber,
-        startColumn: column,
-        endLineNumber: lineNumber,
-        endColumn: column + decl.name.length,
-        severity: monaco.MarkerSeverity.Warning
-      });
-    } else {
-      uniqueVars.add(decl.name);
-    }
-  }
-  
-  // TODO: Check for variable usage before declaration
-  // This would require more sophisticated parsing that's beyond a simple diagnostics provider
-}
-
-/**
  * Check for function call issues
  */
 function checkFunctionCalls(text: string, diagnostics: JexDiagnosticInfo[]) {
@@ -272,8 +210,8 @@ function checkFunctionCalls(text: string, diagnostics: JexDiagnosticInfo[]) {
       continue;
     }
     
-    // Check if the function exists in our built-in functions
-    if (!BUILT_IN_FUNCTIONS.includes(funcName)) {
+    const functions = getAllAvailableFunctions();
+    if (!functions.includes(funcName)) {
       const position = match.index;
       const priorText = text.substring(0, position);
       const lines = priorText.split('\n');
@@ -303,8 +241,8 @@ function checkTransforms(text: string, diagnostics: JexDiagnosticInfo[]) {
   while ((match = transformRegex.exec(text)) !== null) {
     const transformName = match[1];
     
-    // Check if the transform exists in our built-in transforms
-    if (!BUILT_IN_TRANSFORMS.includes(transformName)) {
+    const transforms = getAllAvailableTransforms();
+    if (!transforms.includes(transformName)) {
       const position = match.index + match[0].indexOf(transformName);
       const priorText = text.substring(0, position);
       const lines = priorText.split('\n');

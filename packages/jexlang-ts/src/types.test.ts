@@ -48,16 +48,6 @@ describe('MapFuncRegistry', () => {
         const registry = new MapFuncRegistry();
         expect(() => registry.call('unknown', [])).toThrow('Unknown function: unknown');
     });
-
-    it('should maintain method chaining for set', () => {
-        const registry = new MapFuncRegistry();
-        const result = registry
-            .set('func1', () => 1)
-            .set('func2', () => 2);
-        expect(result).toBe(registry);
-        expect(registry.call('func1', [])).toBe(1);
-        expect(registry.call('func2', [])).toBe(2);
-    });
 });
 
 describe('MapTransformRegistry', () => {
@@ -100,16 +90,5 @@ describe('MapTransformRegistry', () => {
     it('should throw for unknown transforms', () => {
         const registry = new MapTransformRegistry();
         expect(() => registry.transform('unknown', 'test')).toThrow('Unknown transform: unknown');
-    });
-
-    it('should maintain method chaining for set', () => {
-        const registry = new MapTransformRegistry();
-        const result = registry
-            .set('transform1', (input) => `${input}1`)
-            .set('transform2', (input) => `${input}2`);
-
-        expect(result).toBe(registry);
-        expect(registry.transform('transform1', 'test')).toBe('test1');
-        expect(registry.transform('transform2', 'test')).toBe('test2');
     });
 });

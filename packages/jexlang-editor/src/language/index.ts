@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor';
-import { registerJexLangLanguage } from './jexlang-language';
+import { JEX_LANGUAGE_ID, registerJexLangLanguage } from './jexlang-language';
 import { registerCompletionItemProvider } from './completion';
 import { registerHoverProvider } from './hover';
 import { registerSignatureHelpProvider } from './signature';
@@ -27,7 +27,7 @@ export function registerJexLangFeatures(m = monaco) {
   registerFoldingRangeProvider(m);
   
   return {
-    id: 'jexlang',
+    id: JEX_LANGUAGE_ID,
     dispose: () => {
       // Disposal logic if needed
     }
@@ -35,4 +35,12 @@ export function registerJexLangFeatures(m = monaco) {
 }
 
 // Re-export the JEX_LANGUAGE_ID
-export { JEX_LANGUAGE_ID } from './jexlang-language';
+export { JEX_LANGUAGE_ID, registerJexLangLanguage } from './jexlang-language';
+
+export { registerCompletionItemProvider, registerCustomCompletions } from './completion';
+export { registerHoverProvider } from './hover';
+export { registerSignatureHelpProvider } from './signature';
+export { registerDiagnostics } from './diagnostics';
+export { registerFormattingProvider } from './formatting';
+export { registerSymbolProvider } from './symbols';
+export { registerFoldingRangeProvider } from './folding';

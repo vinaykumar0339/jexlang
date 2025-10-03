@@ -40,6 +40,12 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         }
     }
 
+    public removeFunction(name: string): void {
+        if (this.funcRegistry instanceof MapFuncRegistry) {
+            this.funcRegistry.remove(name);
+        }
+    }
+
     public getAllFunctions(): Record<string, FuncImpl> {
         if (this.funcRegistry instanceof MapFuncRegistry) {
             return this.funcRegistry.getAll();
@@ -71,6 +77,12 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     public addTransform(name: string, transform: TransformImpl): void {
         if (this.transformRegistry instanceof MapTransformRegistry) {
             this.transformRegistry.set(name, transform);
+        }
+    }
+
+    public removeTransform(name: string): void {
+        if (this.transformRegistry instanceof MapTransformRegistry) {
+            this.transformRegistry.remove(name);
         }
     }
 

@@ -1,6 +1,6 @@
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { JEX_LANGUAGE_ID, registerJexLangFeatures } from "jexlang-editor";
-import { JexEvaluator, toNumber, toString, type Context, type JexValue } from "jexlang-ts";
+import { JexEvaluator, type Context, type JexValue } from "jexlang-ts";
 import { useRef, useEffect, useState } from "react";
 import unescapeJs from 'unescape-js';
 
@@ -24,28 +24,10 @@ export const ReactJexLangEditor = ({
   };
 
   useEffect(() => {
-    evaluatorRef.current = new JexEvaluator(context);
-
-    evaluatorRef.current.addFunction('httpGet', async (url: JexValue) => {
-          try {
-            const response = await fetch(toString(url));
-            return await response.json();
-          } catch (error) {
-            console.error("Error fetching HTTP GET:", error);
-            throw error;
-          }
-      });
-
-    evaluatorRef.current.addFunction('setTimeout', async (ms: JexValue) => {
-        return await new Promise<string>((resolve) => setTimeout(() => resolve("hello"), toNumber(ms)));
-    });
-
-
-    evaluatorRef.current.addFunction('getAsyncValueForSetTimeout', async (ms: JexValue) => {
-        return await new Promise<number>((resolve) => setTimeout(() => resolve(toNumber(ms)), 1000));
-    });
-
-    // register methods;
+    evaluatorRef.current?.resetContext();
+    for (const key in context) {
+      evaluatorRef.current?.declareContextValue(key, context[key]);
+    }
   }, [context]);
 
   const validate = async (value: string) => {

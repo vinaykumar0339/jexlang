@@ -52,6 +52,12 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         }
     }
 
+    public void removeFunction(String name) {
+        if (this.funcRegistry != null) {
+            this.funcRegistry.remove(name);
+        }
+    }
+
     public Map<String, FuncImpl> getAllFunctions() {
         if (this.funcRegistry != null) {
             return this.funcRegistry.getAll();
@@ -83,6 +89,12 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public void addTransform(String name, TransformImpl fn) {
         if (this.transformRegistry != null) {
             this.transformRegistry.set(name, fn);
+        }
+    }
+
+    public void removeTransform(String name) {
+        if (this.transformRegistry != null) {
+            this.transformRegistry.remove(name);
         }
     }
 
