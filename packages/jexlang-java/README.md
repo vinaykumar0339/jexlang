@@ -13,7 +13,7 @@ Add the dependency to your project:
 #### Maven
 ```xml
 <dependency>
-    <groupId>com.jexlang</groupId>
+    <groupId>io.github.vinaykumar0339</groupId>
     <artifactId>jexlang-java</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -21,7 +21,7 @@ Add the dependency to your project:
 
 #### Gradle
 ```gradle
-implementation 'com.jexlang:jexlang-java:1.0.0'
+implementation 'io.github.vinaykumar0339:jexlang-java:1.0.0'
 ```
 
 ### Quick Start
@@ -29,7 +29,7 @@ implementation 'com.jexlang:jexlang-java:1.0.0'
 Here's a complete example showing how to use JexLang in your Java application:
 
 ```java
-import com.jexlang.JexEvaluator;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,9 +60,9 @@ public class JexLangDemo {
 You can initialize JexLang with custom context, functions, and transforms:
 
 ```java
-import com.jexlang.JexEvaluator;
-import com.jexlang.Function;
-import com.jexlang.Transform;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
+import io.github.vinaykumar0339.functionss.FuncImpl;
+import io.github.vinaykumar0339.transforms.TransformImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
@@ -107,7 +107,7 @@ JexLang offers two types of context for variables:
 2. **Program Context**: Only available for a single evaluation
 
 ```java
-import com.jexlang.JexEvaluator;
+import io.github.vinaykumar0339.evaluator.JexEvaluatorr;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -150,7 +150,7 @@ public class ContextDemo {
 You can declare constant variables that cannot be modified:
 
 ```java
-import com.jexlang.JexEvaluator;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
 
 public class ConstantsDemo {
     public static void main(String[] args) {
@@ -177,7 +177,7 @@ public class ConstantsDemo {
 For performance optimization, you can enable expression caching:
 
 ```java
-import com.jexlang.JexEvaluator;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -216,7 +216,7 @@ public class CachingDemo {
 Here's a more complete example showing how JexLang can be integrated into a real Java application:
 
 ```java
-import com.jexlang.JexEvaluator;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
