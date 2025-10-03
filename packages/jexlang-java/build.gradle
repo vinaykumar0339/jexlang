@@ -1,10 +1,16 @@
 plugins {
-    id 'java'
-    id 'application'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.20.0'
 }
 
-group = 'com.jexlang.java'
+group = 'io.github.vinaykumar0339'
 version = '1.0.0'
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
 repositories {
     mavenCentral()
@@ -14,7 +20,6 @@ dependencies {
 
     implementation("org.antlr:antlr4-runtime:4.13.2")
     implementation("org.apache.commons:commons-math3:3.6.1")
-
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -37,10 +42,10 @@ tasks.register("generateVersionFile") {
     outputs.dir(outputDir)
 
     doLast {
-        def versionFile = new File(outputDir, "com/jexlang/java/Version.java")
+        def versionFile = new File(outputDir, "io/github/vinaykumar0339/Version.java")
         versionFile.parentFile.mkdirs()
         versionFile.text = """
-            package com.jexlang.java;
+            package io.github.vinaykumar0339;
 
             public class Version {
                 public static final String VERSION = "${project.version}";
@@ -61,4 +66,96 @@ sourceSets {
 // Make Java compile depend on generation
 tasks.named("compileJava") {
     dependsOn("generateVersionFile")
+}
+
+tasks.named("sourcesJar") {
+    dependsOn("generateVersionFile")
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group.toString()
+            artifactId = 'jexlang-java'
+            version = version.toString()
+
+            from components.java
+
+            pom {
+                name = 'jexlang-java'
+                description = 'A Java library for JexLang'
+                url = 'https://github.com/vinaykumar0339/jexlang.git'
+                inceptionYear = '2021'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://github.com/vinaykumar0339/jexlang/blob/main/LICENSE'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'vinaykumar0339'
+                        name = 'Vinay Kumar'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/vinaykumar0339/jexlang.git'
+                    developerConnection = 'scm:git:ssh://github.com/vinaykumar0339/jexlang.git'
+                    url = 'http://github.com/vinaykumar0339/jexlang.git'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+
+    gitRootSearch = true
+
+    project {
+        name = 'jexlang-java'
+        description = 'A Java library for JexLang'
+        longDescription = 'A Java library for JexLang'
+        authors = ['Vinay Kumar']
+        license = 'MIT'
+        languages {
+            java {
+                groupId = group
+                artifactId = 'jexlang-java'
+                mainClass = 'io.github.vinaykumar0339.Main'
+            }
+        }
+    }
+
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+
+    environment {
+        variables 'config.toml'
+    }
+
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    sign = true
+                    checksums = true
+                    sourceJar = true
+                    javadocJar = true
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
 }

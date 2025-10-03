@@ -1,0 +1,17 @@
+package io.github.vinaykumar0339.eval.errors;
+
+import javax.management.RuntimeErrorException;
+
+public class JexLangRuntimeError extends RuntimeErrorException {
+    private final String name;
+
+    public JexLangRuntimeError(String message) {
+        super(new Error(message));
+        this.name = "JexLangRuntimeError";
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
