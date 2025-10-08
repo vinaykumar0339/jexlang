@@ -75,12 +75,12 @@ public class CustomJexLangDemo {
         initialContext.put("items", Arrays.asList(1, 2, 3, 4, 5));
         
         // Custom functions
-        Map<String, Function> customFunctions = new HashMap<>();
+        Map<String, FuncImpl> customFunctions = new HashMap<>();
         customFunctions.put("greet", args -> "Hello, " + args[0] + "!");
         customFunctions.put("double", args -> ((Number) args[0]).doubleValue() * 2);
         
         // Custom transforms
-        Map<String, Transform> customTransforms = new HashMap<>();
+        Map<String, TransformImpl> customTransforms = new HashMap<>();
         customTransforms.put("reversed", value -> 
             new StringBuilder(value.toString()).reverse().toString());
         
