@@ -7,74 +7,87 @@
 
 import Foundation
 
-public class JexEvaluator {
-    
-    private var context: [String: Any] = [:]
-    private var cacheParsedTrees: [String: JexLangParser.ProgramContext] = [:]
-    private var cacheExpressions: Bool = false
-    
-    private let evalVisitor: EvalVisitor
-    
-    private var errorListener: JexLangErrorListener
-    
-    public init(_ context: [String: Any]? = nil) {
-        if (context != nil) {
-            self.context = context!
-        }
-        
-        self.evalVisitor = EvalVisitor()
+// MARK: - Parse Session
+
+public class JexParseSession {
+    public let lexer: JexLangLexer
+    public let tokens: CommonTokenStream
+    public let parser: JexLangParser
+    public let tree: JexLangParser.ProgramContext
+    public let errorListener: JexLangErrorListener
+
+    public init(_ expr: String) throws {
+        let input = ANTLRInputStream(expr)
+        self.lexer = JexLangLexer(input)
+        self.tokens = CommonTokenStream(lexer)
+        self.parser = try JexLangParser(tokens)
         self.errorListener = JexLangErrorListener()
-    }
-    
-    private func parseExpression(expr: String) throws -> JexLangParser.ProgramContext {
-        if (self.cacheParsedTrees.keys.contains(expr) && self.cacheExpressions) {
-            if let cacheTree = self.cacheParsedTrees[expr] {
-                return cacheTree
-            }
-        }
-        
-        let charStream = ANTLRInputStream(expr)
-        let lexer = JexLangLexer(charStream)
-        let tokens = CommonTokenStream(lexer)
-        let parser = try! JexLangParser(tokens)
-        
-        // Remove the default console error listener
+
+        // --- Error handling setup ---
         lexer.removeErrorListeners()
-        
-        // Add our custom error listener
-        self.errorListener.clear()
-        lexer.addErrorListener(self.errorListener)
-        
-        // Remove default console error listener from parser too
-        parser.removeErrorListeners();
-        parser.addErrorListener(self.errorListener);
-        
-        let tree = try! parser.program()
-        
-        if (self.errorListener.hasErrors()) {
-            throw self.errorListener.getSyntaxErrors()[0]
+        parser.removeErrorListeners()
+
+        lexer.addErrorListener(errorListener)
+        parser.addErrorListener(errorListener)
+        errorListener.clear()
+
+        // --- Parse ---
+        self.tree = try parser.program()
+
+        // --- Validate syntax errors ---
+        if errorListener.hasErrors() {
+            throw errorListener.getSyntaxErrors()[0]
         }
-        
-        if (self.cacheExpressions) {
-            self.cacheParsedTrees[expr] = tree
-        }
-        
-        self.cacheParsedTrees[expr] = tree
-        return tree
     }
-    
+}
+
+// MARK: - Evaluator
+
+public class JexEvaluator {
+
+    private var context: [String: Any] = [:]
+    private var cacheParsedTrees: [String: JexParseSession] = [:]
+    private var cacheExpressions: Bool = false
+
+    private let evalVisitor: EvalVisitor
+
+    public init(_ context: [String: Any]? = nil) {
+        if let context = context {
+            self.context = context
+        }
+        self.evalVisitor = EvalVisitor()
+    }
+
+    // MARK: - Parse (with caching)
+
+    private func parseExpression(expr: String) throws -> JexParseSession {
+        if cacheExpressions, let cached = cacheParsedTrees[expr] {
+            return cached
+        }
+
+        let session = try JexParseSession(expr)
+
+        if cacheExpressions {
+            cacheParsedTrees[expr] = session
+        }
+
+        return session
+    }
+
+    // MARK: - Evaluate
+
     public func evaluate(
         expr: String,
         programScopeVariables: [String: Any]? = nil
     ) throws -> AnyObject? {
-        let programContext = try parseExpression(expr: expr)
-        
-        let value: JexValue? = self.evalVisitor.visit(programContext)
-        
-        guard let value = value else {
+        let session = try parseExpression(expr: expr)
+
+        // Evaluate using the retained parser context
+        guard let value = evalVisitor.visit(session.tree) else {
             return nil
         }
-        
+
         return value.toObject()
     }
 }
+

@@ -23,6 +23,10 @@ public class JexInteger: JexValue, CustomStringConvertible {
         return false
     }
     
+    public func isNumber() -> Bool {
+        return false
+    }
+    
     public func isBoolean() -> Bool {
         return false
     }
@@ -61,6 +65,10 @@ public class JexInteger: JexValue, CustomStringConvertible {
     
     public func asInteger(context: String) -> Int {
         return value
+    }
+    
+    public func asNumber(context: String) throws -> NSNumber {
+        throw JexValueFactory.typeError(want: "number", ctx: context, actualValue: self)
     }
     
     public func asBoolean(context: String) throws -> Bool {

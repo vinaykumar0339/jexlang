@@ -8,9 +8,6 @@
 import Foundation
 
 public class EvalVisitor: JexLangBaseVisitor<JexValue> {
-    public override func visit(_ tree: any ParseTree) -> JexValue? {
-        return super.visit(tree)
-    }
     
     public override func visitProgram(_ ctx: JexLangParser.ProgramContext) -> JexValue? {
         var result: JexValue? = nil
@@ -44,6 +41,11 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return JexNil()
     }
     
+    
+    public override func visitEmptyStatement(_ ctx: JexLangParser.EmptyStatementContext) -> JexValue {
+        return JexNil()
+    }
+    
     public override func visitExpressionSequence(_ ctx: JexLangParser.ExpressionSequenceContext) -> JexValue? {
         var result: JexValue? = nil
         for singleExpression in ctx.singleExpression() {
@@ -73,10 +75,14 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     }
     
     public override func visitNumberLiteral(_ ctx: JexLangParser.NumberLiteralContext) -> JexValue? {
-        if let number = try? JexValueFactory.fromInteger(integer: toNumber(value: JexString(value: ctx.getText()), ctx: "number literal")) {
+        if let number = try? JexValueFactory.fromNumber(number: toNumber(value: JexString(value: ctx.getText()), ctx: "number literal")) {
             return number
         }
         return JexNil()
+    }
+    
+    public override func visitBooleanLiteral(_ ctx: JexLangParser.BooleanLiteralContext) -> JexValue? {
+        return JexBoolean(value: ctx.getText().lowercased() == "true")
     }
     
     public override func visitStringLiteral(_ ctx: JexLangParser.StringLiteralContext) -> JexValue? {
@@ -103,16 +109,27 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 }
                 
                 if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                    return JexValueFactory.fromInteger(integer: lefNum + rightNum)
+                    return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue + rightNum.doubleValue))
                 }
                 
             } else if (ctx.MINUS() != nil) {
                 if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                    return JexValueFactory.fromInteger(integer: lefNum - rightNum)
+                    return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue - rightNum.doubleValue))
                 }
             }
         }
         
         return nil
+    }
+    
+    public override func visitParenthesizedExpression(_ ctx: JexLangParser.ParenthesizedExpressionContext) -> JexValue {
+        if let expressionSequenceContext = ctx.expressionSequence() {
+            return self.visit(expressionSequenceContext) ?? JexNil()
+        }
+        return JexNil()
+    }
+    
+    public override func defaultResult() -> JexValue {
+        return JexNil()
     }
 }

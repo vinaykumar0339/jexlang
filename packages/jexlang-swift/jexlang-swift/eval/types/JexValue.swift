@@ -10,6 +10,7 @@ import Foundation
 public protocol JexValue {
     func isInteger() -> Bool
     func isDouble() -> Bool
+    func isNumber() -> Bool
     func isBoolean() -> Bool
     func isString() -> Bool
     func isNil() -> Bool
@@ -22,6 +23,7 @@ public protocol JexValue {
     
     func asDouble(context: String) throws -> Double
     func asInteger(context: String) throws -> Int
+    func asNumber(context: String) throws -> NSNumber
     func asBoolean(context: String) throws -> Bool
     func asString(context: String) throws -> String
     func asArray(context: String) throws -> [JexValue]
@@ -39,6 +41,14 @@ public class JexValueFactory {
     
     static func fromInteger(integer: Int) -> JexInteger {
         return JexInteger(value: integer)
+    }
+    
+    static func fromNumber(number: NSNumber) -> JexNumber {
+        return JexNumber(value: number)
+    }
+    
+    static func fromDouble(double: Double) -> JexDouble {
+        return JexDouble(value: double)
     }
     
     static func fromString(string: String) -> JexString {

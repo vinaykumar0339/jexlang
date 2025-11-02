@@ -1,17 +1,17 @@
 //
-//  JexString.swift
+//  JexInteger.swift
 //  jexlang-swift
 //
-//  Created by Vinay Kumar on 04/10/25.
+//  Created by Vinay Kumar on 03/10/25.
 //
 
 import Foundation
 
-public class JexString: JexValue {
+public class JexDouble: JexValue, CustomStringConvertible {
     
-    private let value: String
+    private var value: Double
     
-    public init(value: String) {
+    public init(value: Double) {
         self.value = value
     }
     
@@ -20,7 +20,7 @@ public class JexString: JexValue {
     }
     
     public func isDouble() -> Bool {
-        return false
+        return true
     }
     
     public func isNumber() -> Bool {
@@ -32,7 +32,7 @@ public class JexString: JexValue {
     }
     
     public func isString() -> Bool {
-        return true
+        return false
     }
     
     public func isNil() -> Bool {
@@ -48,19 +48,23 @@ public class JexString: JexValue {
     }
     
     public func getType() -> String {
-        return "string"
+        return "double"
+    }
+    
+    public var description: String {
+        return "\(value)"
     }
     
     public func toObject() -> AnyObject? {
-        return value as AnyObject
+        return value as AnyObject;
     }
     
-    public func asDouble(context: String) throws -> Double {
-        throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)
+    public func asDouble(context: String) -> Double {
+        return value
     }
     
     public func asInteger(context: String) throws -> Int {
-        throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)
+        throw JexValueFactory.typeError(want: "integer", ctx: context, actualValue: self)
     }
     
     public func asNumber(context: String) throws -> NSNumber {
@@ -71,8 +75,8 @@ public class JexString: JexValue {
         throw JexValueFactory.typeError(want: "boolean", ctx: context, actualValue: self)
     }
     
-    public func asString(context: String) -> String {
-        return value;
+    public func asString(context: String) throws -> String {
+        throw JexValueFactory.typeError(want: "string", ctx: context, actualValue: self)
     }
     
     public func asArray(context: String) throws -> [JexValue] {
@@ -83,3 +87,4 @@ public class JexString: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
 }
+

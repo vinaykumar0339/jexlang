@@ -13,9 +13,10 @@ struct jexlang_swiftTests {
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
         let jexEvaluator = JexEvaluator();
-        print(try? jexEvaluator.evaluate(expr: """
-        {}
-        """))
+        let output = try? jexEvaluator.evaluate(expr: """
+        "2" - 2
+        """)
+        print(output)
     }
 
 }

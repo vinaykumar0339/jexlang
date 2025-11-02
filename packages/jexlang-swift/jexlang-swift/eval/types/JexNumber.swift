@@ -1,17 +1,17 @@
 //
-//  JexString.swift
+//  JexNumber.swift
 //  jexlang-swift
 //
-//  Created by Vinay Kumar on 04/10/25.
+//  Created by Vinay Kumar on 02/11/25.
 //
 
 import Foundation
 
-public class JexString: JexValue {
+public class JexNumber: JexValue, CustomStringConvertible {
     
-    private let value: String
+    private var value: NSNumber
     
-    public init(value: String) {
+    public init(value: NSNumber) {
         self.value = value
     }
     
@@ -24,7 +24,7 @@ public class JexString: JexValue {
     }
     
     public func isNumber() -> Bool {
-        return false
+        return true
     }
     
     public func isBoolean() -> Bool {
@@ -32,7 +32,7 @@ public class JexString: JexValue {
     }
     
     public func isString() -> Bool {
-        return true
+        return false
     }
     
     public func isNil() -> Bool {
@@ -48,11 +48,19 @@ public class JexString: JexValue {
     }
     
     public func getType() -> String {
-        return "string"
+        return "number"
+    }
+    
+    public var description: String {
+        return "\(value)"
     }
     
     public func toObject() -> AnyObject? {
-        return value as AnyObject
+        return value
+    }
+    
+    public func asNumber(context: String) throws -> NSNumber {
+        return value
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -60,19 +68,15 @@ public class JexString: JexValue {
     }
     
     public func asInteger(context: String) throws -> Int {
-        throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)
-    }
-    
-    public func asNumber(context: String) throws -> NSNumber {
-        throw JexValueFactory.typeError(want: "number", ctx: context, actualValue: self)
+        throw JexValueFactory.typeError(want: "integer", ctx: context, actualValue: self)
     }
     
     public func asBoolean(context: String) throws -> Bool {
         throw JexValueFactory.typeError(want: "boolean", ctx: context, actualValue: self)
     }
     
-    public func asString(context: String) -> String {
-        return value;
+    public func asString(context: String) throws -> String {
+        return description
     }
     
     public func asArray(context: String) throws -> [JexValue] {

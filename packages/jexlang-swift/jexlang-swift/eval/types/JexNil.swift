@@ -16,6 +16,10 @@ public class JexNil: JexValue {
         return false
     }
     
+    public func isNumber() -> Bool {
+        return false
+    }
+    
     public func isBoolean() -> Bool {
         return false
     }
@@ -46,6 +50,10 @@ public class JexNil: JexValue {
     
     public func asInteger(context: String) throws -> Int {
         throw JexValueFactory.typeError(want: "integer", ctx: context, actualValue: self)
+    }
+    
+    public func asNumber(context: String) throws -> NSNumber {
+        throw JexValueFactory.typeError(want: "number", ctx: context, actualValue: self)
     }
     
     public func asBoolean(context: String) throws -> Bool {

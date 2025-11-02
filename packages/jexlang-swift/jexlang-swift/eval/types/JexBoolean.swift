@@ -1,20 +1,13 @@
 //
-//  JexString.swift
+//  JexBoolean.swift
 //  jexlang-swift
 //
-//  Created by Vinay Kumar on 04/10/25.
+//  Created by Vinay Kumar on 02/11/25.
 //
 
 import Foundation
 
-public class JexString: JexValue {
-    
-    private let value: String
-    
-    public init(value: String) {
-        self.value = value
-    }
-    
+public class JexBoolean: JexValue {
     public func isInteger() -> Bool {
         return false
     }
@@ -23,16 +16,16 @@ public class JexString: JexValue {
         return false
     }
     
+    public func isBoolean() -> Bool {
+        return true
+    }
+    
     public func isNumber() -> Bool {
         return false
     }
     
-    public func isBoolean() -> Bool {
-        return false
-    }
-    
     public func isString() -> Bool {
-        return true
+        return false
     }
     
     public func isNil() -> Bool {
@@ -48,7 +41,7 @@ public class JexString: JexValue {
     }
     
     public func getType() -> String {
-        return "string"
+        return "boolean"
     }
     
     public func toObject() -> AnyObject? {
@@ -56,8 +49,7 @@ public class JexString: JexValue {
     }
     
     public func asDouble(context: String) throws -> Double {
-        throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)
-    }
+        throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)    }
     
     public func asInteger(context: String) throws -> Int {
         throw JexValueFactory.typeError(want: "double", ctx: context, actualValue: self)
@@ -68,18 +60,24 @@ public class JexString: JexValue {
     }
     
     public func asBoolean(context: String) throws -> Bool {
-        throw JexValueFactory.typeError(want: "boolean", ctx: context, actualValue: self)
+        return value
     }
     
-    public func asString(context: String) -> String {
-        return value;
+    public func asString(context: String) throws -> String {
+        throw JexValueFactory.typeError(want: "string", ctx: context, actualValue: self)
     }
     
-    public func asArray(context: String) throws -> [JexValue] {
+    public func asArray(context: String) throws -> [any JexValue] {
         throw JexValueFactory.typeError(want: "array", ctx: context, actualValue: self)
     }
     
-    public func asObject(context: String) throws -> [String : JexValue] {
+    public func asObject(context: String) throws -> [String : any JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
+    }
+    
+    private let value: Bool
+    
+    internal init(value: Bool) {
+        self.value = value
     }
 }
