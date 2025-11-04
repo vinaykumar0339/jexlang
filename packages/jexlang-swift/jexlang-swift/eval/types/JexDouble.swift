@@ -7,9 +7,9 @@
 
 import Foundation
 
-public class JexDouble: JexValue, CustomStringConvertible {
+public class JexDouble: JexValue {
     
-    private var value: Double
+    private let value: Double
     
     public init(value: Double) {
         self.value = value

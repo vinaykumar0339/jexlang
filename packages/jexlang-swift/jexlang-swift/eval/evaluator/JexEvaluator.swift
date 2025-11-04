@@ -7,47 +7,18 @@
 
 import Foundation
 
-// MARK: - Parse Session
-
-public class JexParseSession {
-    public let lexer: JexLangLexer
-    public let tokens: CommonTokenStream
-    public let parser: JexLangParser
-    public let tree: JexLangParser.ProgramContext
-    public let errorListener: JexLangErrorListener
-
-    public init(_ expr: String) throws {
-        let input = ANTLRInputStream(expr)
-        self.lexer = JexLangLexer(input)
-        self.tokens = CommonTokenStream(lexer)
-        self.parser = try JexLangParser(tokens)
-        self.errorListener = JexLangErrorListener()
-
-        // --- Error handling setup ---
-        lexer.removeErrorListeners()
-        parser.removeErrorListeners()
-
-        lexer.addErrorListener(errorListener)
-        parser.addErrorListener(errorListener)
-        errorListener.clear()
-
-        // --- Parse ---
-        self.tree = try parser.program()
-
-        // --- Validate syntax errors ---
-        if errorListener.hasErrors() {
-            throw errorListener.getSyntaxErrors()[0]
-        }
-    }
-}
-
 // MARK: - Evaluator
 
 public class JexEvaluator {
 
     private var context: [String: Any] = [:]
-    private var cacheParsedTrees: [String: JexParseSession] = [:]
+    private var cacheParsedTrees: [String: JexLangParser.ProgramContext] = [:]
     private var cacheExpressions: Bool = false
+    
+    // Holding strong references. If we put this as local variable inside parseExpression. outside function this instances deallocating.
+    private var lexer: JexLangLexer!
+    private var tokens: CommonTokenStream!
+    private var parser: JexLangParser!
 
     private let evalVisitor: EvalVisitor
 
@@ -60,18 +31,38 @@ public class JexEvaluator {
 
     // MARK: - Parse (with caching)
 
-    private func parseExpression(expr: String) throws -> JexParseSession {
+    private func parseExpression(expr: String) throws -> JexLangParser.ProgramContext {
         if cacheExpressions, let cached = cacheParsedTrees[expr] {
             return cached
         }
+        
+        let input = ANTLRInputStream(expr)
+        self.lexer = JexLangLexer(input)
+        self.tokens = CommonTokenStream(lexer)
+        self.parser = try JexLangParser(tokens)
+        let errorListener = JexLangErrorListener()
 
-        let session = try JexParseSession(expr)
+        // --- Error handling setup ---
+        lexer.removeErrorListeners()
+        parser.removeErrorListeners()
 
-        if cacheExpressions {
-            cacheParsedTrees[expr] = session
+        lexer.addErrorListener(errorListener)
+        parser.addErrorListener(errorListener)
+        errorListener.clear()
+
+        // --- Parse ---
+        let tree = try parser.program()
+
+        // --- Validate syntax errors ---
+        if errorListener.hasErrors() {
+            throw errorListener.getSyntaxErrors()[0]
         }
 
-        return session
+        if cacheExpressions {
+            cacheParsedTrees[expr] = tree
+        }
+
+        return tree
     }
 
     // MARK: - Evaluate
@@ -80,10 +71,10 @@ public class JexEvaluator {
         expr: String,
         programScopeVariables: [String: Any]? = nil
     ) throws -> AnyObject? {
-        let session = try parseExpression(expr: expr)
+        let programContext = try parseExpression(expr: expr)
 
         // Evaluate using the retained parser context
-        guard let value = evalVisitor.visit(session.tree) else {
+        guard let value = evalVisitor.visit(programContext) else {
             return nil
         }
 

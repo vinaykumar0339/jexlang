@@ -14,8 +14,8 @@
             filePath = "jexlang-swiftTests/jexlang_swiftTests.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "19"
-            endingLineNumber = "19"
+            startingLineNumber = "25"
+            endingLineNumber = "25"
             landmarkName = "example()"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,9 +30,9 @@
             filePath = "jexlang-swift/eval/visitor/EvalVisitor.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "78"
-            endingLineNumber = "78"
-            landmarkName = "visitNumberLiteral(_:)"
+            startingLineNumber = "205"
+            endingLineNumber = "205"
+            landmarkName = "visitLiteralExpression(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

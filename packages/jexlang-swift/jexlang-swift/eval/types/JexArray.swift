@@ -1,13 +1,19 @@
 //
-//  JexNull.swift
+//  JexArray.swift
 //  jexlang-swift
 //
-//  Created by Vinay Kumar on 03/10/25.
+//  Created by Vinay Kumar on 04/11/25.
 //
 
 import Foundation
 
-public class JexNil: JexValue {
+public class JexArray: JexValue {
+    private let value: [JexValue]
+    
+    init(value: [JexValue]) {
+        self.value = value
+    }
+    
     public func isInteger() -> Bool {
         return false
     }
@@ -29,19 +35,27 @@ public class JexNil: JexValue {
     }
     
     public func isNil() -> Bool {
-        return true
+        return false
     }
     
     public func isArray() -> Bool {
-        return false
+        return true
     }
     
     public func isObject() -> Bool {
         return false
     }
     
+    public func getType() -> String {
+        return "array"
+    }
+    
+    public var description: String {
+        return "[\(value.map(\.description).joined(separator: ", "))]"
+    }
+    
     public func toObject() -> AnyObject? {
-        return nil
+        return value as AnyObject
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -65,18 +79,10 @@ public class JexNil: JexValue {
     }
     
     public func asArray(context: String) throws -> [JexValue] {
-        throw JexValueFactory.typeError(want: "array", ctx: context, actualValue: self)
+        return value
     }
     
     public func asObject(context: String) throws -> [String : JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
-    }
-    
-    public func getType() -> String {
-        return "nil"
-    }
-    
-    public var description: String {
-        return "nil"
     }
 }

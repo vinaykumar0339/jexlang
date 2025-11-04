@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol JexValue {
+public protocol JexValue: CustomStringConvertible {
     func isInteger() -> Bool
     func isDouble() -> Bool
     func isNumber() -> Bool
@@ -28,6 +28,7 @@ public protocol JexValue {
     func asString(context: String) throws -> String
     func asArray(context: String) throws -> [JexValue]
     func asObject(context: String) throws -> [String: JexValue]
+    
 }
 
 public class JexValueFactory {
@@ -55,14 +56,73 @@ public class JexValueFactory {
         return JexString(value: string)
     }
     
-    static func from(value: AnyObject?) throws -> JexValue {
-        if (value == nil) {
-            return JexNil()
-        }
-        if let intValue = value as? Int {
-            return fromInteger(integer: intValue)
-        }
-        
-        throw JexLangRuntimeError(message: "Unsupported type: \(String(describing: value.self)) Supported types are: null, Integer, Double, Boolean, String, List, Dictionary")
+    static func fromBoolean(value: Bool) -> JexBoolean {
+        return JexBoolean(value: value)
     }
+    
+    static func fromArray(array: [JexValue]) -> JexArray {
+        return JexArray(value: array)
+    }
+    
+    static func fromObject(object: [String: JexValue]) -> JexObject {
+        return JexObject(value: object)
+    }
+    
+    static func fromArray(value: [AnyObject]) -> JexArray {
+        let jexList = value.map { from($0) }
+        return fromArray(array: jexList)
+    }
+
+    static func fromObject(value: Any) -> JexObject {
+        guard let map = value as? [String: Any] else {
+            fatalError("Unsupported object type: \(type(of: value))")
+        }
+
+        var jexMap: [String: JexValue] = [:]
+        for (key, val) in map {
+            jexMap[key] = from(val)
+        }
+        return fromObject(object: jexMap)
+    }
+    
+    static func fromNil() -> JexNil {
+        return JexNil()
+    }
+    
+    static func from(_ value: AnyObject?) -> JexValue {
+            guard let value = value else {
+                return fromNil()
+            }
+
+            switch value {
+            case let num as NSNumber:
+                // NSNumber can also represent Bool, so check that first
+                if CFGetTypeID(num) == CFBooleanGetTypeID() {
+                    return fromBoolean(value: num.boolValue)
+                } else {
+                    return fromNumber(number: num)
+                }
+
+            case let intVal as Int:
+                return fromInteger(integer: intVal)
+
+            case let doubleVal as Double:
+                return fromDouble(double: doubleVal)
+
+            case let boolVal as Bool:
+                return fromBoolean(value: boolVal)
+
+            case let str as String:
+                return fromString(string: str)
+
+            case let list as [AnyObject]:
+                return fromArray(value: list)
+
+            case let map as [String: Any]:
+                return fromObject(value: map)
+
+            default:
+                fatalError("Unsupported type: \(type(of: value)). Supported types: nil, NSNumber, Int, Double, Bool, String, [Any], [String: Any]")
+            }
+        }
 }

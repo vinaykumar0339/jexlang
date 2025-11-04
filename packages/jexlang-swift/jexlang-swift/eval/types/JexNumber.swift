@@ -7,9 +7,9 @@
 
 import Foundation
 
-public class JexNumber: JexValue, CustomStringConvertible {
+public class JexNumber: JexValue {
     
-    private var value: NSNumber
+    private let value: NSNumber
     
     public init(value: NSNumber) {
         self.value = value

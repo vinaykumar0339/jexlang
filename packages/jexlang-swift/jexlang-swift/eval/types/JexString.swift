@@ -82,4 +82,8 @@ public class JexString: JexValue {
     public func asObject(context: String) throws -> [String : JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
+    
+    public var description: String {
+        return value
+    }
 }

@@ -80,4 +80,8 @@ public class JexBoolean: JexValue {
     internal init(value: Bool) {
         self.value = value
     }
+    
+    public var description: String {
+        return "\(value)"
+    }
 }
