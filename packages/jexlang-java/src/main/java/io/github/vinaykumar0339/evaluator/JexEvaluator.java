@@ -1,6 +1,7 @@
 package io.github.vinaykumar0339.evaluator;
 
 import io.github.vinaykumar0339.Utils;
+import io.github.vinaykumar0339.context.EvaluatorContext;
 import io.github.vinaykumar0339.functions.FuncImpl;
 import io.github.vinaykumar0339.grammar.JexLangLexer;
 import io.github.vinaykumar0339.grammar.JexLangParser;
@@ -27,6 +28,10 @@ public class JexEvaluator {
     private final JexLangErrorListener errorListener;
     private final Map<String, JexLangParser.ProgramContext> cacheParsedTrees = new HashMap<>();
     private boolean cacheExpressions = false;
+
+    private EvaluatorContext getEvalContext() {
+        return new EvaluatorContext(this);
+    };
 
     private Map<String, JexValue> convertContextToJexValue(Map<String, Object> context) {
         Map<String, JexValue> jexContext = new HashMap<>();
@@ -63,7 +68,7 @@ public class JexEvaluator {
         addAllContextValuesIntoGlobalScope(this.context);
         this.funcsMap = funcsMap != null ? funcsMap : new HashMap<>();
         this.transformMap = transformMap != null ? transformMap : new HashMap<>();
-        this.evalVisitor = new EvalVisitor(this.globalScope, funcsMap, transformMap);
+        this.evalVisitor = new EvalVisitor(this.globalScope, getEvalContext(), funcsMap, transformMap);
         this.errorListener = new JexLangErrorListener();
     }
 
@@ -159,17 +164,17 @@ public class JexEvaluator {
         this.context.clear();
         this.globalScope = Utils.createGlobalScope();
         addAllContextValuesIntoGlobalScope(this.context);
-        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
+        this.evalVisitor = new EvalVisitor(this.globalScope, getEvalContext(), this.funcsMap, this.transformMap);
     }
 
     public void resetFunctions() {
         this.funcsMap.clear();
-        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
+        this.evalVisitor = new EvalVisitor(this.globalScope, getEvalContext(), this.funcsMap, this.transformMap);
     }
 
     public void resetTransforms() {
         this.transformMap.clear();
-        this.evalVisitor = new EvalVisitor(this.globalScope, this.funcsMap, this.transformMap);
+        this.evalVisitor = new EvalVisitor(this.globalScope, getEvalContext(), this.funcsMap, this.transformMap);
     }
 
     public Object getContextValue(String name) {

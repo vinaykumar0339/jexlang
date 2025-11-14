@@ -1,7 +1,9 @@
 package io.github.vinaykumar0339;
 
+import io.github.vinaykumar0339.context.EvaluatorContext;
 import io.github.vinaykumar0339.eval.errors.JexLangRuntimeError;
 import io.github.vinaykumar0339.eval.errors.TypeMismatchError;
+import io.github.vinaykumar0339.evaluator.JexEvaluator;
 import io.github.vinaykumar0339.functions.FuncImpl;
 import io.github.vinaykumar0339.types.JexValue;
 import org.apache.commons.math3.util.FastMath;
@@ -17,6 +19,12 @@ import java.util.Map;
 @DisplayName("UtilsTestCase")
 public class UtilsTestCase {
 
+    EvaluatorContext context = new EvaluatorContext(new JexEvaluator(
+            Map.ofEntries(),
+            Map.ofEntries(),
+            Map.ofEntries()
+    ));
+
     @Nested
     @DisplayName("n1, n2, n3, and assertFinite")
     class NumericFunctions {
@@ -25,11 +33,11 @@ public class UtilsTestCase {
         @DisplayName("n1 applies a unary function correctly")
         public void testN1() {
             FuncImpl func1 = Utils.n1(x -> x * x, "square");
-            JexValue result1 = func1.apply(JexValue.fromNumber(3));
+            JexValue result1 = func1.apply(context, JexValue.fromNumber(3));
             Assertions.assertEquals(9.0, result1.asNumber("square").doubleValue());
 
             FuncImpl func2 = Utils.n1(x -> x * x, "square");
-            JexValue result2 = func2.apply();
+            JexValue result2 = func2.apply(context);
             Assertions.assertEquals(0, result2.asNumber("square").intValue());
         }
 
@@ -37,11 +45,11 @@ public class UtilsTestCase {
         @DisplayName("n2 applies a binary function correctly")
         public void testN2() {
             FuncImpl func1 = Utils.n2(Double::sum, "addA", "addB");
-            JexValue result1 = func1.apply(JexValue.fromNumber(3), JexValue.fromNumber(4));
+            JexValue result1 = func1.apply(context, JexValue.fromNumber(3), JexValue.fromNumber(4));
             Assertions.assertEquals(7.0, result1.asNumber("add").doubleValue());
 
             FuncImpl func2 = Utils.n2(FastMath::pow, "base", "exponent");
-            JexValue result2 = func2.apply(JexValue.fromNumber(10));
+            JexValue result2 = func2.apply(context, JexValue.fromNumber(10));
             Assertions.assertEquals(1.0, result2.asNumber("power").doubleValue());
         }
 
@@ -49,19 +57,19 @@ public class UtilsTestCase {
         @DisplayName("n3 applies a ternary function correctly")
         public void testN3() {
             FuncImpl func = Utils.n3((a, b, c) -> a * b + c, "mulA", "mulB", "addC");
-            JexValue result = func.apply(JexValue.fromNumber(2), JexValue.fromNumber(3), JexValue.fromNumber(4));
+            JexValue result = func.apply(context, JexValue.fromNumber(2), JexValue.fromNumber(3), JexValue.fromNumber(4));
             Assertions.assertEquals(10.0, result.asNumber("ternary").doubleValue());
 
             FuncImpl func3 = Utils.n3((a, b, c) -> a * b + c, "mulA", "mulB", "addC");
-            JexValue result3 = func3.apply(JexValue.fromNumber(5), JexValue.fromNumber(5));
+            JexValue result3 = func3.apply(context, JexValue.fromNumber(5), JexValue.fromNumber(5));
             Assertions.assertEquals(25.0, result3.asNumber("ternary").doubleValue());
 
             FuncImpl func2 = Utils.n3((a, b, c) -> a * b + c, "mulA", "mulB", "addC");
-            JexValue result2 = func2.apply(JexValue.fromNumber(5));
+            JexValue result2 = func2.apply(context, JexValue.fromNumber(5));
             Assertions.assertEquals(0.0, result2.asNumber("ternary").doubleValue());
 
             FuncImpl func4 = Utils.n3((a, b, c) -> a * b + c, "mulA", "mulB", "addC");
-            JexValue result4 = func4.apply();
+            JexValue result4 = func4.apply(context);
             Assertions.assertEquals(0.0, result4.asNumber("ternary").doubleValue());
         }
 
