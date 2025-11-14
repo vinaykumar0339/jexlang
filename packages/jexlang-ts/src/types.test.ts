@@ -3,11 +3,14 @@ import {
     MapFuncRegistry,
     MapTransformRegistry,
     type JexValue,
-    type FuncImpl,
-    type TransformImpl
 } from './types';
+import { JexEvaluator } from './eval';
+
+const evaluatorContext = { jexEvaluator: new JexEvaluator() };
 
 describe('MapFuncRegistry', () => {
+
+
     it('should initialize empty without arguments', () => {
         const registry = new MapFuncRegistry();
         expect(registry.has('test')).toBe(false);
@@ -15,7 +18,7 @@ describe('MapFuncRegistry', () => {
 
     it('should initialize with functions', () => {
         const registry = new MapFuncRegistry({
-            add: (a: JexValue, b: JexValue) => (a as number) + (b as number),
+            add: (evaluatorContext, a: JexValue, b: JexValue) => (a as number) + (b as number),
         });
         expect(registry.has('add')).toBe(true);
         expect(registry.has('unknown')).toBe(false);
@@ -23,30 +26,30 @@ describe('MapFuncRegistry', () => {
 
     it('should set and get functions', () => {
         const registry = new MapFuncRegistry();
-        registry.set('multiply', (a: JexValue, b: JexValue) => (a as number) * (b as number));
+        registry.set('multiply', (evaluatorContext, a: JexValue, b: JexValue) => (a as number) * (b as number));
         expect(registry.has('multiply')).toBe(true);
     });
 
     it('should call functions with arguments', () => {
         const registry = new MapFuncRegistry();
-        registry.set('concat', (a: JexValue, b: JexValue) => `${a}${b}`);
-        expect(registry.call('concat', ['hello', 'world'])).toBe('helloworld');
+        registry.set('concat', (evaluatorContext, a: JexValue, b: JexValue) => `${a}${b}`);
+        expect(registry.call('concat', ['hello', 'world'], evaluatorContext)).toBe('helloworld');
     });
 
     it('should support async functions', async () => {
         const registry = new MapFuncRegistry();
-        registry.set('delay', async (value: JexValue) => {
+        registry.set('delay', async (evaluatorContext, value: JexValue) => {
             return new Promise<JexValue>((resolve) => {
                 setTimeout(() => resolve((value as number) * 2), 1);
             });
         });
-        const result = await registry.call('delay', [5]);
+        const result = await registry.call('delay', [5], evaluatorContext);
         expect(result).toBe(10);
     });
 
     it('should throw for unknown functions', () => {
         const registry = new MapFuncRegistry();
-        expect(() => registry.call('unknown', [])).toThrow('Unknown function: unknown');
+        expect(() => registry.call('unknown', [], evaluatorContext)).toThrow('Unknown function: unknown');
     });
 });
 
@@ -73,7 +76,7 @@ describe('MapTransformRegistry', () => {
     it('should transform values', () => {
         const registry = new MapTransformRegistry();
         registry.set('double', (input: JexValue) => (input as number) * 2);
-        expect(registry.transform('double', 5)).toBe(10);
+        expect(registry.transform('double', 5, evaluatorContext)).toBe(10);
     });
 
     it('should support async transforms', async () => {
@@ -83,12 +86,12 @@ describe('MapTransformRegistry', () => {
                 setTimeout(() => resolve((input as string).toUpperCase()), 1);
             });
         });
-        const result = await registry.transform('delayedUpper', 'hello');
+        const result = await registry.transform('delayedUpper', 'hello', evaluatorContext);
         expect(result).toBe('HELLO');
     });
 
     it('should throw for unknown transforms', () => {
         const registry = new MapTransformRegistry();
-        expect(() => registry.transform('unknown', 'test')).toThrow('Unknown transform: unknown');
+        expect(() => registry.transform('unknown', 'test', evaluatorContext)).toThrow('Unknown transform: unknown');
     });
 });

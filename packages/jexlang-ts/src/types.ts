@@ -1,21 +1,27 @@
+import type { JexEvaluator } from "./eval";
+
 export type JexValue = number | boolean | string | null | JexValue[] | { [k: string]: JexValue }
 
 export type MaybePromise<T> = T | Promise<T>;
 
 export type Context = Record<string, JexValue>;
 
-export type FuncImpl = (...args: JexValue[]) => MaybePromise<JexValue>;
+export type EvaluatorContext = {
+  jexEvaluator: JexEvaluator;
+};
 
-export type TransformImpl = (input: JexValue) => MaybePromise<JexValue>;
+export type FuncImpl = (ctx: EvaluatorContext, ...args: JexValue[]) => MaybePromise<JexValue>;
+
+export type TransformImpl = (input: JexValue, ctx: EvaluatorContext) => MaybePromise<JexValue>;
 
 export interface FuncRegistry {
   has(name: string): boolean;
-  call(name: string, args: JexValue[]): MaybePromise<JexValue>;
+  call(name: string, args: JexValue[], ctx: EvaluatorContext): MaybePromise<JexValue>;
 }
 
 export interface TransformRegistry {
   has(name: string): boolean;
-  transform(name: string, input: JexValue): MaybePromise<JexValue>;
+  transform(name: string, input: JexValue, ctx: EvaluatorContext): MaybePromise<JexValue>;
 }
 
 export class MapFuncRegistry implements FuncRegistry {
@@ -37,10 +43,10 @@ export class MapFuncRegistry implements FuncRegistry {
   has(name: string) {
     return this.map.has(name);
   }
-  call(name: string, args: JexValue[]) {
+  call(name: string, args: JexValue[], ctx: EvaluatorContext) {
     const fn = this.map.get(name);
     if (!fn) throw new Error(`Unknown function: ${name}`);
-    return fn(...args);
+    return fn(ctx, ...args);
   }
 }
 
@@ -63,9 +69,9 @@ export class MapTransformRegistry implements TransformRegistry {
   has(name: string) {
     return this.map.has(name);
   }
-  transform(name: string, input: JexValue) {
+  transform(name: string, input: JexValue, ctx: EvaluatorContext) {
     const fn = this.map.get(name);
     if (!fn) throw new Error(`Unknown transform: ${name}`);
-    return fn(input);
+    return fn(input, ctx);
   }
 }
