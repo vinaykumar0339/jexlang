@@ -63,6 +63,7 @@ public class ExampleUsage {
                         y = y + $it
                         2 | int
                     }
+                    2 + +3
                     """);
             System.out.println(ret);
 //            long startTime = System.currentTimeMillis();
