@@ -32,7 +32,7 @@ public class Utils {
     }
 
     public static FuncImpl n1(Unary f, String ctxName) {
-        return (args) -> {
+        return (ctx, args) -> {
             double x = toNumber(args.length > 0 ? args[0] : JexValue.from(0), ctxName).doubleValue();
             double v = f.apply(x);
             assertFinite(ctxName, v);
@@ -41,7 +41,7 @@ public class Utils {
     }
 
     public static FuncImpl n2(Binary f, String aCtx, String bCtx) {
-        return (args) -> {
+        return (ctx, args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
             double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double v = f.apply(a, b);
@@ -51,7 +51,7 @@ public class Utils {
     }
 
     public static FuncImpl n3(Ternary f, String aCtx, String bCtx, String cCtx) {
-        return (args) -> {
+        return (ctx, args) -> {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
             double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double c = toNumber(args.length > 2 ? args[2] : JexValue.from(0), cCtx).doubleValue();
