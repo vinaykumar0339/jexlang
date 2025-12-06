@@ -12,11 +12,13 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     private final let funcRegistry: MapFuncRegistry;
     private final let transformRegistry: MapTransformRegistry;
     private var scope: Scope;
+    private var evaluatorContext: EvaluatorContext
     
     private var programScopeContext: [String: AnyObject] = [:];
     
     init(
         scope: Scope? = nil,
+        ctx: EvaluatorContext,
         funcsMap: [String: FuncImpl]? = [:],
         transformsMap: [String: TransformImpl]? = [:]
     ) {
@@ -34,6 +36,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             transformHashMap.merge(transformsMap) { (_, new) in new }
         }
         self.transformRegistry = MapTransformRegistry(transformHashMap);
+        self.evaluatorContext = ctx
         super.init()
     }
     

@@ -30,10 +30,10 @@ public final class MapFuncRegistry: FuncRegistry {
         map.removeValue(forKey: name)
     }
 
-    public func call(_ name: String, _ args: [JexValue]) -> JexValue {
+    public func call(_ name: String, _ ctx: EvaluatorContext, _ args: [JexValue]) -> JexValue {
         guard let fn = map[name] else {
             fatalError("Unknown function: \(name)")
         }
-        return fn.apply(args)
+        return fn.apply(ctx, args)
     }
 }

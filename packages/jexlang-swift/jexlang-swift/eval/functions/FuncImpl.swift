@@ -8,6 +8,6 @@
 import Foundation
 
 public protocol FuncImpl {
-    func apply(_ args: [JexValue]) -> JexValue
+    func apply(_ ctx: EvaluatorContext, _ args: [JexValue]) -> JexValue
 }
 

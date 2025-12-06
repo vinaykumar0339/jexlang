@@ -30,10 +30,10 @@ public final class MapTransformRegistry: TransformRegistry {
         map.removeValue(forKey: name)
     }
 
-    public func transform(_ name: String, _ input: JexValue) -> JexValue {
+    public func transform(_ name: String, _ input: JexValue, _ ctx: EvaluatorContext) -> JexValue {
         guard let fn = map[name] else {
             fatalError("Unknown transform: \(name)")
         }
-        return fn.apply(input)
+        return fn.apply(input, ctx)
     }
 }

@@ -10,5 +10,5 @@ import Foundation
 
 public protocol TransformRegistry {
     func has(_ name: String) -> Bool
-    func transform(_ name: String, _ input: JexValue) -> JexValue
+    func transform(_ name: String, _ input: JexValue, _ ctx: EvaluatorContext) -> JexValue
 }

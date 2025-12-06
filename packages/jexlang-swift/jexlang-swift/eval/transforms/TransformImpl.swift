@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol TransformImpl {
-    func apply(_ input: JexValue) -> JexValue
+    func apply(_ input: JexValue, _ ctx: EvaluatorContext) -> JexValue
 }

@@ -9,5 +9,5 @@ import Foundation
 
 public protocol FuncRegistry {
     func has(_ name: String) -> Bool
-    func call(_ name: String, _ args: [JexValue]) -> JexValue
+    func call(_ name: String, _ ctx: EvaluatorContext, _ args: [JexValue]) -> JexValue
 }
