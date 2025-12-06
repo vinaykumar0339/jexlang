@@ -674,4 +674,74 @@ describe('JexEvaluator', () => {
             expect(() => evaluator.evaluate('√-9')).toThrow(JexLangRuntimeError);
         });
     });
+
+    describe('literal expressions', () => {
+        it('should evaluate numeric literals', () => {
+            expect(evaluator.evaluate('123')).toBe(123);
+            expect(evaluator.evaluate('45.67')).toBe(45.67);
+        });
+
+        it('should evaluate string literals', () => {
+            expect(evaluator.evaluate('"hello"')).toBe('hello');
+            expect(evaluator.evaluate("'world'")).toBe('world');
+
+            expect(evaluator.evaluate('"true"')).toBe('true');
+            expect(evaluator.evaluate('"false"')).toBe('false');
+        });
+
+        it('should evaluate boolean literals', () => {
+            expect(evaluator.evaluate('true')).toBe(true);
+            expect(evaluator.evaluate('false')).toBe(false);
+        });
+
+        it('should evaluate null literal', () => {
+            expect(evaluator.evaluate('null')).toBeNull();
+        });
+
+        it('should evaluate array literals', () => {
+            expect(evaluator.evaluate('[1, 2, 3]')).toEqual([1, 2, 3]);
+            expect(evaluator.evaluate('["a", "b", "c"]')).toEqual(['a', 'b', 'c']);
+
+            const dynamicArray = [10, "test", true, null];
+            evaluator.declareContextValue('dynamicArray', dynamicArray);
+            expect(evaluator.evaluate('[dynamicArray[0], dynamicArray[1], dynamicArray[2], dynamicArray[3]]')).toEqual(dynamicArray);
+
+            const index1 = 0;
+            const index2 = 1;
+            const index3 = 2;
+            const index4 = 3;
+            evaluator.declareContextValue('index1', index1);
+            evaluator.declareContextValue('index2', index2);
+            evaluator.declareContextValue('index3', index3);
+            evaluator.declareContextValue('index4', index4);
+            expect(evaluator.evaluate('[dynamicArray[index1], dynamicArray[index2], dynamicArray[index3], dynamicArray[index4]]')).toEqual(dynamicArray);
+        });
+
+        it('should evaluate object literals', () => {
+            expect(evaluator.evaluate('{"key": "value", "num": 42}')).toEqual({ key: 'value', num: 42 });
+            expect(evaluator.evaluate('{"a": 1, "b": 2, "c": 3}')).toEqual({ a: 1, b: 2, c: 3 });
+
+            const dynamicObject = {
+                name: "Test",
+                value: 100,
+                isActive: true,
+                computed: true,
+            };
+            const isValueKeyValue = 100;
+            const isActiveKey = "isActive";
+            const computed = true;
+            evaluator.declareContextValue('dynamicObject', dynamicObject);
+            evaluator.declareContextValue('isValueKeyValue', isValueKeyValue);
+            evaluator.declareContextValue('isActiveKey', isActiveKey);
+            evaluator.declareContextValue('computed', computed);
+            expect(evaluator.evaluate(`
+                    {
+                        "name": dynamicObject.name,
+                        "value": isValueKeyValue,
+                        [isActiveKey]: dynamicObject.isActive,
+                        computed
+                    }
+                `)).toEqual(dynamicObject);
+        });
+    });
 });
