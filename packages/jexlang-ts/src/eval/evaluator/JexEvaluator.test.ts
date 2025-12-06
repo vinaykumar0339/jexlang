@@ -505,4 +505,52 @@ describe('JexEvaluator', () => {
             expect(evaluator.evaluate('obj == obj3')).toBe(true);
         });
     });
+
+    describe('logical expressions', () => {
+        it('logical AND operator', () => {
+            expect(evaluator.evaluate('true && true')).toBe(true);
+            expect(evaluator.evaluate('true && false')).toBe(false);
+            expect(evaluator.evaluate('false && true')).toBe(false);
+            expect(evaluator.evaluate('false && false')).toBe(false);
+
+            expect(evaluator.evaluate('true and true')).toBe(true);
+            expect(evaluator.evaluate('true and false')).toBe(false);
+            expect(evaluator.evaluate('false and true')).toBe(false);
+            expect(evaluator.evaluate('false and false')).toBe(false);
+        });
+
+        it('logical OR operator', () => {
+            expect(evaluator.evaluate('true || true')).toBe(true);
+            expect(evaluator.evaluate('true || false')).toBe(true);
+            expect(evaluator.evaluate('false || true')).toBe(true);
+            expect(evaluator.evaluate('false || false')).toBe(false);
+
+            expect(evaluator.evaluate('true or true')).toBe(true);
+            expect(evaluator.evaluate('true or false')).toBe(true);
+            expect(evaluator.evaluate('false or true')).toBe(true);
+            expect(evaluator.evaluate('false or false')).toBe(false);
+        });
+
+        it('logical operators with non-boolean values', () => {
+            expect(evaluator.evaluate('1 && 0')).toBe(false);
+            expect(evaluator.evaluate('1 || 0')).toBe(true);
+            expect(evaluator.evaluate('"hello" && ""')).toBe(false);
+            expect(evaluator.evaluate('"hello" || ""')).toBe(true);
+
+            expect(evaluator.evaluate('0 and 1')).toBe(false);
+            expect(evaluator.evaluate('0 or 1')).toBe(true);
+            expect(evaluator.evaluate('"" and "hello"')).toBe(false);
+            expect(evaluator.evaluate('"" or "hello"')).toBe(true);
+        });
+
+        it('combined logical expressions', () => {
+            expect(evaluator.evaluate('true && false || true')).toBe(true);
+            expect(evaluator.evaluate('false || false && true')).toBe(false);
+            expect(evaluator.evaluate('(true || false) && (false || true)')).toBe(true);
+
+            expect(evaluator.evaluate('true and false or true')).toBe(true);
+            expect(evaluator.evaluate('false or false and true')).toBe(false);
+            expect(evaluator.evaluate('(true or false) and (false or true)')).toBe(true);
+        });
+    });
 });
