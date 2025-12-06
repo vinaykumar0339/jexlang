@@ -810,6 +810,45 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return JexNil()
     }
     
+    public override func visitErrorNode(_ node: ErrorNode) -> JexValue {
+        let location = SyntaxErrorLocation(
+            line: node.getSymbol()?.getLine() ?? 0,
+            column: node.getSymbol()?.getCharPositionInLine() ?? 0,
+            offendingSymbol: node.getText()
+        )
+
+        var errorMessage: String
+
+        if let symbol = node.getSymbol() {
+            let tokenType = symbol.getType()
+            let tokenText = escapeTokenText(node.getText())
+
+            if tokenType >= 0 {
+                errorMessage = "Unexpected token '\(tokenText)'"
+            } else {
+                errorMessage = "Invalid syntax near '\(tokenText)'"
+            }
+
+            if symbol.getLine() > 0 {
+                errorMessage += " at line \(symbol.getLine()):\(symbol.getCharPositionInLine() + 1)"
+            }
+        } else {
+            errorMessage = "Syntax error encountered: \(node.getText())"
+        }
+        
+        // TODO: throw error says transform name not found
+        return JexNil()
+    }
+    
+    private func escapeTokenText(_ text: String?) -> String {
+        guard let text = text else { return "" }
+
+        return text
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+            .replacingOccurrences(of: "\t", with: "\\t")
+    }
+    
     public override func defaultResult() -> JexValue {
         return JexNil()
     }
