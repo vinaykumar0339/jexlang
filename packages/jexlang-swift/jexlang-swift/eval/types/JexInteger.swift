@@ -87,16 +87,4 @@ public class JexInteger: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        if other.isInteger() {
-            return (try? other.asInteger(context: "equals")) == value
-        }
-        if other.isNumber() {
-            return (try? other.asNumber(context: "equals")).map { $0.intValue == value } ?? false
-        }
-        if other.isDouble() {
-            return (try? other.asDouble(context: "equals")).map { Int($0) == value } ?? false
-        }
-        return false
-    }
 }

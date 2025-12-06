@@ -120,6 +120,65 @@ public func toString(value: JexValue, ctx: String) throws -> String {
     }
 }
 
+public func isEqual(_ lhs: JexValue, _ rhs: JexValue) -> Bool {
+    // null checks
+    if lhs.isNil() && rhs.isNil() { return true }
+    if lhs.isNil() || rhs.isNil() { return false }
+
+    // boolean comparison
+    if lhs.isBoolean() && rhs.isBoolean() {
+        do {
+            return try lhs.asBoolean(context: "equality") ==
+                   rhs.asBoolean(context: "equality")
+        } catch {
+            return false
+        }
+    }
+
+    // number comparison
+    if lhs.isNumber() && rhs.isNumber() {
+        do {
+            return try lhs.asNumber(context: "equality").doubleValue ==
+                   rhs.asNumber(context: "equality").doubleValue
+        } catch {
+            return false
+        }
+    }
+
+    // string comparison
+    if lhs.isString() && rhs.isString() {
+        do {
+            return try lhs.asString(context: "equality") ==
+                   rhs.asString(context: "equality")
+        } catch {
+            return false
+        }
+    }
+
+    // array reference equality
+    if lhs.isArray() && rhs.isArray() {
+        return lhs === rhs        // same instance
+    }
+
+    // object reference equality
+    if lhs.isObject() && rhs.isObject() {
+        return lhs === rhs        // same instance
+    }
+
+    // Fallback: one is number -> convert both to number
+    if lhs.isNumber() || rhs.isNumber() {
+        do {
+            let n1 = try toNumber(value: lhs, ctx: "equality")
+            let n2 = try toNumber(value: rhs, ctx: "equality")
+            return n1.doubleValue == n2.doubleValue
+        } catch {
+            return false
+        }
+    }
+
+    return false
+}
+
 public func isLessThan(
     lhs: JexValue,
     rhs: JexValue,

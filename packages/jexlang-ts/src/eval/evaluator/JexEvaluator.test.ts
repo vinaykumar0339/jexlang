@@ -385,4 +385,78 @@ describe('JexEvaluator', () => {
             expect(() => evaluator.evaluate('"Value: " - 100')).toThrow();
         });
     });
+
+    describe('equality expressions', () => {
+        it('equality operator with numbers', () => {
+            expect(evaluator.evaluate('5 == 5')).toBe(true);
+            expect(evaluator.evaluate('5 == 3')).toBe(false);
+        });
+
+        it('inequality operator with numbers', () => {
+            expect(evaluator.evaluate('5 != 3')).toBe(true);
+            expect(evaluator.evaluate('5 != 5')).toBe(false);
+        });
+
+        it('equality operator with strings', () => {
+            expect(evaluator.evaluate('"test" == "test"')).toBe(true);
+            expect(evaluator.evaluate('"test" == "TEST"')).toBe(false);
+        });
+
+        it('inequality operator with strings', () => {
+            expect(evaluator.evaluate('"hello" != "world"')).toBe(true);
+            expect(evaluator.evaluate('"hello" != "hello"')).toBe(false);
+        });
+
+        it('equality operator with mixed types', () => {
+            expect(evaluator.evaluate('5 == "5"')).toBe(true);
+            expect(evaluator.evaluate('0 == false')).toBe(true);
+        });
+
+        it('inequality operator with mixed types', () => {
+            expect(evaluator.evaluate('5 != "5"')).toBe(false);
+            expect(evaluator.evaluate('0 != false')).toBe(false);
+        });
+
+        it('array equality', () => {
+            expect(evaluator.evaluate('[1, 2, 3] == [1, 2, 3]')).toBe(false);
+            expect(evaluator.evaluate('[1, 2, 3] == [1, 2, 4]')).toBe(false);
+            expect(evaluator.evaluate('[1, 2, 3] != [1, 2, 4]')).toBe(true);
+            expect(evaluator.evaluate('[1, 2, 3] != [1, 2, 3]')).toBe(true);
+
+            // reference equality
+            const arr = [1, 2, 3];
+            evaluator.declareContextValue('arr', arr);
+            expect(evaluator.evaluate('arr == arr')).toBe(true);
+
+            const arr2 = [1, 2, 3];
+            evaluator.declareContextValue('arr2', arr2);
+            expect(evaluator.evaluate('arr != arr2')).toBe(true);
+
+            const arr3 = arr;
+            evaluator.declareContextValue('arr3', arr3);
+            expect(evaluator.evaluate('arr == arr3')).toBe(true);
+
+        });
+
+        it('object equality', () => {
+            expect(evaluator.evaluate('{"a": 1, "b": 2} == {"a": 1, "b": 2}')).toBe(false);
+            expect(evaluator.evaluate('{"a": 1, "b": 2} == {"a": 1, "b": 3}')).toBe(false);
+
+            expect(evaluator.evaluate('{"a": 1, "b": 2} != {"a": 1, "b": 3}')).toBe(true);
+            expect(evaluator.evaluate('{"a": 1, "b": 2} != {"a": 1, "b": 2}')).toBe(true);
+
+            // reference equality
+            const obj = { a: 1, b: 2 };
+            evaluator.declareContextValue('obj', obj);
+            expect(evaluator.evaluate('obj == obj')).toBe(true);
+
+            const obj2 = { a: 1, b: 2 };
+            evaluator.declareContextValue('obj2', obj2);
+            expect(evaluator.evaluate('obj != obj2')).toBe(true);
+
+            const obj3 = obj;
+            evaluator.declareContextValue('obj3', obj3);
+            expect(evaluator.evaluate('obj == obj3')).toBe(true);
+        });
+    });
 });

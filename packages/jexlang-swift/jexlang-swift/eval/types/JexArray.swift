@@ -86,16 +86,4 @@ public class JexArray: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        guard other.isArray(),
-              let otherArr = try? other.asArray(context: "equals") else { return false }
-
-        if otherArr.count != value.count { return false }
-
-        for (a, b) in zip(value, otherArr) {
-            if !a.equals(b) { return false }
-        }
-
-        return true
-    }
 }

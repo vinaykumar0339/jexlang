@@ -29,9 +29,6 @@ public protocol JexValue: AnyObject, CustomStringConvertible {
     func asArray(context: String) throws -> [JexValue]
     func asObject(context: String) throws -> [String: JexValue]
     
-    // Equals
-    func equals(_ other: JexValue) -> Bool
-    
 }
 
 public class JexValueFactory {

@@ -87,8 +87,4 @@ public class JexString: JexValue {
         return value
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        guard other.isString() else { return false }
-        return (try? other.asString(context: "equals")) == value
-    }
 }

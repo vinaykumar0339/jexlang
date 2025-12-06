@@ -87,17 +87,5 @@ public class JexDouble: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        if other.isDouble() {
-            return (try? other.asDouble(context: "equals")) == value
-        }
-        if other.isNumber() {
-            return (try? other.asNumber(context: "equals")).map { $0.doubleValue == value } ?? false
-        }
-        if other.isInteger() {
-            return (try? other.asInteger(context: "equals")).map { Double($0) == value } ?? false
-        }
-        return false
-    }
 }
 

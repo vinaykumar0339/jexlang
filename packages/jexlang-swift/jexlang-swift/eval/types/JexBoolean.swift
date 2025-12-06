@@ -85,8 +85,4 @@ public class JexBoolean: JexValue {
         return "\(value)"
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        guard other.isBoolean() else { return false }
-        return (try? other.asBoolean(context: "equals")) == value
-    }
 }

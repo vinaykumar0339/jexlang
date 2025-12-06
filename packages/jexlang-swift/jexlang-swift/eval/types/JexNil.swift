@@ -79,8 +79,5 @@ public class JexNil: JexValue {
     public var description: String {
         return "nil"
     }
-    
-    public func equals(_ other: JexValue) -> Bool {
-        return other.isNil()
-    }
+
 }

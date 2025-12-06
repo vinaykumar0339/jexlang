@@ -99,16 +99,4 @@ public class JexNumber: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
-    public func equals(_ other: JexValue) -> Bool {
-        if other.isNumber() {
-            return (try? other.asNumber(context: "equals")) == value
-        }
-        if other.isInteger() {
-            return value.intValue == (try? other.asInteger(context: "equals"))
-        }
-        if other.isDouble() {
-            return value.doubleValue == (try? other.asDouble(context: "equals"))
-        }
-        return false
-    }
 }

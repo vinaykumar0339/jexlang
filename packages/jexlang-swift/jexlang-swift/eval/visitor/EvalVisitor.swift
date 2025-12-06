@@ -631,9 +631,9 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let right = self.visit(ctx.singleExpression(1))
         
         if let _ = ctx.EQ() {
-            return JexBoolean(value: left.equals(right))
+            return JexBoolean(value: isEqual(left, right))
         } else if let _ = ctx.NEQ() {
-            return JexBoolean(value: !left.equals(right))
+            return JexBoolean(value: !isEqual(left, right))
         }
         
         return JexNil()
