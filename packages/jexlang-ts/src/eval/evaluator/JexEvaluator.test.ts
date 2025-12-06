@@ -553,4 +553,61 @@ describe('JexEvaluator', () => {
             expect(evaluator.evaluate('(true or false) and (false or true)')).toBe(true);
         });
     });
+
+    describe('relational expressions', () => {
+        it('greater than operator', () => {
+            expect(evaluator.evaluate('5 > 3')).toBe(true);
+            expect(evaluator.evaluate('2 > 4')).toBe(false);
+        });
+
+        it('less than operator', () => {
+            expect(evaluator.evaluate('3 < 5')).toBe(true);
+            expect(evaluator.evaluate('4 < 2')).toBe(false);
+        }); 
+
+        it('greater than or equal operator', () => {
+            expect(evaluator.evaluate('5 >= 5')).toBe(true);
+            expect(evaluator.evaluate('6 >= 4')).toBe(true);
+            expect(evaluator.evaluate('3 >= 7')).toBe(false);
+        });
+
+        it('less than or equal operator', () => {
+            expect(evaluator.evaluate('5 <= 5')).toBe(true);
+            expect(evaluator.evaluate('4 <= 6')).toBe(true);
+            expect(evaluator.evaluate('7 <= 3')).toBe(false);
+        });
+
+        it('relational operators with strings', () => {
+            expect(() => evaluator.evaluate('"apple" < "banana"')).toThrow();
+            expect(() => evaluator.evaluate('"grape" > "orange"')).toThrow();
+            expect(() => evaluator.evaluate('"cat" <= "cat"')).toThrow();
+            expect(() => evaluator.evaluate('"dog" >= "elephant"')).toThrow();
+        });
+
+        it('numbers and strings comparison', () => {
+            expect(evaluator.evaluate('5 > "3"')).toBe(true);
+            expect(evaluator.evaluate('"4" < 6')).toBe(true);
+            expect(evaluator.evaluate('7 >= "7"')).toBe(true);
+            expect(evaluator.evaluate('"8" <= 10')).toBe(true);
+        });
+
+        it('stringified numbers comparison', () => {
+            expect(evaluator.evaluate('"10" > "2"')).toBe(true);
+            expect(evaluator.evaluate('"3" < "12"')).toBe(true);
+            expect(evaluator.evaluate('"5" >= "5"')).toBe(true);
+            expect(evaluator.evaluate('"7" <= "6"')).toBe(false);
+        });
+
+        it('numbers, strings and booleans comparison', () => {
+            expect(evaluator.evaluate('1 < "2"')).toBe(true);
+            expect(evaluator.evaluate('"3" > 2')).toBe(true);
+            expect(evaluator.evaluate('0 <= "0"')).toBe(true);
+            expect(evaluator.evaluate('"1" >= 2')).toBe(false);
+
+            expect(evaluator.evaluate('true > "0"')).toBe(true);
+            expect(evaluator.evaluate('"1" < false')).toBe(false);
+            expect(evaluator.evaluate('false <= "0"')).toBe(true);
+            expect(evaluator.evaluate('"1" >= true')).toBe(true);
+        })
+    });
 });
