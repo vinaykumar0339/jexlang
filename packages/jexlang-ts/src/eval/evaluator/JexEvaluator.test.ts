@@ -1034,4 +1034,114 @@ describe('JexEvaluator', () => {
             expect(evaluator.evaluate('user.age ?: 18')).toBe(18);
         });
     });
+    
+
+    describe('identifier expressions', () => {
+        it('should evaluate identifiers from context', () => {
+            evaluator.declareContextValue('x', 10);
+            evaluator.declareContextValue('y', 20);
+            evaluator.declareContextValue('name', 'Test');
+
+            expect(evaluator.evaluate('x')).toBe(10);
+            expect(evaluator.evaluate('y')).toBe(20);
+            expect(evaluator.evaluate('name')).toBe('Test');
+        });
+
+        it('should throw error for undefined identifiers', () => {
+            expect(() => evaluator.evaluate('undefinedVar')).toThrow(JexLangRuntimeError);
+            expect(() => evaluator.evaluate('anotherUndefined')).toThrow(JexLangRuntimeError);
+        });
+
+        it('should evaluate number identifier', () => {
+            evaluator.declareContextValue('num', 42);
+            expect(evaluator.evaluate('num')).toBe(42);
+            
+            evaluator.declareContextValue('decimal', 3.14);
+            expect(evaluator.evaluate('decimal')).toBe(3.14);
+            
+            evaluator.declareContextValue('negative', -100);
+            expect(evaluator.evaluate('negative')).toBe(-100);
+        });
+
+        it('should evaluate string identifier', () => {
+            evaluator.declareContextValue('str', 'hello');
+            expect(evaluator.evaluate('str')).toBe('hello');
+            
+            evaluator.declareContextValue('empty', '');
+            expect(evaluator.evaluate('empty')).toBe('');
+        });
+
+        it('should evaluate boolean identifier', () => {
+            evaluator.declareContextValue('isTrue', true);
+            expect(evaluator.evaluate('isTrue')).toBe(true);
+            
+            evaluator.declareContextValue('isFalse', false);
+            expect(evaluator.evaluate('isFalse')).toBe(false);
+        });
+
+        it('should evaluate null identifier', () => {
+            evaluator.declareContextValue('nullValue', null);
+            expect(evaluator.evaluate('nullValue')).toBeNull();
+        });
+
+        it('should evaluate array identifier', () => {
+            evaluator.declareContextValue('arr', [1, 2, 3]);
+            expect(evaluator.evaluate('arr')).toEqual([1, 2, 3]);
+            
+            evaluator.declareContextValue('emptyArr', []);
+            expect(evaluator.evaluate('emptyArr')).toEqual([]);
+            
+            evaluator.declareContextValue('mixedArr', [1, 'test', true, null]);
+            expect(evaluator.evaluate('mixedArr')).toEqual([1, 'test', true, null]);
+        });
+
+        it('should evaluate object identifier', () => {
+            evaluator.declareContextValue('obj', { key: 'value' });
+            expect(evaluator.evaluate('obj')).toEqual({ key: 'value' });
+            
+            evaluator.declareContextValue('emptyObj', {});
+            expect(evaluator.evaluate('emptyObj')).toEqual({});
+            
+            evaluator.declareContextValue('complexObj', { 
+            name: 'test', 
+            count: 42, 
+            active: true, 
+            data: null 
+            });
+            expect(evaluator.evaluate('complexObj')).toEqual({ 
+            name: 'test', 
+            count: 42, 
+            active: true, 
+            data: null 
+            });
+        });
+
+        it('should evaluate nested object identifier', () => {
+            evaluator.declareContextValue('nested', { 
+            level1: { 
+                level2: { 
+                value: 'deep' 
+                } 
+            } 
+            });
+            expect(evaluator.evaluate('nested')).toEqual({ 
+            level1: { 
+                level2: { 
+                value: 'deep' 
+                } 
+            } 
+            });
+        });
+
+        it('should evaluate array of objects identifier', () => {
+            evaluator.declareContextValue('users', [
+                { name: 'Alice', age: 25 },
+                { name: 'Bob', age: 30 }
+            ]);
+            expect(evaluator.evaluate('users')).toEqual([
+                { name: 'Alice', age: 25 },
+                { name: 'Bob', age: 30 }
+            ]);
+        });
+    });
 });
