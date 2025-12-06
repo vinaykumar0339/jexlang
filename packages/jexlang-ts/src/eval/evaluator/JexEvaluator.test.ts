@@ -610,4 +610,68 @@ describe('JexEvaluator', () => {
             expect(evaluator.evaluate('"1" >= true')).toBe(true);
         })
     });
+
+    describe('multiplicative expressions', () => {
+        it('simple multiplication', () => {
+            const result = evaluator.evaluate('2 * 3');
+            expect(result).toBe(6);
+        });
+
+        it('simple division', () => {
+            const result = evaluator.evaluate('8 / 2');
+            expect(result).toBe(4);
+        });
+
+        it('multiplication and division', () => {
+            const result = evaluator.evaluate('10 * 2 / 5 * 3');
+            expect(result).toBe(12);
+        });
+
+        it('multiplicative expressions with parentheses', () => {
+            const result = evaluator.evaluate('(2 + 3) * (4 - 1) / 5');
+            expect(result).toBe(3);
+        });
+    });
+
+    describe('unary expressions', () => {
+        it('unary plus operator', () => {
+            expect(evaluator.evaluate('+5')).toBe(5);
+            expect(evaluator.evaluate('+-3')).toBe(-3);
+        });
+
+        it('unary minus operator', () => {
+            expect(evaluator.evaluate('-5')).toBe(-5);
+            expect(evaluator.evaluate('-(-3)')).toBe(3);
+        });
+
+        // TODO: Need to support logical NOT operator '!' along with 'not'
+        // it('logical NOT operator', () => {
+        //     expect(evaluator.evaluate('!true')).toBe(false);
+        //     expect(evaluator.evaluate('!false')).toBe(true);
+
+        //     expect(evaluator.evaluate('not true')).toBe(false);
+        //     expect(evaluator.evaluate('not false')).toBe(true);
+        // });
+    });
+
+    describe('square root expressions', () => {
+        it('square root of a positive number', () => {
+            expect(evaluator.evaluate('sqrt(16)')).toBe(4);
+            expect(evaluator.evaluate('sqrt(2.25)')).toBe(1.5);
+
+            expect(evaluator.evaluate('√16')).toBe(4);
+            expect(evaluator.evaluate('√2.25')).toBe(1.5);
+            expect(evaluator.evaluate('√100')).toBe(10);
+        });
+
+        it('square root of zero', () => {
+            expect(evaluator.evaluate('sqrt(0)')).toBe(0);
+            expect(evaluator.evaluate('√0')).toBe(0);
+        });
+
+        it('square root of a negative number', () => {
+            expect(() => evaluator.evaluate('sqrt(-4)')).toThrow(JexLangRuntimeError);
+            expect(() => evaluator.evaluate('√-9')).toThrow(JexLangRuntimeError);
+        });
+    });
 });
