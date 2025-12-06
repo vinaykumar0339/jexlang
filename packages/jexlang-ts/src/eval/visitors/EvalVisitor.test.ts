@@ -3,6 +3,7 @@ import * as JexLangParser from "../../grammar/JexLangParser";
 import { EvalVisitor } from "./EvalVisitor";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
+import { JexEvaluator } from "../evaluator";
 
 function createJexLangParserContext<T>(overrides: Partial<T> = {}): T {
   // Create a dummy object with no prototype to mimic context instance
@@ -47,14 +48,16 @@ const createStringLiteralContext = (text: string) => {
 
 describe("EvalVisitor", () => {
 
+    const evaluatorContext = { jexEvaluator: new JexEvaluator() };
+
     describe('constructor', () => {
         it('should create an instance of EvalVisitor', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             expect(visitor).toBeInstanceOf(EvalVisitor);
         });
 
         it('should have properly set the default constructor parameters', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const globalScopeVars = visitor.getGlobalScopeVariables();
             expect(globalScopeVars).toEqual({
                 PI: Math.PI,
@@ -82,7 +85,7 @@ describe("EvalVisitor", () => {
 
         it('should properly add custom functions and transforms', () => {
             // Add new function and check it is available
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             visitor.addFunction("testFunc", () => "test");
             expect(visitor.hasFunction("testFunc")).toBe(true);
 
@@ -97,6 +100,7 @@ describe("EvalVisitor", () => {
 
             const visitor = new EvalVisitor(
                 undefined,
+                evaluatorContext,
                 { "customFunc": customFunc },
                 { "customTransform": customTransform }
             );
@@ -106,12 +110,12 @@ describe("EvalVisitor", () => {
         });
 
         it('should initialize programScopeContext to an empty object', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             expect(visitor.getProgramScopeContext()).toEqual({});
         });
 
         it('should set and reset programScopeContext correctly', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const context = { key: "value" };
             visitor.setProgramScopeContext(context);
             expect(visitor.getProgramScopeContext()).toEqual(context);
@@ -123,7 +127,7 @@ describe("EvalVisitor", () => {
 
     describe('visitLiteralExpression', () => {
         it('should delegate to visitBooleanLiteral for boolean literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createJexLangParserContext<JexLangParser.LiteralExpressionContext>({
                 literal: () => createBooleanLiteralContext("true"),
             });
@@ -150,7 +154,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should delegate to visitNumberLiteral for number literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createJexLangParserContext<JexLangParser.LiteralExpressionContext>({
                 literal: () => createNumberLiteralContext("42"),
             });
@@ -183,7 +187,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should delegate to visitStringLiteral for string literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createJexLangParserContext<JexLangParser.LiteralExpressionContext>({
                 literal: () => createStringLiteralContext('"hello"'),
             });
@@ -216,7 +220,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should delegate to visitNullLiteral for null literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createJexLangParserContext<JexLangParser.LiteralExpressionContext>({
                 literal: () => createJexLangParserContext<JexLangParser.NullLiteralContext>({
                     getText: () => "null",
@@ -254,21 +258,21 @@ describe("EvalVisitor", () => {
 
     describe('visitBooleanLiteral', () => {
         it('should return true for "true" literal', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createBooleanLiteralContext("true");
             const result = visitor.visitBooleanLiteral(ctx);
             expect(result).toBe(true);
         });
 
         it('should return false for "false" literal', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createBooleanLiteralContext("false");
             const result = visitor.visitBooleanLiteral(ctx);
             expect(result).toBe(false);
         });
 
         it('should return false for all other literals than "true"', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx1 = createBooleanLiteralContext("anything else");
             const result1 = visitor.visitBooleanLiteral(ctx1);
             expect(result1).toBe(false);
@@ -293,7 +297,7 @@ describe("EvalVisitor", () => {
 
     describe('visitNumberLiteral', () => {
         it('should parse valid number literals correctly', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
 
             const ctx1 = createNumberLiteralContext("42");
             expect(visitor.visitNumberLiteral(ctx1)).toBe(42);
@@ -312,7 +316,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should throw error for invalid number literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
 
             const ctx1 = createNumberLiteralContext("abc");
             expect(() => visitor.visitNumberLiteral(ctx1)).toThrow();
@@ -330,7 +334,7 @@ describe("EvalVisitor", () => {
 
     describe('visitStringLiteral', () => {
         it('should parse string literals correctly', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
 
             const ctx1 = createStringLiteralContext('"hello"');
             expect(visitor.visitStringLiteral(ctx1)).toBe("hello");
@@ -349,7 +353,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should handle escaped quotes in string literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
 
             const ctx1 = createStringLiteralContext('"He said \"Hello\""');
             expect(visitor.visitStringLiteral(ctx1)).toBe('He said "Hello"');
@@ -359,7 +363,7 @@ describe("EvalVisitor", () => {
         });
 
         it('validate for unterminated string literals', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
 
             const ctx1 = createStringLiteralContext('"hello');
             expect(visitor.visitStringLiteral(ctx1)).toBe("hell");
@@ -371,7 +375,7 @@ describe("EvalVisitor", () => {
 
     describe('visitNullLiteral', () => {
         it('should return null for null literal', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx = createJexLangParserContext<JexLangParser.NullLiteralContext>({
                 getText: () => "null",
             });
@@ -380,7 +384,7 @@ describe("EvalVisitor", () => {
         });
 
         it('should return null for any other text', () => {
-            const visitor = new EvalVisitor();
+            const visitor = new EvalVisitor(undefined, evaluatorContext);
             const ctx1 = createJexLangParserContext<JexLangParser.NullLiteralContext>({
                 getText: () => "anything else",
             });

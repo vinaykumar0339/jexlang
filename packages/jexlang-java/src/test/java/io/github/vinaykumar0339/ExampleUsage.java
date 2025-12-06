@@ -26,11 +26,11 @@ public class ExampleUsage {
     );
     
     private static final Map<String, TransformImpl> transforms = Map.ofEntries(
-            Map.entry("greet", (name) -> JexValue.fromString("Hello, " + name.asString("greet transform") + "!"))
+            Map.entry("greet", ( name, context) -> JexValue.fromString("Hello, " + name.asString("greet transform") + "!"))
     );
 
     private static final Map<String, FuncImpl> funcs = Map.ofEntries(
-            Map.entry("test", (args -> {
+            Map.entry("test", ((ctx, args) -> {
                 System.out.println(Arrays.toString(args));
                 return new JexNull();
             }))
@@ -42,33 +42,57 @@ public class ExampleUsage {
             JexEvaluator evaluator = new JexEvaluator(context, funcs, transforms);
             evaluator.setCacheExpressions(true);
 
-            long startTime = System.currentTimeMillis();
+            evaluator.evaluate("""
+                    let x = 10;
+                    let y = 40;
+                    global const z = x * PI
+                    let p = z + y
+                    let q = "123"
+                    p + (q | number)
+                    
+                    let arr = [1, 2, 3]
+                    push(arr, 4)
+                    pop(arr)
+                    arr
+                    """);
+
+            Object ret = evaluator.evaluate("""
+                    let x = [1, 2, 3, 4, 5];
+                    let y = 0
+                    repeat(x) {
+                        y = y + $it
+                        2 | int
+                    }
+                    2 + +3
+                    """);
+            System.out.println(ret);
+//            long startTime = System.currentTimeMillis();
             
             // Example 1: Basic expression
-            String basicExample = "x * y + 10";
-            System.out.println("Example 1: " + basicExample);
-            System.out.println("Result: " + evaluator.evaluate(basicExample));
-            System.out.println();
-            
-            // Example 2: Working with objects
-            String objectExample = "user.name + ' is ' + user.age + ' years old'";
-            System.out.println("Example 2: " + objectExample);
-            System.out.println("Result: " + evaluator.evaluate(objectExample));
-            System.out.println();
-            
-            // Example 3: Using custom transform
-            String transformExample = "'World' | greet";
-            System.out.println("Example 3: " + transformExample);
-            System.out.println("Result: " + evaluator.evaluate(transformExample));
-            System.out.println();
-            
-            // Example 4: System constants
-            String constantsExample = "{ \"version\": VERSION, \"language\": __CLIENT_LANGUAGE }";
-            System.out.println("Example 4: " + constantsExample);
-            System.out.println("Result: " + evaluator.evaluate(constantsExample));
-
-            long endTime = System.currentTimeMillis();
-            System.out.println("\nExecution time: " + (endTime - startTime) + " ms");
+//            String basicExample = "x * y + 10";
+//            System.out.println("Example 1: " + basicExample);
+//            System.out.println("Result: " + evaluator.evaluate(basicExample));
+//            System.out.println();
+//
+//            // Example 2: Working with objects
+//            String objectExample = "user.name + ' is ' + user.age + ' years old'";
+//            System.out.println("Example 2: " + objectExample);
+//            System.out.println("Result: " + evaluator.evaluate(objectExample));
+//            System.out.println();
+//
+//            // Example 3: Using custom transform
+//            String transformExample = "'World' | greet";
+//            System.out.println("Example 3: " + transformExample);
+//            System.out.println("Result: " + evaluator.evaluate(transformExample));
+//            System.out.println();
+//
+//            // Example 4: System constants
+//            String constantsExample = "{ \"version\": VERSION, \"language\": __CLIENT_LANGUAGE }";
+//            System.out.println("Example 4: " + constantsExample);
+//            System.out.println("Result: " + evaluator.evaluate(constantsExample));
+//
+//            long endTime = System.currentTimeMillis();
+//            System.out.println("\nExecution time: " + (endTime - startTime) + " ms");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,6 +1,6 @@
 import JexLangVisitor from "../../grammar/JexLangVisitor";
 import * as JexLangParser from "../../grammar/JexLangParser";
-import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise, type Context } from "../../types";
+import { type FuncImpl, type FuncRegistry, type JexValue, MapFuncRegistry, type TransformImpl, type TransformRegistry, MapTransformRegistry, type MaybePromise, type Context, type EvaluatorContext } from "../../types";
 import { BUILT_IN_FUNCTIONS } from "../functions";
 import { BUILT_IN_TRANSFORMS } from "../transforms";
 import { createGlobalScope, isNumeric, toBoolean, toNumber, toString } from "../../utils";
@@ -13,15 +13,18 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     private transformRegistry: TransformRegistry;
     private scope: Scope;
     private programScopeContext: Context = {};
+    private evaluatorContext: EvaluatorContext;
 
     constructor(
         scope: Scope = createGlobalScope(),
+        evaluatorContext: EvaluatorContext,
         funcsMap?: Record<string, FuncImpl>, 
         transformsMap?: Record<string, TransformImpl>,
     ) {
         super();
 
         this.scope = scope;
+        this.evaluatorContext = evaluatorContext;
 
         this.funcRegistry = new MapFuncRegistry({
           ...BUILT_IN_FUNCTIONS,
@@ -590,14 +593,14 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         return this.handlePromise(this.visit(ctx.singleExpression()), (input) => {
             const transformName = ctx.IDENTIFIER().getText();
             if (this.transformRegistry.has(transformName)) {
-                return this.handlePromise(this.transformRegistry.transform(transformName, input), (output) => {
+                return this.handlePromise(this.transformRegistry.transform(transformName, input, this.evaluatorContext), (output) => {
                     return output;
                 });
             }
 
             // if transform not found lets check in functions
             if (this.funcRegistry.has(transformName)) {
-                return this.handlePromise(this.funcRegistry.call(transformName, [input]), (output) => {
+                return this.handlePromise(this.funcRegistry.call(transformName, [input], this.evaluatorContext), (output) => {
                     return output;
                 });
             }
@@ -813,7 +816,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         try {
             if (args instanceof Promise) {
                 return args.then(resolvedArgs => {
-                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs), res => res);
+                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs, this.evaluatorContext), res => res);
                 }).catch(error => {
                     if (error instanceof JexLangRuntimeError) {
                         throw error;
@@ -825,7 +828,7 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                 });
             } else {
                 return this.handlePromises(args, (...resolvedArgs) => {
-                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs), res => res);
+                    return this.handlePromise(this.funcRegistry.call(functionName, resolvedArgs, this.evaluatorContext), res => res);
                 });
             }
         } catch (error) {

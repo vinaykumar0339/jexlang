@@ -1,12 +1,16 @@
 import { CharStreams, CommonTokenStream } from "antlr4";
 import { JexLangErrorListener } from "../listeners/JexLangErrorListener";
 import { EvalVisitor } from "../visitors/EvalVisitor";
-import type { Context, FuncImpl, JexValue, TransformImpl } from "../../types";
+import type { Context, EvaluatorContext, FuncImpl, JexValue, TransformImpl } from "../../types";
 import JexLangLexer from "../../grammar/JexLangLexer";
 import JexLangParser, { ProgramContext } from "../../grammar/JexLangParser";
 import { createGlobalScope } from "../../utils";
 import type { Scope } from "../scopes";
 import { JexLangRuntimeError } from "../errors";
+
+export const getEvalContext = (jexEvaluator: JexEvaluator): EvaluatorContext => {
+  return { jexEvaluator };
+}
 
 export class JexEvaluator {
   private visitor: EvalVisitor;
@@ -18,6 +22,7 @@ export class JexEvaluator {
   private transformsMap: Record<string, TransformImpl>;
   private globalScope: Scope = createGlobalScope();
   private context: Context = {};
+  private evaluatorContext: EvaluatorContext;
 
   private addAllContextValuesIntoGlobalScope(context: Context): void {
     for (const [key, value] of Object.entries(context)) {
@@ -34,7 +39,8 @@ export class JexEvaluator {
     this.addAllContextValuesIntoGlobalScope(this.context);
     this.funcs = funcs;
     this.transformsMap = transformsMap;
-    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+    this.evaluatorContext = getEvalContext(this);
+    this.visitor = new EvalVisitor(this.globalScope, this.evaluatorContext, this.funcs, this.transformsMap);
     this.errorListener = new JexLangErrorListener();
   }
 
@@ -143,17 +149,18 @@ export class JexEvaluator {
     this.context = {};
     this.globalScope = createGlobalScope();
     this.addAllContextValuesIntoGlobalScope(this.context);
-    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+    this.evaluatorContext = getEvalContext(this);
+    this.visitor = new EvalVisitor(this.globalScope, this.evaluatorContext, this.funcs, this.transformsMap);
   }
 
   resetFunctions(): void {
     this.funcs = {};
-    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+    this.visitor = new EvalVisitor(this.globalScope, this.evaluatorContext, this.funcs, this.transformsMap);
   }
 
   resetTransforms(): void {
     this.transformsMap = {};
-    this.visitor = new EvalVisitor(this.globalScope, this.funcs, this.transformsMap);
+    this.visitor = new EvalVisitor(this.globalScope, this.evaluatorContext, this.funcs, this.transformsMap);
   }
 
   getContextValue(key: string): JexValue {

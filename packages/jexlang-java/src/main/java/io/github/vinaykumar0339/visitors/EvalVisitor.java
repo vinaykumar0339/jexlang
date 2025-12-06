@@ -1,6 +1,7 @@
 package io.github.vinaykumar0339.visitors;
 
 import io.github.vinaykumar0339.Utils;
+import io.github.vinaykumar0339.context.EvaluatorContext;
 import io.github.vinaykumar0339.eval.errors.*;
 import io.github.vinaykumar0339.eval.errors.*;
 import io.github.vinaykumar0339.functions.FuncImpl;
@@ -23,17 +24,23 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private final MapFuncRegistry funcRegistry;
     private final MapTransformRegistry transformRegistry;
     private Scope scope;
+    private EvaluatorContext evaluatorContext;
 
     private Map<String, Object> programScopeContext = new HashMap<>();
 
     public EvalVisitor(
             Scope scope,
+            EvaluatorContext ctx,
             Map<String, FuncImpl> funcsMap,
             Map<String, TransformImpl> transformsMap
     ) {
         super();
 
         this.scope = Objects.requireNonNullElseGet(scope, Utils::createGlobalScope);
+        if (ctx == null) {
+            throw new NullPointerException("ctx is null EvaluatorContext cannot be null");
+        }
+        this.evaluatorContext = ctx;
 
         Map<String, FuncImpl> funcHashMap = new HashMap<>(Functions.makeBuiltins());
         if (funcsMap != null) {
@@ -519,12 +526,12 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         String transformName = ctx.IDENTIFIER().getText();
 
         if (this.transformRegistry.has(transformName)) {
-            return this.transformRegistry.transform(transformName, input);
+            return this.transformRegistry.transform(transformName, input, this.evaluatorContext);
         }
 
         // if transform not found lets check in functions
         if (this.funcRegistry.has(transformName)) {
-            return this.funcRegistry.call(transformName, input);
+            return this.funcRegistry.call(transformName, this.evaluatorContext, input);
         }
 
         throw new UndefinedTransformError(transformName);
@@ -726,7 +733,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             }
         }
 
-        return this.funcRegistry.call(functionName, args.toArray(new JexValue[0]));
+        return this.funcRegistry.call(functionName, this.evaluatorContext, args.toArray(new JexValue[0]));
     }
 
     @Override
