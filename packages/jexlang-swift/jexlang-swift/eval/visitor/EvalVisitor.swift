@@ -613,13 +613,13 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let right = self.visit(ctx.singleExpression(1))
         
         if let _ = ctx.LT() {
-            return JexBoolean(value: left.safeCompare(right, op: .lessThan))
+            return JexBoolean(value: isLessThan(lhs: left, rhs: right))
         } else if let _ = ctx.GT() {
-            return JexBoolean(value: left.safeCompare(right, op: .greaterThan))
+            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right))
         } else if let _ = ctx.LTE() {
-            return JexBoolean(value: left.safeCompare(right, op: .lessThanOrEqual))
+            return JexBoolean(value: isLessThan(lhs: left, rhs: right, alsoEqual: true))
         } else if let _ = ctx.GTE() {
-            return JexBoolean(value: left.safeCompare(right, op: .greaterThanOrEqual))
+            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right, alsoEqual: true))
         }
         
         return JexNil()

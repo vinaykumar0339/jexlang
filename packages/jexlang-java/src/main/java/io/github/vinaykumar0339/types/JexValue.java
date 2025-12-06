@@ -30,7 +30,14 @@ public interface JexValue {
     }
 
     static JexNumber fromNumber(Number number) {
-        return new JexNumber(number);
+        double d = number.doubleValue();
+
+        // Check if it is whole number → 2.0 becomes 2
+        if (d == Math.rint(d)) {
+            return new JexNumber((long) d);  // store as integer
+        }
+
+        return new JexNumber(d);  // store as double
     }
 
     static JexInteger fromInteger(Integer number) {

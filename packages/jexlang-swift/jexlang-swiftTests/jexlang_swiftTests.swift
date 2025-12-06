@@ -14,13 +14,13 @@ struct jexlang_swiftTests {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
         let jexEvaluator = try? JexEvaluator();
         let output = try? jexEvaluator?.evaluate(expr: """
-        "2" - 2 
+        "2.0" - 2 
         """)
         let output1 = try? jexEvaluator?.evaluate(expr: """
-        "2" + 2 
+        2.0 + 2
         """)
         let output2 = try? jexEvaluator?.evaluate(expr: """
-        "2" + 2 + 100
+        "2" + (2 + 100)
         """)
         print(output, output1, output2)
     }

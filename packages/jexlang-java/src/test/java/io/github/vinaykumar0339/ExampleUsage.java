@@ -42,30 +42,45 @@ public class ExampleUsage {
             JexEvaluator evaluator = new JexEvaluator(context, funcs, transforms);
             evaluator.setCacheExpressions(true);
 
-            evaluator.evaluate("""
-                    let x = 10;
-                    let y = 40;
-                    global const z = x * PI
-                    let p = z + y
-                    let q = "123"
-                    p + (q | number)
-                    
-                    let arr = [1, 2, 3]
-                    push(arr, 4)
-                    pop(arr)
-                    arr
+            Object output = evaluator.evaluate("""
+                    "2.0" - 2
                     """);
+            System.out.println(output);
 
-            Object ret = evaluator.evaluate("""
-                    let x = [1, 2, 3, 4, 5];
-                    let y = 0
-                    repeat(x) {
-                        y = y + $it
-                        2 | int
-                    }
-                    2 + +3
+            Object output1 = evaluator.evaluate("""
+                    2.0 + 2
                     """);
-            System.out.println(ret);
+            System.out.println(output1);
+
+            Object output2 = evaluator.evaluate("""
+                    "2" + (2 + 100)
+                    """);
+            System.out.println(output2);
+
+//            evaluator.evaluate("""
+//                    let x = 10;
+//                    let y = 40;
+//                    global const z = x * PI
+//                    let p = z + y
+//                    let q = "123"
+//                    p + (q | number)
+//
+//                    let arr = [1, 2, 3]
+//                    push(arr, 4)
+//                    pop(arr)
+//                    arr
+//                    """);
+//
+//            Object ret = evaluator.evaluate("""
+//                    let x = [1, 2, 3, 4, 5];
+//                    let y = 0
+//                    repeat(x) {
+//                        y = y + $it
+//                        2 | int
+//                    }
+//                    2 + +3
+//                    """);
+//            System.out.println(ret);
 //            long startTime = System.currentTimeMillis();
             
             // Example 1: Basic expression

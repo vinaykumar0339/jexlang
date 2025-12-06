@@ -34,58 +34,6 @@ public protocol JexValue: AnyObject, CustomStringConvertible {
     
 }
 
-enum JexValueCompareType {
-    case lessThan
-    case lessThanOrEqual
-    case greaterThan
-    case greaterThanOrEqual
-}
-
-extension JexValue {
-    
-    /// Safely attempts numeric conversion — returns nil on failure (never throws)
-    private func safeDouble() -> Double? {
-        return try? self.asDouble(context: "compare")
-    }
-
-    /// Safely attempts string conversion — returns nil on failure (never throws)
-    private func safeString() -> String? {
-        return try? self.asString(context: "compare")
-    }
-
-    /// Safely attempts boolean conversion — returns nil on failure (never throws)
-    private func safeBool() -> Bool? {
-        return try? self.asBoolean(context: "compare")
-    }
-
-    /// Main safe comparator for all operators
-    func safeCompare(_ other: JexValue, op: JexValueCompareType) -> Bool {
-
-        // ---- NUMERIC COMPARISON ----
-        if let a = safeDouble(), let b = other.safeDouble() {
-            switch op {
-            case .lessThan:  return a < b
-            case .lessThanOrEqual: return a <= b
-            case .greaterThan:  return a > b
-            case .greaterThanOrEqual: return a >= b
-            }
-        }
-
-        // ---- STRING COMPARISON ----
-        if let a = safeString(), let b = other.safeString() {
-            switch op {
-            case .lessThan:  return a < b
-            case .lessThanOrEqual: return a <= b
-            case .greaterThan:  return a > b
-            case .greaterThanOrEqual: return a >= b
-            }
-        }
-
-        // ---- ANYTHING ELSE → false (NO ERROR!) ----
-        return false
-    }
-}
-
 public class JexValueFactory {
     static func typeError(
         want: String,

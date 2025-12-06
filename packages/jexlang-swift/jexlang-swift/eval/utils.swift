@@ -89,14 +89,200 @@ public func toBoolean(value: JexValue, ctx: String) throws -> Bool {
 
 public func toString(value: JexValue, ctx: String) throws -> String {
     switch value {
-    case is JexInteger:
-        return String(try value.asInteger(context: ctx))
     case is JexNil:
         return "nil"
+    case is JexString:
+        return try value.asString(context: ctx)
+    case is JexInteger:
+        return String(describing: try value.asInteger(context: ctx))
+    case is JexDouble:
+        return String(describing: try value.asDouble(context: ctx))
+    case is JexNumber:
+        return String(describing: try value.asNumber(context: ctx))
+    case is JexBoolean:
+        return try value.asBoolean(context: ctx) ? "true" : "false"
+    case is JexArray:
+        let arr = try value.asArray(context: ctx)
+        let items = try arr.map { try toString(value: $0, ctx: ctx) }
+        return "[\(items.joined(separator: ", "))]"
+    case is JexObject:
+        let obj = try value.asObject(context: ctx)
+        
+        var parts: [String] = []
+        for (key, val) in obj {
+            let valStr = try toString(value: val, ctx: ctx)
+            parts.append("\"\(key)\": \"\(valStr)\"")
+        }
+        
+        return "{\(parts.joined(separator: ", "))}"
     default:
         throw TypeMismatchError(operation: "string conversion", expected: "string", actual: getJexValueType(value: value));
     }
 }
+
+public func isLessThan(
+    lhs: JexValue,
+    rhs: JexValue,
+    alsoEqual: Bool = false
+) -> Bool {
+    
+    var isLess = false
+    
+    if lhs.getType() != rhs.getType() {
+        
+        // If either is a number → try numeric compare
+        if lhs.isNumber() || rhs.isNumber() {
+            do {
+                let num1 = try toNumber(value: lhs, ctx: "comparison")
+                let num2 = try toNumber(value: rhs, ctx: "comparison")
+                
+                if alsoEqual {
+                    isLess = num1.doubleValue <= num2.doubleValue
+                } else {
+                    isLess = num1.doubleValue < num2.doubleValue
+                }
+                
+            } catch {
+                isLess = false
+            }
+        } else {
+            isLess = false
+        }
+        
+        return isLess
+    }
+
+    if lhs.isNumber() && rhs.isNumber() {
+        do {
+            let a = try lhs.asNumber(context: "comparison").doubleValue
+            let b = try rhs.asNumber(context: "comparison").doubleValue
+            
+            if alsoEqual {
+                return a <= b
+            } else {
+                return a < b
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    if lhs.isString() && rhs.isString() {
+        do {
+            let a = try lhs.asString(context: "comparison")
+            let b = try rhs.asString(context: "comparison")
+            
+            if alsoEqual {
+                return a <= b
+            } else {
+                return a < b
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    if lhs.isBoolean() && rhs.isBoolean() {
+        do {
+            let a = try lhs.asBoolean(context: "comparison")
+            let b = try rhs.asBoolean(context: "comparison")
+            
+            // Bool.compare equivalent: false < true
+            if alsoEqual {
+                return (!a && b) || (a == b)
+            } else {
+                return (!a && b)
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    return false
+}
+
+public func isGreaterThan(
+    lhs: JexValue,
+    rhs: JexValue,
+    alsoEqual: Bool = false
+) -> Bool {
+    
+    var isGreater = false
+
+    if lhs.getType() != rhs.getType() {
+        
+        // If either side is number → try numeric compare
+        if lhs.isNumber() || rhs.isNumber() {
+            do {
+                let num1 = try toNumber(value: lhs, ctx: "comparison")
+                let num2 = try toNumber(value: rhs, ctx: "comparison")
+                
+                if alsoEqual {
+                    isGreater = num1.doubleValue >= num2.doubleValue
+                } else {
+                    isGreater = num1.doubleValue > num2.doubleValue
+                }
+                
+            } catch {
+                isGreater = false
+            }
+        } else {
+            isGreater = false
+        }
+        
+        return isGreater
+    }
+    
+    if lhs.isNumber() && rhs.isNumber() {
+        do {
+            let a = try lhs.asNumber(context: "comparison").doubleValue
+            let b = try rhs.asNumber(context: "comparison").doubleValue
+            
+            if alsoEqual {
+                return a >= b
+            } else {
+                return a > b
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    if lhs.isString() && rhs.isString() {
+        do {
+            let a = try lhs.asString(context: "comparison")
+            let b = try rhs.asString(context: "comparison")
+            
+            if alsoEqual {
+                return a >= b
+            } else {
+                return a > b
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    if lhs.isBoolean() && rhs.isBoolean() {
+        do {
+            let a = try lhs.asBoolean(context: "comparison")
+            let b = try rhs.asBoolean(context: "comparison")
+            
+            // Bool.compare equivalent: true > false
+            if alsoEqual {
+                return (a && !b) || (a == b)
+            } else {
+                return (a && !b)
+            }
+        } catch {
+            return false
+        }
+    }
+    
+    // Any other type → false
+    return false
+}
+
 
 public func createGlobalScope() -> Scope {
     let scope = Scope(scopeType: .global)
