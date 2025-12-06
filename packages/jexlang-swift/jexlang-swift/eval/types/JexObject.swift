@@ -13,7 +13,7 @@ public class JexObject: JexValue {
         throw JexValueFactory.typeError(want: "array", ctx: context, actualValue: self)
     }
     
-    public func asObject(context: String) throws -> [String : any JexValue] {
+    public func asObject(context: String) -> [String : any JexValue] {
         return value
     }
     
@@ -89,6 +89,20 @@ public class JexObject: JexValue {
     }
     
     public func isObject() -> Bool {
+        return true
+    }
+    
+    public func equals(_ other: JexValue) -> Bool {
+        guard other.isObject(),
+              let otherObj = try? other.asObject(context: "equals") else { return false }
+
+        if otherObj.count != value.count { return false }
+
+        for (key, val) in value {
+            guard let otherVal = otherObj[key] else { return false }
+            if !val.equals(otherVal) { return false }
+        }
+
         return true
     }
     

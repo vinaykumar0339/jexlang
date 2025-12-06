@@ -15,6 +15,18 @@ public class JexNumber: JexValue {
         self.value = value
     }
     
+    public init(value: Double) {
+        self.value = NSNumber(value: value)
+    }
+    
+    public init(value: Int) {
+        self.value = NSNumber(value: value)
+    }
+    
+    public init(value: Float) {
+        self.value = NSNumber(value: value)
+    }
+    
     public func isInteger() -> Bool {
         return false
     }
@@ -59,7 +71,7 @@ public class JexNumber: JexValue {
         return value
     }
     
-    public func asNumber(context: String) throws -> NSNumber {
+    public func asNumber(context: String) -> NSNumber {
         return value
     }
     
@@ -85,5 +97,18 @@ public class JexNumber: JexValue {
     
     public func asObject(context: String) throws -> [String : JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
+    }
+    
+    public func equals(_ other: JexValue) -> Bool {
+        if other.isNumber() {
+            return (try? other.asNumber(context: "equals")) == value
+        }
+        if other.isInteger() {
+            return value.intValue == (try? other.asInteger(context: "equals"))
+        }
+        if other.isDouble() {
+            return value.doubleValue == (try? other.asDouble(context: "equals"))
+        }
+        return false
     }
 }

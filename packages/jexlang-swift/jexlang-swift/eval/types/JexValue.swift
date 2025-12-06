@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol JexValue: CustomStringConvertible {
+public protocol JexValue: AnyObject, CustomStringConvertible {
     func isInteger() -> Bool
     func isDouble() -> Bool
     func isNumber() -> Bool
@@ -29,6 +29,61 @@ public protocol JexValue: CustomStringConvertible {
     func asArray(context: String) throws -> [JexValue]
     func asObject(context: String) throws -> [String: JexValue]
     
+    // Equals
+    func equals(_ other: JexValue) -> Bool
+    
+}
+
+enum JexValueCompareType {
+    case lessThan
+    case lessThanOrEqual
+    case greaterThan
+    case greaterThanOrEqual
+}
+
+extension JexValue {
+    
+    /// Safely attempts numeric conversion — returns nil on failure (never throws)
+    private func safeDouble() -> Double? {
+        return try? self.asDouble(context: "compare")
+    }
+
+    /// Safely attempts string conversion — returns nil on failure (never throws)
+    private func safeString() -> String? {
+        return try? self.asString(context: "compare")
+    }
+
+    /// Safely attempts boolean conversion — returns nil on failure (never throws)
+    private func safeBool() -> Bool? {
+        return try? self.asBoolean(context: "compare")
+    }
+
+    /// Main safe comparator for all operators
+    func safeCompare(_ other: JexValue, op: JexValueCompareType) -> Bool {
+
+        // ---- NUMERIC COMPARISON ----
+        if let a = safeDouble(), let b = other.safeDouble() {
+            switch op {
+            case .lessThan:  return a < b
+            case .lessThanOrEqual: return a <= b
+            case .greaterThan:  return a > b
+            case .greaterThanOrEqual: return a >= b
+            }
+        }
+
+        // ---- STRING COMPARISON ----
+        if let a = safeString(), let b = other.safeString() {
+            switch op {
+            case .lessThan:  return a < b
+            case .lessThanOrEqual: return a <= b
+            case .greaterThan:  return a > b
+            case .greaterThanOrEqual: return a >= b
+            }
+        }
+
+        // ---- ANYTHING ELSE → false (NO ERROR!) ----
+        return false
+    }
 }
 
 public class JexValueFactory {
@@ -48,12 +103,24 @@ public class JexValueFactory {
         return JexNumber(value: number)
     }
     
+    static func fromNumber(double: Double) -> JexNumber {
+        return JexNumber(value: NSNumber(value: double))
+    }
+    
+    static func fromNumer(int: Int) -> JexNumber {
+        return JexNumber(value: NSNumber(value: int))
+    }
+    
     static func fromDouble(double: Double) -> JexDouble {
         return JexDouble(value: double)
     }
     
     static func fromString(string: String) -> JexString {
         return JexString(value: string)
+    }
+    
+    static func fromString(char: Character) -> JexString {
+        return JexString(value: "\(char)")
     }
     
     static func fromBoolean(value: Bool) -> JexBoolean {
@@ -74,7 +141,7 @@ public class JexValueFactory {
     }
 
     static func fromObject(value: Any) -> JexObject {
-        guard let map = value as? [String: Any] else {
+        guard let map = value as? [String: AnyObject] else {
             fatalError("Unsupported object type: \(type(of: value))")
         }
 
