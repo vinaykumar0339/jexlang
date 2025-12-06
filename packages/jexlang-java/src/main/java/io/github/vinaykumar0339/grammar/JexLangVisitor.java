@@ -1,6 +1,6 @@
 // Generated from JexLang.g4 by ANTLR 4.13.2
 
-    package io.github.vinaykumar0339.grammar;
+     package io.github.vinaykumar0339.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 

@@ -644,14 +644,10 @@ describe('JexEvaluator', () => {
             expect(evaluator.evaluate('-(-3)')).toBe(3);
         });
 
-        // TODO: Need to support logical NOT operator '!' along with 'not'
-        // it('logical NOT operator', () => {
-        //     expect(evaluator.evaluate('!true')).toBe(false);
-        //     expect(evaluator.evaluate('!false')).toBe(true);
-
-        //     expect(evaluator.evaluate('not true')).toBe(false);
-        //     expect(evaluator.evaluate('not false')).toBe(true);
-        // });
+        it('logical NOT operator', () => {
+            expect(evaluator.evaluate('!true')).toBe(false);
+            expect(evaluator.evaluate('!false')).toBe(true);
+        });
     });
 
     describe('square root expressions', () => {

@@ -745,6 +745,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
                 return -toNumber(value);
             } else if (ctx.PLUS()) {
                 return toNumber(value);
+            } else if (ctx.NOT()) {
+                return !toBoolean(value);
             }
             throw new JexLangRuntimeError(`Unknown unary operator ${ctx.getChild(0).getText()}`);
         });

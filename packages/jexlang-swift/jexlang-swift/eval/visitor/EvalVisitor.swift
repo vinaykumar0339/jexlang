@@ -681,15 +681,24 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     public override func visitUnaryExpression(_ ctx: JexLangParser.UnaryExpressionContext) -> JexValue {
         let jexValue = self.visit(ctx.singleExpression())
         
-        guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
-            // TODO: Need to throw error
-            return JexNil()
-        }
-        
         if let _ = ctx.PLUS() {
+            guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
+                // TODO: Need to throw error
+                return JexNil()
+            }
             return JexValueFactory.fromNumber(double: number.doubleValue)
         } else if let _ = ctx.MINUS() {
+            guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
+                // TODO: Need to throw error
+                return JexNil()
+            }
             return JexValueFactory.fromNumber(double: -number.doubleValue)
+        } else if let _ = ctx.NOT() {
+            guard let bool = try? toBoolean(value: jexValue, ctx: "unary expression") else {
+                // TODO: Need to throw error
+                return JexNil()
+            }
+            return JexValueFactory.fromBoolean(value: bool)
         }
         
         return JexNil()

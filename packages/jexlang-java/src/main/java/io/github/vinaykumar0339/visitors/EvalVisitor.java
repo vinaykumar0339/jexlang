@@ -24,7 +24,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     private final MapFuncRegistry funcRegistry;
     private final MapTransformRegistry transformRegistry;
     private Scope scope;
-    private EvaluatorContext evaluatorContext;
+    private final EvaluatorContext evaluatorContext;
 
     private Map<String, Object> programScopeContext = new HashMap<>();
 
@@ -668,6 +668,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             return JexValue.fromNumber(-Utils.toNumber(value, "unary expression").doubleValue());
         } else if (ctx.PLUS() != null) {
             return JexValue.fromNumber(+Utils.toNumber(value, "unary expression").doubleValue());
+        } else if (ctx.NOT() != null) {
+            boolean boolValue = Utils.toBoolean(value, "unary expression");
+            return JexValue.fromBoolean(!boolValue);
         }
 
         throw new JexLangRuntimeError("Unknown unary operator " + ctx.getChild(0).getText());

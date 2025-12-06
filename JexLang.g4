@@ -2,7 +2,7 @@ grammar JexLang;
 
 // Enable this when target is Java.
 // @header {
-//     package com.jexlang.java.grammar;
+//     package io.github.vinaykumar0339.grammar;
 // }
 
 // Parser Rules
@@ -50,7 +50,7 @@ singleExpression
     // Unary operators
     | (INCREMENT | DECREMENT) singleExpression # PrefixExpression
     | (SQRT | 'sqrt') singleExpression                                              # SquareRootExpression
-    | (PLUS | MINUS) singleExpression                                              # UnaryExpression
+    | (PLUS | MINUS | NOT) singleExpression                                              # UnaryExpression
 
     // Exponentiation (right associative)
     | <assoc=right> singleExpression (POW | POWER) singleExpression             # PowerExpression
@@ -182,6 +182,7 @@ MODULO      : '%' ;
 POWER       : '^' ;
 LT          : '<' ;
 GT          : '>' ;
+NOT         : '!' ;
 
 // Delimiters
 LPAREN      : '(' ;
