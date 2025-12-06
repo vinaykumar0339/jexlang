@@ -387,7 +387,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             JexValue prop = this.visit(propCtx);
             if (prop.isObject()) {
                 properties.putAll(prop.asObject("object literal"));
-            } // ignore if the response is not and object.
+            } // ignore if the response is not an object.
         }
         return JexValue.fromObject(properties);
     }
@@ -959,7 +959,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitElseIfClause(JexLangParser.ElseIfClauseContext ctx) {
         JexValue condition = this.visit(ctx.expressionSequence());
         // empty array and objects are falsy
-        if (Utils.toBoolean(condition, "if expression")) {
+        if (Utils.toBoolean(condition, "else if expression")) {
             return this.visit(ctx.block());
         } else if (ctx.elseIfStatement() != null) {
             return this.visit(ctx.elseIfStatement());

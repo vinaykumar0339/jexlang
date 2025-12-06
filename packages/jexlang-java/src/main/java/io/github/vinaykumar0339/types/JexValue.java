@@ -105,7 +105,7 @@ public interface JexValue {
         } else if (value instanceof java.util.Map<?, ?>) {
             return fromObject(value);
         }
-        throw new IllegalArgumentException("Unsupported type: " + value.getClass().getName() + "Supported types are: null, Number, Boolean, String, List, Map" );
+        throw new IllegalArgumentException("Unsupported type: " + value.getClass().getName() + "Supported types are: null, Number, Integer, Double, Boolean, String, List, Map" );
 }
 }
 
