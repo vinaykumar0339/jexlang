@@ -311,4 +311,78 @@ describe('JexEvaluator', () => {
             expect(result).toBe(3);
         });
     });
+
+
+    // Expressions.
+    describe('additive expressions', () => {
+        it('simple addition', () => {
+            const result = evaluator.evaluate('1 + 2');
+            expect(result).toBe(3);
+        });
+
+        it('addition with negative number', () => {
+            const result = evaluator.evaluate('5 + -3');
+            expect(result).toBe(2);
+        });
+
+        it('multiple additions', () => {
+            const result = evaluator.evaluate('1 + 2 + 3 + 4');
+            expect(result).toBe(10);
+        });
+
+        it('addition and subtraction', () => {
+            const result = evaluator.evaluate('10 + 5 - 3 + 2 - 1');
+            expect(result).toBe(13);
+        });
+
+        it('addition with parentheses', () => {
+            const result = evaluator.evaluate('(1 + 2) + (3 + 4)');
+            expect(result).toBe(10);
+        });
+
+        it('string and number addition', () => {
+            const result = evaluator.evaluate('"The answer is: " + 42');
+            expect(result).toBe('The answer is: 42');
+
+            const result2 = evaluator.evaluate('42 + " is the answer"');
+            expect(result2).toBe('42 is the answer');
+
+            const result3 = evaluator.evaluate('"10" + 5');;
+            expect(result3).toBe('105');
+
+            const result4 = evaluator.evaluate('5 + "10"');;
+            expect(result4).toBe('510');
+
+            const result5 = evaluator.evaluate('"1" + 100 + "0"');
+            expect(result5).toBe('11000');
+
+            const result6 = evaluator.evaluate('"2.0" + 3.5');
+            expect(result6).toBe('2.03.5');
+
+            const result7 = evaluator.evaluate('3.5 + "2.0"');;
+            expect(result7).toBe('3.52.0');
+
+            const result8 = evaluator.evaluate('"2.0" + 2 + 100');
+            expect(result8).toBe('2.02100');
+
+            const result9 = evaluator.evaluate('2 + 2 + "2.0"');;
+            expect(result9).toBe('42.0');
+
+            const result10 = evaluator.evaluate('"2.0" + (2 + 100)');
+            expect(result10).toBe('2.0102');
+        })
+
+        it('string concatenation', () => {
+            const result = evaluator.evaluate('"Hello, " + "world!"');
+            expect(result).toBe('Hello, world!');
+
+            const result2 = evaluator.evaluate('"Foo" + "Bar" + "Baz"');;
+            expect(result2).toBe('FooBarBaz');
+
+            const result3 = evaluator.evaluate('"The answer is: " + "42"');;
+            expect(result3).toBe('The answer is: 42');
+
+            expect(() => evaluator.evaluate('"Value: " - 100')).toThrow();
+        });
+    });
 });
