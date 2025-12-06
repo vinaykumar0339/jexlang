@@ -518,8 +518,11 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visitShortTernaryExpression(_ ctx: JexLangParser.ShortTernaryExpressionContext) -> JexValue {
         let condition = self.visit(ctx.singleExpression(0));
-        // If values are present, return the resolved condition, null is falsy others are truthy
-        if !condition.isNil() {
+        if
+            // empty array and objects are falsy
+            let isTrue = try? toBoolean(value: condition, ctx: "ternary expression"),
+            isTrue
+        {
             return condition
         } else {
             return self.visit(ctx.singleExpression(1))

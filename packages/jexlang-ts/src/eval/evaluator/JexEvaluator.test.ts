@@ -740,4 +740,298 @@ describe('JexEvaluator', () => {
                 `)).toEqual(dynamicObject);
         });
     });
+
+    describe('member expressions', () => {
+        it('should access object properties', () => {
+            const obj = { a: 1, b: 2, c: 3 };
+            evaluator.declareContextValue('obj', obj);
+            expect(evaluator.evaluate('obj.a')).toBe(1);
+            expect(evaluator.evaluate('obj.b')).toBe(2);
+            expect(evaluator.evaluate('obj.c')).toBe(3);
+
+            const dynamicKey = 'b';
+            evaluator.declareContextValue('dynamicKey', dynamicKey);
+            expect(evaluator.evaluate('obj[dynamicKey]')).toBe(2);
+
+        });
+
+        it('should access array elements', () => {
+            const arr = [10, 20, 30, 40];
+            evaluator.declareContextValue('arr', arr);
+            expect(evaluator.evaluate('arr[0]')).toBe(10);
+            expect(evaluator.evaluate('arr[1]')).toBe(20);
+            expect(evaluator.evaluate('arr[2]')).toBe(30);
+            expect(evaluator.evaluate('arr[3]')).toBe(40);
+            expect(evaluator.evaluate('arr[4]')).toBeNull();
+
+            // negative indexing
+            expect(evaluator.evaluate('arr[-1]')).toBe(40);
+            expect(evaluator.evaluate('arr[-2]')).toBe(30);
+            expect(evaluator.evaluate('arr[-3]')).toBe(20);
+            expect(evaluator.evaluate('arr[-4]')).toBe(10);
+            expect(evaluator.evaluate('arr[-5]')).toBeNull();
+
+            const index = 2;
+            evaluator.declareContextValue('index', index);
+            expect(evaluator.evaluate('arr[index]')).toBe(30);
+        });
+    });
+
+    describe('complex member access expressions', () => {
+        it('should access nested object properties', () => {
+            const obj = { 
+                user: { 
+                    name: 'John', 
+                    address: { 
+                        city: 'New York', 
+                        zip: 10001 
+                    } 
+                } 
+            };
+            evaluator.declareContextValue('obj', obj);
+            expect(evaluator.evaluate('obj.user.name')).toBe('John');
+            expect(evaluator.evaluate('obj.user.address.city')).toBe('New York');
+            expect(evaluator.evaluate('obj.user.address.zip')).toBe(10001);
+        });
+
+        it('should access nested array elements', () => {
+            const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+            evaluator.declareContextValue('arr', arr);
+            expect(evaluator.evaluate('arr[0][0]')).toBe(1);
+            expect(evaluator.evaluate('arr[1][2]')).toBe(6);
+            expect(evaluator.evaluate('arr[2][1]')).toBe(8);
+            expect(evaluator.evaluate('arr[-1][-1]')).toBe(9);
+        });
+
+        it('should access array of objects', () => {
+            const users = [
+                { name: 'Alice', age: 25 },
+                { name: 'Bob', age: 30 },
+                { name: 'Charlie', age: 35 }
+            ];
+            evaluator.declareContextValue('users', users);
+            expect(evaluator.evaluate('users[0].name')).toBe('Alice');
+            expect(evaluator.evaluate('users[1].age')).toBe(30);
+            expect(evaluator.evaluate('users[2].name')).toBe('Charlie');
+            expect(evaluator.evaluate('users[-1].age')).toBe(35);
+        });
+
+        it('should access object with array properties', () => {
+            const data = {
+                scores: [95, 87, 92],
+                names: ['Test1', 'Test2', 'Test3']
+            };
+            evaluator.declareContextValue('data', data);
+            expect(evaluator.evaluate('data.scores[0]')).toBe(95);
+            expect(evaluator.evaluate('data.scores[2]')).toBe(92);
+            expect(evaluator.evaluate('data.names[1]')).toBe('Test2');
+            expect(evaluator.evaluate('data.scores[-1]')).toBe(92);
+        });
+
+        it('should handle mixed bracket and dot notation', () => {
+            const complex = {
+                items: [
+                    { id: 1, values: [10, 20, 30] },
+                    { id: 2, values: [40, 50, 60] }
+                ]
+            };
+            evaluator.declareContextValue('complex', complex);
+            expect(evaluator.evaluate('complex.items[0].id')).toBe(1);
+            expect(evaluator.evaluate('complex.items[0].values[1]')).toBe(20);
+            expect(evaluator.evaluate('complex.items[1].values[2]')).toBe(60);
+            expect(evaluator.evaluate('complex["items"][0]["id"]')).toBe(1);
+        });
+
+        it('should evaluate expressions within member access', () => {
+            const data = {
+                values: [100, 200, 300, 400]
+            };
+            evaluator.declareContextValue('data', data);
+            evaluator.declareContextValue('idx', 1);
+            expect(evaluator.evaluate('data.values[1 + 1]')).toBe(300);
+            expect(evaluator.evaluate('data.values[idx]')).toBe(200);
+            expect(evaluator.evaluate('data.values[idx + 2]')).toBe(400);
+        });
+
+        it('should handle deeply nested structures', () => {
+            const deep = {
+                level1: {
+                    level2: {
+                        level3: {
+                            array: [
+                                { value: 'found' }
+                            ]
+                        }
+                    }
+                }
+            };
+            evaluator.declareContextValue('deep', deep);
+            expect(evaluator.evaluate('deep.level1.level2.level3.array[0].value')).toBe('found');
+        });
+
+        it('should return null for non-existent nested properties', () => {
+            const obj = { a: { b: 1 } };
+            evaluator.declareContextValue('obj', obj);
+            expect(evaluator.evaluate('obj.a.c')).toBeNull();
+            expect(evaluator.evaluate('obj.x.y.z')).toBeNull();
+        });
+    });
+
+    describe('parenthesized expressions', () => {
+        it('should evaluate expressions within parentheses', () => {
+            expect(evaluator.evaluate('(2 + 3)')).toBe(5);
+            expect(evaluator.evaluate('((1 + 2) * (3 + 4))')).toBe(21);
+            expect(evaluator.evaluate('((10 - 2) / (4 + 4))')).toBe(1);
+        });
+    });
+
+    describe('power expressions', () => {
+        it('should evaluate exponentiation', () => {
+            expect(evaluator.evaluate('2 ^ 3')).toBe(8);
+            expect(evaluator.evaluate('5 ^ 0')).toBe(1);
+            expect(evaluator.evaluate('4 ^ 1.5')).toBe(8);
+        });
+
+        it('should handle chained exponentiation', () => {
+            expect(evaluator.evaluate('2 ^ 3 ^ 2')).toBe(512); // 2^(3^2) = 2^9 = 512
+            expect(evaluator.evaluate('3 ^ 2 ^ 2')).toBe(81);  // 3^(2^2) = 3^4 = 81
+        });
+
+        it('should evaluate exponentiation with parentheses', () => {
+            expect(evaluator.evaluate('(2 ^ 3) ^ 2')).toBe(64); // (2^3)^2 = 8^2 = 64
+            expect(evaluator.evaluate('2 ^ (3 ^ 2)')).toBe(512); // 2^(3^2) = 2^9 = 512
+        });
+    });
+
+    describe('ternary expressions', () => {
+        it('should evaluate simple ternary expressions', () => {
+            expect(evaluator.evaluate('true ? 1 : 2')).toBe(1);
+            expect(evaluator.evaluate('false ? 1 : 2')).toBe(2);
+        });
+
+        it('should evaluate nested ternary expressions', () => {
+            expect(evaluator.evaluate('true ? (false ? 1 : 2) : 3')).toBe(2);
+            expect(evaluator.evaluate('false ? 1 : (true ? 2 : 3)')).toBe(2);
+        });
+
+        it('should handle complex ternary expressions', () => {
+            expect(evaluator.evaluate('(5 > 3) ? (10 + 5) : (20 - 5)')).toBe(15);
+            expect(evaluator.evaluate('(2 + 2 == 5) ? "yes" : "no"')).toBe('no');
+        });
+
+        it('should handle ternary expressions with different data types', () => {
+            // Number results
+            expect(evaluator.evaluate('true ? 42 : 0')).toBe(42);
+            expect(evaluator.evaluate('false ? 42 : 0')).toBe(0);
+            
+            // String results
+            expect(evaluator.evaluate('true ? "hello" : "world"')).toBe('hello');
+            expect(evaluator.evaluate('false ? "hello" : "world"')).toBe('world');
+            
+            // Boolean results
+            expect(evaluator.evaluate('true ? true : false')).toBe(true);
+            expect(evaluator.evaluate('false ? true : false')).toBe(false);
+            
+            // Null results
+            expect(evaluator.evaluate('true ? null : 42')).toBeNull();
+            expect(evaluator.evaluate('false ? 42 : null')).toBeNull();
+            
+            // Array results
+            expect(evaluator.evaluate('true ? [1, 2, 3] : [4, 5, 6]')).toEqual([1, 2, 3]);
+            expect(evaluator.evaluate('false ? [1, 2, 3] : [4, 5, 6]')).toEqual([4, 5, 6]);
+            
+            // Object results
+            expect(evaluator.evaluate('true ? {"a": 1} : {"b": 2}')).toEqual({a: 1});
+            expect(evaluator.evaluate('false ? {"a": 1} : {"b": 2}')).toEqual({b: 2});
+        });
+
+        it('should handle ternary expressions with mixed data types', () => {
+            expect(evaluator.evaluate('true ? 42 : "string"')).toBe(42);
+            expect(evaluator.evaluate('false ? 42 : "string"')).toBe('string');
+            expect(evaluator.evaluate('true ? [1, 2] : {"a": 1}')).toEqual([1, 2]);
+            expect(evaluator.evaluate('false ? [1, 2] : {"a": 1}')).toEqual({a: 1});
+            expect(evaluator.evaluate('true ? null : false')).toBeNull();
+            expect(evaluator.evaluate('false ? null : false')).toBe(false);
+        });
+
+        it('should handle ternary expressions with context variables', () => {
+            evaluator.declareContextValue('x', 10);
+            evaluator.declareContextValue('y', 20);
+            evaluator.declareContextValue('arr', [1, 2, 3]);
+            evaluator.declareContextValue('obj', {name: 'test'});
+            
+            expect(evaluator.evaluate('x > y ? x : y')).toBe(20);
+            expect(evaluator.evaluate('x < y ? arr : obj')).toEqual([1, 2, 3]);
+            expect(evaluator.evaluate('x == 10 ? arr[0] : obj.name')).toBe(1);
+            expect(evaluator.evaluate('y != 20 ? null : "found"')).toBe('found');
+        });
+
+        it('should handle nested ternary expressions with different data types', () => {
+            expect(evaluator.evaluate('true ? (false ? "a" : "b") : (true ? "c" : "d")')).toBe('b');
+            expect(evaluator.evaluate('false ? (true ? 1 : 2) : (false ? 3 : 4)')).toBe(4);
+            expect(evaluator.evaluate('true ? (true ? [1] : [2]) : (true ? [3] : [4])')).toEqual([1]);
+            expect(evaluator.evaluate('false ? null : (true ? {"x": 1} : {"y": 2})')).toEqual({x: 1});
+        });
+
+        it('should handle ternary expressions with complex conditions', () => {
+            evaluator.declareContextValue('users', [
+                {name: 'Alice', age: 25},
+                {name: 'Bob', age: 30}
+            ]);
+            
+            expect(evaluator.evaluate('users[0].age > 20 ? users[0].name : "unknown"')).toBe('Alice');
+            expect(evaluator.evaluate('users[1].age < 25 ? users[1] : null')).toBeNull();
+            expect(evaluator.evaluate('length(users) > 1 ? users : []')).toEqual([
+                {name: 'Alice', age: 25},
+                {name: 'Bob', age: 30}
+            ]);
+        });
+
+        it('should handle ternary expressions with arithmetic operations', () => {
+            expect(evaluator.evaluate('5 > 3 ? (10 + 5) : (20 - 5)')).toBe(15);
+            expect(evaluator.evaluate('2 * 3 == 6 ? (100 / 10) : (50 * 2)')).toBe(10);
+            expect(evaluator.evaluate('10 % 2 == 0 ? "even" : "odd"')).toBe('even');
+        });
+
+        it('should handle ternary expressions with logical operations', () => {
+            expect(evaluator.evaluate('true && false ? "yes" : "no"')).toBe('no');
+            expect(evaluator.evaluate('true || false ? 1 : 0')).toBe(1);
+            expect(evaluator.evaluate('!false ? [1, 2] : [3, 4]')).toEqual([1, 2]);
+            expect(evaluator.evaluate('(5 > 3) && (10 < 20) ? {"result": true} : {"result": false}')).toEqual({result: true});
+        });
+    });
+
+    describe('elvis operator', () => {
+        it('should return left operand if truthy', () => {
+            expect(evaluator.evaluate('42 ?: 0')).toBe(42);
+            expect(evaluator.evaluate('"hello" ?: "world"')).toBe('hello');
+            expect(evaluator.evaluate('true ?: false')).toBe(true);
+        });
+
+        it('should return right operand if left is falsy', () => {
+            expect(evaluator.evaluate('0 ?: 42')).toBe(42);
+            expect(evaluator.evaluate('"" ?: "default"')).toBe('default');
+            expect(evaluator.evaluate('false ?: true')).toBe(true);
+            expect(evaluator.evaluate('null ?: "fallback"')).toBe('fallback');
+        });
+
+        it('should work with context variables', () => {
+            evaluator.declareContextValue('name', '');
+            expect(evaluator.evaluate('name ?: "Anonymous"')).toBe('Anonymous');
+            
+            evaluator.setContextValue('name', 'John');
+            expect(evaluator.evaluate('name ?: "Anonymous"')).toBe('John');
+        });
+
+        it('should work with nested elvis operators', () => {
+            expect(evaluator.evaluate('null ?: "" ?: "default"')).toBe('default');
+            expect(evaluator.evaluate('0 ?: false ?: 100')).toBe(100);
+        });
+
+        it('should work with complex expressions', () => {
+            evaluator.declareContextValue('user', { name: '', age: 0 });
+            expect(evaluator.evaluate('user.name ?: "Unknown"')).toBe('Unknown');
+            expect(evaluator.evaluate('user.age ?: 18')).toBe(18);
+        });
+    });
 });

@@ -578,8 +578,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     visitShortTernaryExpression = (ctx: JexLangParser.ShortTernaryExpressionContext): MaybePromise<JexValue> => {
 
         return this.handlePromise(this.visit(ctx.singleExpression(0)), (resolvedCondition) => {
-            // If values are present, return the resolved condition, null and undefined are falsy others are truthy
-            if (resolvedCondition != null && resolvedCondition != undefined) {
+            // empty array and objects are falsy
+            if (toBoolean(resolvedCondition)) {
                 return resolvedCondition;
             } else {
                 return this.handlePromise(this.visit(ctx.singleExpression(1)), (resolvedFalseBranch) => {

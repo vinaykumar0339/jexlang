@@ -512,8 +512,8 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     @Override
     public JexValue visitShortTernaryExpression(JexLangParser.ShortTernaryExpressionContext ctx) {
         JexValue condition = this.visit(ctx.singleExpression(0));
-        // If values are present, return the resolved condition, null is falsy others are truthy
-        if (condition != null && !condition.isNull()) {
+        // empty array and objects are falsy
+        if (Utils.toBoolean(condition, "ternary expression")) {
             return condition;
         } else {
             return this.visit(ctx.singleExpression(1));
