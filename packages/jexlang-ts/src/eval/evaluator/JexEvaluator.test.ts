@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { JexEvaluator } from './JexEvaluator';
 import type { Context, FuncImpl, TransformImpl } from '../../types';
 import { JexLangRuntimeError, JexLangSyntaxError } from '../errors';
+import { toString } from '../../utils';
 
 describe('JexEvaluator', () => {
     let evaluator: JexEvaluator;
@@ -1705,6 +1706,34 @@ describe('JexEvaluator', () => {
                     sum;
                 `);
                 expect(result).toBe(12); // (1*2) + (2*2) + (3*2)
+            });
+
+            it('should handle async operations in object repeat', async () => {
+                const asyncValue: FuncImpl = async (_ctx, val) => Number(val) + 10;
+                evaluator.addFunction('asyncValue', asyncValue);
+                const result = await evaluator.evaluate(`
+                    let obj = {"a": 1, "b": 2};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + asyncValue($it);
+                    }
+                    sum;
+                `);
+                expect(result).toBe(23); // (1+10) + (2+10)
+            });
+
+            it('should handle async operations in string repeat', async () => {
+                const asyncCharCode: FuncImpl = async (_ctx, char) => toString(char).charCodeAt(0);
+                evaluator.addFunction('asyncCharCode', asyncCharCode);
+                const result = await evaluator.evaluate(`
+                    let str = "abc";
+                    let total = 0;
+                    repeat (str) {
+                        total = total + asyncCharCode($it);
+                    }
+                    total;
+                `);
+                expect(result).toBe(294); // 'a'(97) + 'b'(98) + 'c'(99)
             });
         });
     });
