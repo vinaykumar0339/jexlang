@@ -2250,4 +2250,360 @@ describe('JexEvaluator', () => {
             });
         });
     });
+
+    describe('prefix expressions', () => {
+        describe('prefix increment/decrement with variables', () => {
+            it('should increment variable with prefix operator', () => {
+                evaluator.declareContextValue('x', 5);
+                const result = evaluator.evaluate('++x');
+                expect(result).toBe(6);
+                expect(evaluator.evaluate('x')).toBe(6);
+            });
+
+            it('should decrement variable with prefix operator', () => {
+                evaluator.declareContextValue('y', 10);
+                const result = evaluator.evaluate('--y');
+                expect(result).toBe(9);
+                expect(evaluator.evaluate('y')).toBe(9);
+            });
+
+            it('should return new value after prefix increment', () => {
+                evaluator.declareContextValue('count', 0);
+                expect(evaluator.evaluate('++count')).toBe(1);
+                expect(evaluator.evaluate('++count')).toBe(2);
+                expect(evaluator.evaluate('count')).toBe(2);
+            });
+
+            it('should return new value after prefix decrement', () => {
+                evaluator.declareContextValue('count', 5);
+                expect(evaluator.evaluate('--count')).toBe(4);
+                expect(evaluator.evaluate('--count')).toBe(3);
+                expect(evaluator.evaluate('count')).toBe(3);
+            });
+
+            it('should handle multiple prefix operations', () => {
+                evaluator.declareContextValue('a', 0);
+                evaluator.declareContextValue('b', 0);
+                const result = evaluator.evaluate('++a + ++b');
+                expect(result).toBe(2);
+                expect(evaluator.evaluate('a')).toBe(1);
+                expect(evaluator.evaluate('b')).toBe(1);
+            });
+
+            it('should throw error for undefined variable', () => {
+                expect(() => evaluator.evaluate('++undefinedVar')).toThrow();
+                expect(() => evaluator.evaluate('--undefinedVar')).toThrow();
+            });
+        });
+
+        describe('prefix increment/decrement with array elements', () => {
+            it('should increment array element with positive index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                const result = evaluator.evaluate('++arr[0]');
+                expect(result).toBe(2);
+                expect(evaluator.evaluate('arr[0]')).toBe(2);
+                expect(evaluator.evaluate('arr')).toEqual([2, 2, 3]);
+            });
+
+            it('should decrement array element with positive index', () => {
+                evaluator.declareContextValue('arr', [10, 20, 30]);
+                const result = evaluator.evaluate('--arr[1]');
+                expect(result).toBe(19);
+                expect(evaluator.evaluate('arr[1]')).toBe(19);
+            });
+
+            it('should increment array element with negative index', () => {
+                evaluator.declareContextValue('arr', [5, 10, 15]);
+                const result = evaluator.evaluate('++arr[-1]');
+                expect(result).toBe(16);
+                expect(evaluator.evaluate('arr[-1]')).toBe(16);
+                expect(evaluator.evaluate('arr[2]')).toBe(16);
+            });
+
+            it('should decrement array element with negative index', () => {
+                evaluator.declareContextValue('arr', [100, 200, 300]);
+                const result = evaluator.evaluate('--arr[-2]');
+                expect(result).toBe(199);
+                expect(evaluator.evaluate('arr[-2]')).toBe(199);
+                expect(evaluator.evaluate('arr[1]')).toBe(199);
+            });
+
+            it('should handle prefix operations with expression as index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3, 4, 5]);
+                evaluator.declareContextValue('idx', 2);
+                const result = evaluator.evaluate('++arr[idx + 1]');
+                expect(result).toBe(5);
+                expect(evaluator.evaluate('arr[3]')).toBe(5);
+            });
+
+            it('should return null for out of bounds array index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                const result = evaluator.evaluate('++arr[10]');
+                expect(result).toBeNull();
+            });
+
+            it('should handle nested array increment', () => {
+                evaluator.declareContextValue('matrix', [[1, 2], [3, 4]]);
+                const result = evaluator.evaluate('++matrix[0][1]');
+                expect(result).toBe(3);
+                expect(evaluator.evaluate('matrix[0][1]')).toBe(3);
+            });
+        });
+
+        describe('prefix increment/decrement with object properties', () => {
+            it('should increment object property with dot notation', () => {
+                evaluator.declareContextValue('obj', { count: 5 });
+                const result = evaluator.evaluate('++obj.count');
+                expect(result).toBe(6);
+                expect(evaluator.evaluate('obj.count')).toBe(6);
+            });
+
+            it('should decrement object property with dot notation', () => {
+                evaluator.declareContextValue('obj', { value: 20 });
+                const result = evaluator.evaluate('--obj.value');
+                expect(result).toBe(19);
+                expect(evaluator.evaluate('obj.value')).toBe(19);
+            });
+
+            it('should increment object property with bracket notation', () => {
+                evaluator.declareContextValue('obj', { score: 10 });
+                const result = evaluator.evaluate('++obj["score"]');
+                expect(result).toBe(11);
+                expect(evaluator.evaluate('obj.score')).toBe(11);
+            });
+
+            it('should decrement object property with bracket notation', () => {
+                evaluator.declareContextValue('obj', { points: 50 });
+                const result = evaluator.evaluate('--obj["points"]');
+                expect(result).toBe(49);
+                expect(evaluator.evaluate('obj.points')).toBe(49);
+            });
+
+            it('should handle prefix operations with dynamic property names', () => {
+                evaluator.declareContextValue('obj', { x: 5, y: 10 });
+                evaluator.declareContextValue('key', 'x');
+                const result = evaluator.evaluate('++obj[key]');
+                expect(result).toBe(6);
+                expect(evaluator.evaluate('obj.x')).toBe(6);
+            });
+
+            it('should handle nested object property increment', () => {
+                evaluator.declareContextValue('data', { user: { age: 25 } });
+                const result = evaluator.evaluate('++data.user.age');
+                expect(result).toBe(26);
+                expect(evaluator.evaluate('data.user.age')).toBe(26);
+            });
+
+            it('should throw error for non-object property access', () => {
+                evaluator.declareContextValue('num', 42);
+                expect(() => evaluator.evaluate('++num.prop')).toThrow();
+            });
+        });
+    });
+
+    describe('postfix expressions', () => {
+        describe('postfix increment/decrement with variables', () => {
+            it('should increment variable with postfix operator', () => {
+                evaluator.declareContextValue('x', 5);
+                const result = evaluator.evaluate('x++');
+                expect(result).toBe(5);
+                expect(evaluator.evaluate('x')).toBe(6);
+            });
+
+            it('should decrement variable with postfix operator', () => {
+                evaluator.declareContextValue('y', 10);
+                const result = evaluator.evaluate('y--');
+                expect(result).toBe(10);
+                expect(evaluator.evaluate('y')).toBe(9);
+            });
+
+            it('should return old value after postfix increment', () => {
+                evaluator.declareContextValue('count', 0);
+                expect(evaluator.evaluate('count++')).toBe(0);
+                expect(evaluator.evaluate('count')).toBe(1);
+                expect(evaluator.evaluate('count++')).toBe(1);
+                expect(evaluator.evaluate('count')).toBe(2);
+            });
+
+            it('should return old value after postfix decrement', () => {
+                evaluator.declareContextValue('count', 5);
+                expect(evaluator.evaluate('count--')).toBe(5);
+                expect(evaluator.evaluate('count')).toBe(4);
+                expect(evaluator.evaluate('count--')).toBe(4);
+                expect(evaluator.evaluate('count')).toBe(3);
+            });
+
+            it('should handle multiple postfix operations', () => {
+                evaluator.declareContextValue('a', 0);
+                evaluator.declareContextValue('b', 0);
+                const result = evaluator.evaluate('a++ + b++');
+                expect(result).toBe(0);
+                expect(evaluator.evaluate('a')).toBe(1);
+                expect(evaluator.evaluate('b')).toBe(1);
+            });
+
+            it('should handle mix of prefix and postfix', () => {
+                evaluator.declareContextValue('x', 5);
+                const result = evaluator.evaluate('++x + x++');
+                expect(result).toBe(12); // (6) + (6), then x becomes 7
+                expect(evaluator.evaluate('x')).toBe(7);
+            });
+
+            it('should throw error for undefined variable', () => {
+                expect(() => evaluator.evaluate('undefinedVar++')).toThrow();
+                expect(() => evaluator.evaluate('undefinedVar--')).toThrow();
+            });
+        });
+
+        describe('postfix increment/decrement with array elements', () => {
+            it('should increment array element with positive index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                const result = evaluator.evaluate('arr[0]++');
+                expect(result).toBe(1);
+                expect(evaluator.evaluate('arr[0]')).toBe(2);
+                expect(evaluator.evaluate('arr')).toEqual([2, 2, 3]);
+            });
+
+            it('should decrement array element with positive index', () => {
+                evaluator.declareContextValue('arr', [10, 20, 30]);
+                const result = evaluator.evaluate('arr[1]--');
+                expect(result).toBe(20);
+                expect(evaluator.evaluate('arr[1]')).toBe(19);
+            });
+
+            it('should increment array element with negative index', () => {
+                evaluator.declareContextValue('arr', [5, 10, 15]);
+                const result = evaluator.evaluate('arr[-1]++');
+                expect(result).toBe(15);
+                expect(evaluator.evaluate('arr[-1]')).toBe(16);
+                expect(evaluator.evaluate('arr[2]')).toBe(16);
+            });
+
+            it('should decrement array element with negative index', () => {
+                evaluator.declareContextValue('arr', [100, 200, 300]);
+                const result = evaluator.evaluate('arr[-2]--');
+                expect(result).toBe(200);
+                expect(evaluator.evaluate('arr[-2]')).toBe(199);
+                expect(evaluator.evaluate('arr[1]')).toBe(199);
+            });
+
+            it('should handle postfix operations with expression as index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3, 4, 5]);
+                evaluator.declareContextValue('idx', 2);
+                const result = evaluator.evaluate('arr[idx + 1]++');
+                expect(result).toBe(4);
+                expect(evaluator.evaluate('arr[3]')).toBe(5);
+            });
+
+            it('should handle postfix with computed index expression', () => {
+                evaluator.declareContextValue('arr', [10, 20, 30, 40]);
+                const result = evaluator.evaluate('arr[1 + 1]++');
+                expect(result).toBe(30);
+                expect(evaluator.evaluate('arr[2]')).toBe(31);
+            });
+
+            it('should return null for out of bounds array index', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                const result = evaluator.evaluate('arr[10]++');
+                expect(result).toBeNull();
+            });
+
+            it('should handle nested array decrement', () => {
+                evaluator.declareContextValue('matrix', [[1, 2], [3, 4]]);
+                const result = evaluator.evaluate('matrix[1][0]--');
+                expect(result).toBe(3);
+                expect(evaluator.evaluate('matrix[1][0]')).toBe(2);
+            });
+        });
+
+        describe('postfix increment/decrement with object properties', () => {
+            it('should increment object property with dot notation', () => {
+                evaluator.declareContextValue('obj', { count: 5 });
+                const result = evaluator.evaluate('obj.count++');
+                expect(result).toBe(5);
+                expect(evaluator.evaluate('obj.count')).toBe(6);
+            });
+
+            it('should decrement object property with dot notation', () => {
+                evaluator.declareContextValue('obj', { value: 20 });
+                const result = evaluator.evaluate('obj.value--');
+                expect(result).toBe(20);
+                expect(evaluator.evaluate('obj.value')).toBe(19);
+            });
+
+            it('should increment object property with bracket notation', () => {
+                evaluator.declareContextValue('obj', { score: 10 });
+                const result = evaluator.evaluate('obj["score"]++');
+                expect(result).toBe(10);
+                expect(evaluator.evaluate('obj.score')).toBe(11);
+            });
+
+            it('should decrement object property with bracket notation', () => {
+                evaluator.declareContextValue('obj', { points: 50 });
+                const result = evaluator.evaluate('obj["points"]--');
+                expect(result).toBe(50);
+                expect(evaluator.evaluate('obj.points')).toBe(49);
+            });
+
+            it('should handle postfix operations with dynamic property names', () => {
+                evaluator.declareContextValue('obj', { x: 5, y: 10 });
+                evaluator.declareContextValue('key', 'y');
+                const result = evaluator.evaluate('obj[key]++');
+                expect(result).toBe(10);
+                expect(evaluator.evaluate('obj.y')).toBe(11);
+            });
+
+            it('should handle nested object property decrement', () => {
+                evaluator.declareContextValue('data', { user: { age: 25 } });
+                const result = evaluator.evaluate('data.user.age--');
+                expect(result).toBe(25);
+                expect(evaluator.evaluate('data.user.age')).toBe(24);
+            });
+
+            it('should throw error for non-object property access', () => {
+                evaluator.declareContextValue('str', 'test');
+                expect(() => evaluator.evaluate('str.length++')).toThrow();
+            });
+        });
+
+        describe('complex postfix/prefix scenarios', () => {
+            it('should handle array of objects with postfix', () => {
+                evaluator.declareContextValue('users', [
+                    { score: 10 },
+                    { score: 20 }
+                ]);
+                const result = evaluator.evaluate('users[0].score++');
+                expect(result).toBe(10);
+                expect(evaluator.evaluate('users[0].score')).toBe(11);
+            });
+
+            it('should handle object with array property and prefix', () => {
+                evaluator.declareContextValue('data', { values: [5, 10, 15] });
+                const result = evaluator.evaluate('++data.values[1]');
+                expect(result).toBe(11);
+                expect(evaluator.evaluate('data.values[1]')).toBe(11);
+            });
+
+            it('should handle negative index with postfix in nested array', () => {
+                evaluator.declareContextValue('matrix', [[1, 2], [3, 4], [5, 6]]);
+                const result = evaluator.evaluate('matrix[-1][-1]++');
+                expect(result).toBe(6);
+                expect(evaluator.evaluate('matrix[-1][-1]')).toBe(7);
+                expect(evaluator.evaluate('matrix[2][1]')).toBe(7);
+            });
+
+            it('should handle expression in both array and object access', () => {
+                evaluator.declareContextValue('complex', {
+                    items: [
+                        { count: 0 },
+                        { count: 5 }
+                    ]
+                });
+                evaluator.declareContextValue('idx', 0);
+                const result = evaluator.evaluate('complex.items[idx + 1].count++');
+                expect(result).toBe(5);
+                expect(evaluator.evaluate('complex.items[1].count')).toBe(6);
+            });
+        });
+    });
 });
