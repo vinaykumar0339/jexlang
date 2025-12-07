@@ -1144,4 +1144,568 @@ describe('JexEvaluator', () => {
             ]);
         });
     });
+
+    describe('var declaration expressions', () => {
+        it('should declare variable with let keyword', () => {
+            const number = evaluator.evaluate('let x = 10; x;');
+            expect(number).toBe(10);
+
+            const double = evaluator.evaluate('let y = 5.54; y;');
+            expect(double).toBe(5.54);
+
+            const string = evaluator.evaluate('let name = "Test"; name;');
+            expect(string).toBe('Test');
+
+            const boolean = evaluator.evaluate('let isTrue = false; isTrue;');
+            expect(boolean).toBe(false);
+
+            const array = evaluator.evaluate('let arr = [1, 2, 3]; arr;');
+            expect(array).toEqual([1, 2, 3]);
+
+            const mixedArray = evaluator.evaluate('let mixed = [1, "two", true, null]; mixed;');
+            expect(mixedArray).toEqual([1, 'two', true, null]);
+
+            const object = evaluator.evaluate('let obj = {"key": "value"}; obj;');
+            expect(object).toEqual({ key: 'value' });
+
+            const nestedObject = evaluator.evaluate('let nested = {"a": {"b": 2}}; nested;');
+            expect(nestedObject).toEqual({ a: { b: 2 } });
+        });
+
+        it('should declare with const keyword', () => {
+            const number = evaluator.evaluate('const x = 20; x;');
+            expect(number).toBe(20);
+
+            const string = evaluator.evaluate('const greeting = "Hello"; greeting;');
+            expect(string).toBe('Hello');
+
+            const boolean = evaluator.evaluate('const isValid = true; isValid;');
+            expect(boolean).toBe(true);
+
+            const array = evaluator.evaluate('const nums = [4, 5, 6]; nums;');
+            expect(array).toEqual([4, 5, 6]);
+
+            const object = evaluator.evaluate('const settings = {"theme": "dark"}; settings;');
+            expect(object).toEqual({ theme: 'dark' });
+        });
+
+        it('should throw error for redeclaration of variable', () => {
+            expect(() => evaluator.evaluate('let x = 10; let x = 20;')).toThrow(JexLangRuntimeError);
+            expect(() => evaluator.evaluate('const y = 5; const y = 15;')).toThrow(JexLangRuntimeError);
+        });
+
+        it('should throw error for reassignment of const variable', () => {
+            expect(() => evaluator.evaluate('const z = 30; z = 40;')).toThrow(JexLangRuntimeError);
+        });
+
+        it('should allow reassignment of let variable', () => {
+            const result = evaluator.evaluate('let a = 1; a = 2; a;');
+            expect(result).toBe(2);
+        });
+
+        it('should handle variable scope correctly', () => {
+            const result = evaluator.evaluate(`
+                let x = 10;
+                {
+                    let x = 20;
+                    x;
+                }
+            `);
+            expect(result).toBe(20);
+
+            const outerX = evaluator.evaluate(`
+                let y = 5;
+                {
+                    let y = 15;
+                }
+                y;
+            `);
+            expect(outerX).toBe(5);
+        });
+
+        it('should create a variable in the global scope by declaring with global keyword', () => {
+            evaluator.evaluate('global let gVar = 100;');
+            expect(evaluator.getGlobalScopeVariables().gVar).toBe(100);
+
+            evaluator.evaluate('global const gConst = "global";');
+            expect(evaluator.getGlobalScopeVariables().gConst).toBe('global');
+        });
+
+        it('should allow access to global variables from local scope', () => {
+            evaluator.evaluate('global let gNum = 50;');
+            const result = evaluator.evaluate(`
+                {
+                    let localNum = gNum + 25;
+                    localNum;
+                }
+            `);
+            expect(result).toBe(75);
+        });
+
+        it('global scope variables redeclaration is allowed and it should not throw error', () => {
+            evaluator.evaluate('global let gVar = 200; global let gVar = 300;');
+            expect(evaluator.getGlobalScopeVariables().gVar).toBe(300);
+            expect(() => evaluator.evaluate('global let gVar = 400;')).not.toThrow();
+
+            evaluator.evaluate('global const gConst = "first"; global const gConst = "second";');
+            expect(evaluator.getGlobalScopeVariables().gConst).toBe('second');
+            expect(() => evaluator.evaluate('global const gConst = "third";')).not.toThrow();
+        })
+    });
+
+    describe('block statements', () => {
+        it('should evaluate block statements correctly', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 10;
+                    let y = 20;
+                    x + y;
+                }
+            `);
+            expect(result).toBe(30);
+        });
+
+        it('should maintain variable scope within blocks', () => {
+            expect(() => evaluator.evaluate(`
+                {
+                    let x = 5;
+                }
+                x;
+            `)).toThrow(JexLangRuntimeError);
+        });
+
+        it('should allow nested blocks', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 2;
+                    {
+                        let y = 3;
+                        x * y;
+                    }
+                }
+            `);
+            expect(result).toBe(6);
+        });
+
+        it('should access outer scope variables within inner blocks', () => {
+            const result = evaluator.evaluate(`
+                let a = 4;
+                {
+                    let b = 5;
+                    a + b;
+                }
+            `);
+            expect(result).toBe(9);
+        });
+
+        it('should not allow inner block variables to leak to outer scope', () => {
+            expect(() => evaluator.evaluate(`
+                {
+                    let m = 7;
+                }
+                m;
+            `)).toThrow(JexLangRuntimeError);
+        });
+
+        it('should handle multiple statements in a block', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 1;
+                    x = x + 1;
+                    x = x * 3;
+                    x;
+                }
+            `);
+            expect(result).toBe(6);
+        });
+
+        it('should handle blocks with only variable declarations', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 10;
+                    const y = 20;
+                }
+            `);
+            expect(result).toBe(20);
+        });
+
+        it('should handle blocks with global variable declarations', () => {
+            evaluator.evaluate(`
+                {
+                    global let gVar = 123;
+                    global const gConst = "block";
+                }
+            `);
+            expect(evaluator.getGlobalScopeVariables().gVar).toBe(123);
+            expect(evaluator.getGlobalScopeVariables().gConst).toBe('block');
+        });
+
+        it('should handle blocks with nested variable declarations', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 5;
+                    {
+                        let y = 10;
+                        {
+                            let z = 15;
+                            x + y + z;
+                        }
+                    }
+                }
+            `);
+            expect(result).toBe(30);
+        });
+    });
+
+    describe('repeat expressions', () => {
+        describe('numeric repeat', () => {
+            it('should repeat block specified number of times', async () => {
+                const result = await evaluator.evaluate(`
+                    let sum = 0;
+                    repeat (5) {
+                        sum = sum + 1;
+                    }
+                    sum;
+                `);
+                expect(result).toBe(5);
+            });
+
+            it('should provide $index variable in numeric repeat', () => {
+                const result = evaluator.evaluate(`
+                    let total = 0;
+                    repeat (3) {
+                        total = total + $index;
+                    }
+                    total;
+                `);
+                expect(result).toBe(3); // 0 + 1 + 2
+            });
+
+            it('should provide $it variable equal to $index in numeric repeat', () => {
+                const result = evaluator.evaluate(`
+                    let sum = 0;
+                    repeat (4) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                `);
+                expect(result).toBe(6); // 0 + 1 + 2 + 3
+            });
+
+            it('should handle zero iterations', () => {
+                const result = evaluator.evaluate(`
+                    let count = 0;
+                    repeat (0) {
+                        count = count + 1;
+                    }
+                    count;
+                `);
+                expect(result).toBe(0);
+            });
+
+            it('should throw error for negative iterations', () => {
+                expect(() => evaluator.evaluate(`
+                    repeat (-5) {
+                        let x = 1;
+                    }
+                `)).toThrow(JexLangRuntimeError);
+            });
+
+            it('should return last evaluated result from block', () => {
+                const result = evaluator.evaluate(`
+                    repeat (3) {
+                        $index * 2;
+                    }
+                `);
+                expect(result).toBe(4); // Last iteration: 2 * 2
+            });
+        });
+
+        describe('array repeat', () => {
+            it('should iterate over array elements', () => {
+                const result = evaluator.evaluate(`
+                    let arr = [10, 20, 30];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                `);
+                expect(result).toBe(60);
+            });
+
+            it('should provide $index variable in array repeat', () => {
+                const result = evaluator.evaluate(`
+                    let arr = ["a", "b", "c"];
+                    let indices = 0;
+                    repeat (arr) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                `);
+                expect(result).toBe(3); // 0 + 1 + 2
+            });
+
+            it('should provide $it variable with current element', () => {
+                const result = evaluator.evaluate(`
+                    let arr = [5, 10, 15];
+                    let product = 1;
+                    repeat (arr) {
+                        product = product * $it;
+                    }
+                    product;
+                `);
+                expect(result).toBe(750); // 5 * 10 * 15
+            });
+
+            it('should handle empty array', () => {
+                const result = evaluator.evaluate(`
+                    let arr = [];
+                    let count = 0;
+                    repeat (arr) {
+                        count = count + 1;
+                    }
+                    count;
+                `);
+                expect(result).toBe(0);
+            });
+
+            it('should return last evaluated result from array iteration', () => {
+                const result = evaluator.evaluate(`
+                    let arr = [1, 2, 3, 4];
+                    repeat (arr) {
+                        $it * 10;
+                    }
+                `);
+                expect(result).toBe(40); // Last element: 4 * 10
+            });
+        });
+
+        describe('object repeat', () => {
+            it('should iterate over object properties', () => {
+                const result = evaluator.evaluate(`
+                    let obj = {"a": 1, "b": 2, "c": 3};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                `);
+                expect(result).toBe(6);
+            });
+
+            it('should provide $key variable in object repeat', () => {
+                const result = evaluator.evaluate(`
+                    let obj = {"x": 10, "y": 20};
+                    let keys = "";
+                    repeat (obj) {
+                        keys = keys + $key;
+                    }
+                    keys;
+                `);
+                expect(result).toMatch(/xy|yx/); // Order may vary
+            });
+
+            it('should provide $value variable equal to $it', () => {
+                const result = evaluator.evaluate(`
+                    let obj = {"a": 5, "b": 10};
+                    let total = 0;
+                    repeat (obj) {
+                        total = total + $value;
+                    }
+                    total;
+                `);
+                expect(result).toBe(15);
+            });
+
+            it('should handle empty object', () => {
+                const result = evaluator.evaluate(`
+                    let obj = {};
+                    let count = 0;
+                    repeat (obj) {
+                        count = count + 1;
+                    }
+                    count;
+                `);
+                expect(result).toBe(0);
+            });
+
+            it('should return last evaluated result from object iteration', () => {
+                const result = evaluator.evaluate(`
+                    let obj = {"a": 1, "b": 2};
+                    repeat (obj) {
+                        $it * 100;
+                    }
+                `);
+                expect([100, 200]).toContain(result); // Order may vary
+            });
+        });
+
+        describe('string repeat', () => {
+            it('should iterate over string characters', () => {
+                const result = evaluator.evaluate(`
+                    let str = "abc";
+                    let combined = "";
+                    repeat (str) {
+                        combined = combined + $it;
+                    }
+                    combined;
+                `);
+                expect(result).toBe('abc');
+            });
+
+            it('should provide $index variable in string repeat', () => {
+                const result = evaluator.evaluate(`
+                    let str = "test";
+                    let indices = 0;
+                    repeat (str) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                `);
+                expect(result).toBe(6); // 0 + 1 + 2 + 3
+            });
+
+            it('should handle empty string', () => {
+                const result = evaluator.evaluate(`
+                    let str = "";
+                    let count = 0;
+                    repeat (str) {
+                        count = count + 1;
+                    }
+                    count;
+                `);
+                expect(result).toBe(0);
+            });
+
+            it('should return last evaluated result from string iteration', () => {
+                const result = evaluator.evaluate(`
+                    let str = "xyz";
+                    repeat (str) {
+                        $it;
+                    }
+                `);
+                expect(result).toBe('z');
+            });
+        });
+
+        describe('null and undefined handling', () => {
+            it('should return null for null iterable', () => {
+                const result = evaluator.evaluate(`
+                    repeat (null) {
+                        let x = 1;
+                    }
+                `);
+                expect(result).toBeNull();
+            });
+
+            it('should handle null from expression', () => {
+                evaluator.declareContextValue('nullValue', null);
+                const result = evaluator.evaluate(`
+                    repeat (nullValue) {
+                        let x = 1;
+                    }
+                `);
+                expect(result).toBeNull();
+            });
+        });
+
+        describe('nested repeat expressions', () => {
+            it('should handle nested numeric repeats', () => {
+                const result = evaluator.evaluate(`
+                    let sum = 0;
+                    repeat (3) {
+                        repeat (2) {
+                            sum = sum + 1;
+                        }
+                    }
+                    sum;
+                `);
+                expect(result).toBe(6); // 3 * 2
+            });
+
+            it('should handle nested array repeats', () => {
+                const result = evaluator.evaluate(`
+                    let matrix = [[1, 2], [3, 4]];
+                    let total = 0;
+                    repeat (matrix) {
+                        repeat ($it) {
+                            total = total + $it;
+                        }
+                    }
+                    total;
+                `);
+                expect(result).toBe(10); // 1 + 2 + 3 + 4
+            });
+        });
+
+        describe('scope and variable shadowing', () => {
+            it('should create new scope for repeat block', () => {
+                expect(() => evaluator.evaluate(`
+                    repeat (1) {
+                        let blockVar = 5;
+                    }
+                    blockVar;
+                `)).toThrow(JexLangRuntimeError);
+            });
+
+            it('should access outer scope variables', () => {
+                const result = evaluator.evaluate(`
+                    let outer = 10;
+                    repeat (2) {
+                        outer = outer + 5;
+                    }
+                    outer;
+                `);
+                expect(result).toBe(20);
+            });
+
+            it('should not leak $index and $it variables', () => {
+                expect(() => evaluator.evaluate(`
+                    repeat (3) {
+                        let x = $index;
+                    }
+                    $index;
+                `)).toThrow(JexLangRuntimeError);
+
+                expect(() => evaluator.evaluate(`
+                    repeat ([1, 2]) {
+                        let y = $it;
+                    }
+                    $it;
+                `)).toThrow(JexLangRuntimeError);
+            });
+        });
+
+        describe('async repeat expressions', () => {
+            it('should handle async operations in numeric repeat', async () => {
+                const asyncFunc: FuncImpl = async () => {
+                    return 5
+                };
+                evaluator.addFunction('asyncFunc', asyncFunc);
+                const result = await evaluator.evaluate(`
+                    let sum = 0;
+                    repeat(2) {
+                        sum = sum + asyncFunc();
+                    }  
+                    sum;
+                `);
+                expect(result).toBe(10);
+            });
+
+            it('should handle async operations in array repeat', async () => {
+                const asyncDouble: FuncImpl = async (_ctx, val) => Number(val) * 2;
+                evaluator.addFunction('asyncDouble', asyncDouble);
+                const result = await evaluator.evaluate(`
+                    let arr = [1, 2, 3];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + asyncDouble($it);
+                    }
+                    sum;
+                `);
+                expect(result).toBe(12); // (1*2) + (2*2) + (3*2)
+            });
+        });
+    });
 });

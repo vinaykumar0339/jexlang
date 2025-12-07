@@ -33,6 +33,15 @@ public class ExampleUsage {
             Map.entry("test", ((ctx, args) -> {
                 System.out.println(Arrays.toString(args));
                 return new JexNull();
+            })),
+            Map.entry("asyncFunc", ((ctx, args) -> {
+                // Simulate an asynchronous operation
+                try {
+                    Thread.sleep(100); // Simulate delay
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return JexValue.fromNumber(5);
             }))
     );
 
@@ -42,18 +51,22 @@ public class ExampleUsage {
             JexEvaluator evaluator = new JexEvaluator(context, funcs, transforms);
             evaluator.setCacheExpressions(true);
 
-            Object output = evaluator.evaluate("""
-                    "2.0" - 2
-                    """);
-            System.out.println(output);
-
-            Object output1 = evaluator.evaluate("""
-                    2.0 + 2
-                    """);
-            System.out.println(output1);
+//            Object output = evaluator.evaluate("""
+//                    "2.0" - 2
+//                    """);
+//            System.out.println(output);
+//
+//            Object output1 = evaluator.evaluate("""
+//                    2.0 + 2
+//                    """);
+//            System.out.println(output1);
 
             Object output2 = evaluator.evaluate("""
-                    "2" + (2 + 100)
+                    let sum = 0;
+                    repeat (2) {
+                        sum = sum + asyncFunc();
+                    }
+                    sum;
                     """);
             System.out.println(output2);
 

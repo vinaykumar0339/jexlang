@@ -191,7 +191,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             
             const statementResult = this.visit(statement);
             if (hasPromise) {
-                result = (result as unknown as Promise<JexValue>).then(() => statementResult);
+                // Why () => this.visit(statement)? because we want to chain the promises in sequence with fresh calls because in this call we might have modified the older result variable. in previous promises.
+                result = (result as unknown as Promise<JexValue>).then(() => this.visit(statement));
             } else if (statementResult instanceof Promise) {
                 hasPromise = true;
                 result = Promise.resolve(result).then(() => statementResult);
@@ -280,7 +281,8 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
             
             const statementResult = this.visit(statement);
             if (hasPromise) {
-                result = (result as unknown as Promise<JexValue>).then(() => statementResult);
+                // Why () => this.visit(statement)? because we want to chain the promises in sequence with fresh calls because in this call we might have modified the older result variable. in previous promises.
+                result = (result as unknown as Promise<JexValue>).then(() => this.visit(statement));
             } else if (statementResult instanceof Promise) {
                 hasPromise = true;
                 result = Promise.resolve(result).then(() => statementResult);
@@ -328,78 +330,177 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
     }
 
     private handleNumericRepeat(count: number, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
-        const results: MaybePromise<JexValue>[] = [];
-
         if (count < 0) {
             throw new JexLangRuntimeError(`Cannot repeat a block negative times: ${count}`);
         }
         
         this.scope = new Scope(this.scope, 'block');
 
+        let result: MaybePromise<JexValue> = null;
+        let hasPromise = false;
+
         for (let i = 0; i < count; i++) {
-            this.scope.declareAndAssignVariable('$index', i);
-            this.scope.declareAndAssignVariable('$it', i);
-            results.push(this.visit(block));
+            if (hasPromise) {
+                // Already async, chain the next iteration
+                const currentIndex = i; // Capture current index
+                result = (result as unknown as Promise<JexValue>).then(() => {
+                    this.scope.declareAndAssignVariable('$index', currentIndex);
+                    this.scope.declareAndAssignVariable('$it', currentIndex);
+                    return this.visit(block);
+                });
+            } else {
+                // Execute the iteration
+                this.scope.declareAndAssignVariable('$index', i);
+                this.scope.declareAndAssignVariable('$it', i);
+                const iterationResult = this.visit(block);
+                
+                if (iterationResult instanceof Promise) {
+                    hasPromise = true;
+                    result = iterationResult;
+                } else {
+                    result = iterationResult;
+                }
+            }
         }
-        
-        return this.handlePromises(results, (...resolvedResults) => {
-            this.setScopeToParent();
-            // Return the last evaluated result of the block
-            return resolvedResults[resolvedResults.length - 1] ?? null
-        });
+
+        if (hasPromise) {
+            return (result as Promise<JexValue>).then(resolved => {
+                this.setScopeToParent();
+                return resolved ?? null;
+            });
+        }
+
+        this.setScopeToParent();
+        return result;
     }
 
     private handleArrayRepeat(array: JexValue[], block: JexLangParser.BlockContext): MaybePromise<JexValue> {
-        const results: MaybePromise<JexValue>[] = [];
-        
         this.scope = new Scope(this.scope, 'block');
+
+        let result: MaybePromise<JexValue> = null;
+        let hasPromise = false;
+
         for (let i = 0; i < array.length; i++) {
-            this.scope.declareAndAssignVariable('$index', i);
-            this.scope.declareAndAssignVariable('$it', array[i]);
-            results.push(this.visit(block));
+            if (hasPromise) {
+                // Already async, chain the next iteration
+                const currentIndex = i; // Capture current index
+                const currentItem = array[i]; // Capture current item
+                result = (result as unknown as Promise<JexValue>).then(() => {
+                    this.scope.declareAndAssignVariable('$index', currentIndex);
+                    this.scope.declareAndAssignVariable('$it', currentItem);
+                    return this.visit(block);
+                });
+            } else {
+                // Execute the iteration
+                this.scope.declareAndAssignVariable('$index', i);
+                this.scope.declareAndAssignVariable('$it', array[i]);
+                const iterationResult = this.visit(block);
+                
+                if (iterationResult instanceof Promise) {
+                    hasPromise = true;
+                    result = iterationResult;
+                } else {
+                    result = iterationResult;
+                }
+            }
         }
-        
-        return this.handlePromises(results, (...resolvedResults) => {
-            this.setScopeToParent();
-            // Return the last evaluated result of the block
-            return resolvedResults[resolvedResults.length - 1] ?? null
-        });
+
+        if (hasPromise) {
+            return (result as Promise<JexValue>).then(resolved => {
+                this.setScopeToParent();
+                return resolved ?? null;
+            });
+        }
+
+        this.setScopeToParent();
+        return result;
     }
 
     private handleObjectRepeat(obj: Record<string, JexValue>, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
-        const results: MaybePromise<JexValue>[] = [];
         const entries = Object.entries(obj);
-        
         this.scope = new Scope(this.scope, 'block');
+
+        let result: MaybePromise<JexValue> = null;
+        let hasPromise = false;
+
         for (const [key, value] of entries) {
-            this.scope.declareAndAssignVariable('$key', key);
-            this.scope.declareAndAssignVariable('$it', value);
-            this.scope.declareAndAssignVariable('$value', value);
-            results.push(this.visit(block));
+            if (hasPromise) {
+                // Already async, chain the next iteration
+                const currentKey = key; // Capture current key
+                const currentValue = value; // Capture current value
+                result = (result as unknown as Promise<JexValue>).then(() => {
+                    this.scope.declareAndAssignVariable('$key', currentKey);
+                    this.scope.declareAndAssignVariable('$it', currentValue);
+                    this.scope.declareAndAssignVariable('$value', currentValue);
+                    return this.visit(block);
+                });
+            } else {
+                // Execute the iteration
+                this.scope.declareAndAssignVariable('$key', key);
+                this.scope.declareAndAssignVariable('$it', value);
+                this.scope.declareAndAssignVariable('$value', value);
+                const iterationResult = this.visit(block);
+                
+                if (iterationResult instanceof Promise) {
+                    hasPromise = true;
+                    result = iterationResult;
+                } else {
+                    result = iterationResult;
+                }
+            }
         }
-        
-        return this.handlePromises(results, (...resolvedResults) => {
-            this.setScopeToParent();
-            // Return the last evaluated result of the block
-            return resolvedResults[resolvedResults.length - 1] ?? null
-        });
+
+        if (hasPromise) {
+            return (result as Promise<JexValue>).then(resolved => {
+                this.setScopeToParent();
+                return resolved ?? null;
+            });
+        }
+
+        this.setScopeToParent();
+        return result;
     }
 
     private handleStringRepeat(str: string, block: JexLangParser.BlockContext): MaybePromise<JexValue> {
-        const results: MaybePromise<JexValue>[] = [];
-
         this.scope = new Scope(this.scope, 'block');
+
+        let result: MaybePromise<JexValue> = null;
+        let hasPromise = false;
+
         for (let i = 0; i < str.length; i++) {
-            this.scope.declareAndAssignVariable('$index', i);
-            this.scope.declareAndAssignVariable('$it', str[i]);
-            results.push(this.visit(block));
+            if (hasPromise) {
+                // Already async, chain the next iteration
+                const currentIndex = i; // Capture current index
+                const currentChar = str[i]; // Capture current character
+                result = (result as unknown as Promise<JexValue>).then(() => {
+                    this.scope.declareAndAssignVariable('$index', currentIndex);
+                    this.scope.declareAndAssignVariable('$it', currentChar);
+                    return this.visit(block);
+                });
+            } else {
+                // Execute the iteration
+                this.scope.declareAndAssignVariable('$index', i);
+                this.scope.declareAndAssignVariable('$it', str[i]);
+                const iterationResult = this.visit(block);
+                
+                if (iterationResult instanceof Promise) {
+                    hasPromise = true;
+                    result = iterationResult;
+                } else {
+                    result = iterationResult;
+                }
+            }
         }
-        
-        return this.handlePromises(results, (...resolvedResults) => {
-            this.setScopeToParent();
-            // Return the last evaluated result of the block
-            return resolvedResults[resolvedResults.length - 1] ?? null
-        });
+
+        if (hasPromise) {
+            return (result as Promise<JexValue>).then(resolved => {
+                this.setScopeToParent();
+                return resolved ?? null;
+            });
+        }
+
+        this.setScopeToParent();
+        return result;
     }
 
     visitEmptyStatement = (ctx: JexLangParser.EmptyStatementContext): MaybePromise<JexValue> => {
