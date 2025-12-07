@@ -56,7 +56,7 @@ export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {
   },
 
   int: (val) => {
-    return Math.floor(toNumber(val));
+    return parseInt(toString(val));
   },
 
   float: (val) => {

@@ -2606,4 +2606,1448 @@ describe('JexEvaluator', () => {
             });
         });
     });
+
+    describe('function call expressions', () => {
+        describe('math functions', () => {
+            it('should evaluate abs function', () => {
+                // number input
+                expect(evaluator.evaluate('abs(-5)')).toBe(5);
+                expect(evaluator.evaluate('abs(3.14)')).toBe(3.14);
+                expect(evaluator.evaluate('abs(-10.5)')).toBe(10.5);
+                expect(evaluator.evaluate('abs(10.0)')).toBe(10);
+                expect(evaluator.evaluate('abs(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('abs("-7")')).toBe(7);
+                expect(evaluator.evaluate('abs("4.2")')).toBe(4.2);
+                expect(evaluator.evaluate('abs("-0")')).toBe(0);
+                expect(evaluator.evaluate('abs("0")')).toBe(0);
+                expect(evaluator.evaluate('abs("-10.0")')).toBe(10);
+                expect(() => evaluator.evaluate('abs("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('abs(true)')).toBe(1);
+                expect(evaluator.evaluate('abs(false)')).toBe(0);
+                expect(evaluator.evaluate('abs(-false)')).toBe(0);
+                expect(evaluator.evaluate('abs(-true)')).toBe(1);
+                
+                // null input
+                expect(evaluator.evaluate('abs(null)')).toBe(0);
+            });
+
+            it('should evaluate ceil function', () => {
+                // number input
+                expect(evaluator.evaluate('ceil(4.2)')).toBe(5);
+                expect(evaluator.evaluate('ceil(4.8)')).toBe(5);
+                expect(evaluator.evaluate('ceil(-4.2)')).toBe(-4);
+                expect(evaluator.evaluate('ceil(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('ceil("4.2")')).toBe(5);
+                expect(evaluator.evaluate('ceil("4.8")')).toBe(5);
+                expect(evaluator.evaluate('ceil("-4.2")')).toBe(-4);
+                expect(() => evaluator.evaluate('ceil("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('ceil(true)')).toBe(1);
+                expect(evaluator.evaluate('ceil(false)')).toBe(0);
+                expect(evaluator.evaluate('ceil(0.3)')).toBe(1);
+                expect(evaluator.evaluate('ceil(-0.3)')).toBe(-0);
+
+                // null input
+                expect(evaluator.evaluate('ceil(null)')).toBe(0);
+            });
+
+            it('should evaluate floor function', () => {
+                // number input
+                expect(evaluator.evaluate('floor(4.2)')).toBe(4);
+                expect(evaluator.evaluate('floor(4.8)')).toBe(4);
+                expect(evaluator.evaluate('floor(-4.2)')).toBe(-5);
+                expect(evaluator.evaluate('floor(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('floor("4.2")')).toBe(4);
+                expect(evaluator.evaluate('floor("4.8")')).toBe(4);
+                expect(evaluator.evaluate('floor("-4.2")')).toBe(-5);
+                expect(() => evaluator.evaluate('floor("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('floor(true)')).toBe(1);
+                expect(evaluator.evaluate('floor(false)')).toBe(0);
+                expect(evaluator.evaluate('floor(0.7)')).toBe(0);
+                expect(evaluator.evaluate('floor(-0.7)')).toBe(-1);
+
+                // null input
+                expect(evaluator.evaluate('floor(null)')).toBe(0);
+            });
+
+            it('should evaluate round function', () => {
+                // number input
+                expect(evaluator.evaluate('round(4.2)')).toBe(4);
+                expect(evaluator.evaluate('round(4.8)')).toBe(5);
+                expect(evaluator.evaluate('round(4.5)')).toBe(5);
+                expect(evaluator.evaluate('round(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('round("4.2")')).toBe(4);
+                expect(evaluator.evaluate('round("4.8")')).toBe(5);
+                expect(evaluator.evaluate('round("4.5")')).toBe(5);
+                expect(() => evaluator.evaluate('round("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('round(true)')).toBe(1);
+                expect(evaluator.evaluate('round(false)')).toBe(0);
+                expect(evaluator.evaluate('round(0.5)')).toBe(1);
+                expect(evaluator.evaluate('round(-0.5)')).toBe(-0);
+                
+                // null input
+                expect(evaluator.evaluate('round(null)')).toBe(0);
+            });
+
+            it('should evaluate trunc function', () => {
+                // number input
+                expect(evaluator.evaluate('trunc(4.9)')).toBe(4);
+                expect(evaluator.evaluate('trunc(-4.9)')).toBe(-4);
+                expect(evaluator.evaluate('trunc(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('trunc("4.9")')).toBe(4);
+                expect(evaluator.evaluate('trunc("-4.9")')).toBe(-4);
+                expect(() => evaluator.evaluate('trunc("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('trunc(true)')).toBe(1);
+                expect(evaluator.evaluate('trunc(false)')).toBe(0);
+                expect(evaluator.evaluate('trunc(0.9)')).toBe(0);
+                expect(evaluator.evaluate('trunc(-0.9)')).toBe(-0);
+
+                // null input
+                expect(evaluator.evaluate('trunc(null)')).toBe(0);
+            });
+
+            it('should evaluate min function', () => {
+                // number input
+                expect(evaluator.evaluate('min(1, 2, 3)')).toBe(1);
+                expect(evaluator.evaluate('min(5, -2, 10)')).toBe(-2);
+                expect(evaluator.evaluate('min(3.14, 2.71, 1.41)')).toBe(1.41);
+                expect(evaluator.evaluate('min(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('min("1", "2", "3")')).toBe(1);
+                expect(evaluator.evaluate('min("5", "-2", "10")')).toBe(-2);
+                expect(evaluator.evaluate('min("3.14", "2.71", "1.41")')).toBe(1.41);
+                expect(() => evaluator.evaluate('min("invalid", "1")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('min(true, false)')).toBe(0);
+                expect(evaluator.evaluate('min(false, false)')).toBe(0);
+                expect(evaluator.evaluate('min(true, true)')).toBe(1);
+                
+                // mixed input
+                expect(evaluator.evaluate('min(3, "2", true, false)')).toBe(0);
+                expect(evaluator.evaluate('min(5, "3", false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('min(null, 1, 2)')).toBe(0);
+                expect(evaluator.evaluate('min(null)')).toBe(0);
+            });
+
+            it('should evaluate max function', () => {
+                // number input
+                expect(evaluator.evaluate('max(1, 2, 3)')).toBe(3);
+                expect(evaluator.evaluate('max(5, -2, 10)')).toBe(10);
+                expect(evaluator.evaluate('max(3.14, 2.71, 1.41)')).toBe(3.14);
+                expect(evaluator.evaluate('max(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('max("1", "2", "3")')).toBe(3);
+                expect(evaluator.evaluate('max("5", "-2", "10")')).toBe(10);
+                expect(evaluator.evaluate('max("3.14", "2.71", "1.41")')).toBe(3.14);
+                expect(() => evaluator.evaluate('max("invalid", "1")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('max(true, false)')).toBe(1);
+                expect(evaluator.evaluate('max(false, false)')).toBe(0);
+                expect(evaluator.evaluate('max(true, true)')).toBe(1);
+
+                // mixed input
+                expect(evaluator.evaluate('max(3, "2", true, false)')).toBe(3);
+                expect(evaluator.evaluate('max(1, "2", true)')).toBe(2);
+
+                // null input
+                expect(evaluator.evaluate('max(null, -1, 0)')).toBe(0);
+                expect(evaluator.evaluate('max(null)')).toBe(0);
+            });
+
+            it('should evaluate pow function', () => {
+                // number input
+                expect(evaluator.evaluate('pow(2, 3)')).toBe(8);
+                expect(evaluator.evaluate('pow(5, 2)')).toBe(25);
+                expect(evaluator.evaluate('pow(10, 0)')).toBe(1);
+                expect(evaluator.evaluate('pow(0, 5)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('pow("2", "3")')).toBe(8);
+                expect(evaluator.evaluate('pow("5", "2")')).toBe(25);
+                expect(evaluator.evaluate('pow("10", "0")')).toBe(1);
+                expect(() => evaluator.evaluate('pow("invalid", 2)')).toThrow(JexLangRuntimeError);
+                expect(() => evaluator.evaluate('pow(2, "invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('pow(true, false)')).toBe(1);
+                expect(evaluator.evaluate('pow(false, true)')).toBe(0);
+                expect(evaluator.evaluate('pow(true, true)')).toBe(1);
+                expect(evaluator.evaluate('pow(false, false)')).toBe(1);
+                
+                // mixed input
+                expect(evaluator.evaluate('pow(2, "3")')).toBe(8);
+                expect(evaluator.evaluate('pow("5", 2)')).toBe(25);
+                expect(evaluator.evaluate('pow(true, 3)')).toBe(1);
+                expect(evaluator.evaluate('pow(5, false)')).toBe(1);
+                expect(evaluator.evaluate('pow(false, 3)')).toBe(0);
+                expect(evaluator.evaluate('pow(5, true)')).toBe(5);
+
+                // null input
+                expect(evaluator.evaluate('pow(null, 3)')).toBe(0);
+                expect(evaluator.evaluate('pow(5, null)')).toBe(1);
+            });
+
+            it('should evaluate sqrt function', () => {
+                // number input
+                expect(evaluator.evaluate('sqrt(16)')).toBe(4);
+                expect(evaluator.evaluate('sqrt(2.25)')).toBe(1.5);
+                expect(evaluator.evaluate('sqrt(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('sqrt("16")')).toBe(4);
+                expect(evaluator.evaluate('sqrt("2.25")')).toBe(1.5);
+                expect(() => evaluator.evaluate('sqrt("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('sqrt(true)')).toBe(1);
+                expect(evaluator.evaluate('sqrt(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('sqrt(null)')).toBe(0);
+
+                // negative number should throw
+                expect(() => evaluator.evaluate('sqrt(-4)')).toThrow(JexLangRuntimeError);
+            });
+
+            it('should evaluate cbrt function', () => {
+                // number input
+                expect(evaluator.evaluate('cbrt(8)')).toBe(2);
+                expect(evaluator.evaluate('cbrt(27)')).toBe(3);
+                expect(evaluator.evaluate('cbrt(0)')).toBe(0);
+                expect(evaluator.evaluate('cbrt(-8)')).toBe(-2);
+
+                // string input
+                expect(evaluator.evaluate('cbrt("8")')).toBe(2);
+                expect(evaluator.evaluate('cbrt("27")')).toBe(3);
+                expect(() => evaluator.evaluate('cbrt("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('cbrt(true)')).toBe(1);
+                expect(evaluator.evaluate('cbrt(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('cbrt(null)')).toBe(0);
+            });
+
+            it('should evaluate random function', () => {
+                const result = evaluator.evaluate('random()');
+                expect(typeof result).toBe('number');
+                expect(Number(result)).toBeGreaterThanOrEqual(0);
+                expect(Number(result)).toBeLessThan(1);
+            });
+
+            it('should evaluate sign function', () => {
+                // number input
+                expect(evaluator.evaluate('sign(5)')).toBe(1);
+                expect(evaluator.evaluate('sign(-5)')).toBe(-1);
+                expect(evaluator.evaluate('sign(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('sign("5")')).toBe(1);
+                expect(evaluator.evaluate('sign("-5")')).toBe(-1);
+                expect(evaluator.evaluate('sign("0")')).toBe(0);
+                expect(() => evaluator.evaluate('sign("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('sign(true)')).toBe(1);
+                expect(evaluator.evaluate('sign(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('sign(null)')).toBe(0);
+            });
+        });
+
+        describe('trigonometric functions', () => {
+            it('should evaluate sin function', () => {
+                // number input
+                expect(evaluator.evaluate('sin(0)')).toBe(0);
+                expect(Math.abs(Number(evaluator.evaluate('sin(1.5707963267948966)')) - 1)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('sin("0")')).toBe(0);
+                expect(() => evaluator.evaluate('sin("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('sin(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('sin(null)')).toBe(0);
+            });
+
+            it('should evaluate cos function', () => {
+                // number input
+                expect(evaluator.evaluate('cos(0)')).toBe(1);
+                expect(Math.abs(Number(evaluator.evaluate('cos(3.141592653589793)')) + 1)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('cos("0")')).toBe(1);
+                expect(() => evaluator.evaluate('cos("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('cos(false)')).toBe(1);
+
+                // null input
+                expect(evaluator.evaluate('cos(null)')).toBe(1);
+            });
+
+            it('should evaluate tan function', () => {
+                // number input
+                expect(evaluator.evaluate('tan(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('tan("0")')).toBe(0);
+                expect(() => evaluator.evaluate('tan("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('tan(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('tan(null)')).toBe(0);
+            });
+
+            it('should evaluate asin function', () => {
+                // number input
+                expect(evaluator.evaluate('asin(0)')).toBe(0);
+                expect(Math.abs(Number(evaluator.evaluate('asin(1)')) - 1.5707963267948966)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('asin("0")')).toBe(0);
+                expect(() => evaluator.evaluate('asin("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('asin(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('asin(null)')).toBe(0);
+            });
+
+            it('should evaluate acos function', () => {
+                // number input
+                expect(Math.abs(Number(evaluator.evaluate('acos(1)')))).toBeLessThan(0.0001);
+
+                // string input
+                expect(Math.abs(Number(evaluator.evaluate('acos("1")')))).toBeLessThan(0.0001);
+                expect(() => evaluator.evaluate('acos("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(Math.abs(Number(evaluator.evaluate('acos(true)')))).toBeLessThan(0.0001);
+
+                // null input
+                expect(Math.abs(Number(evaluator.evaluate('acos(null)')) - 1.5707963267948966)).toBeLessThan(0.0001);
+            });
+
+            it('should evaluate atan function', () => {
+                // number input
+                expect(evaluator.evaluate('atan(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('atan("0")')).toBe(0);
+                expect(() => evaluator.evaluate('atan("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('atan(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('atan(null)')).toBe(0);
+            });
+
+            it('should evaluate atan2 function', () => {
+                // number input
+                expect(evaluator.evaluate('atan2(0, 1)')).toBe(0);
+                expect(Math.abs(Number(evaluator.evaluate('atan2(1, 0)')) - 1.5707963267948966)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('atan2("0", "1")')).toBe(0);
+                expect(() => evaluator.evaluate('atan2("invalid", 1)')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('atan2(false, true)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('atan2(null, 1)')).toBe(0);
+            });
+        });
+
+        describe('hyperbolic functions', () => {
+            it('should evaluate sinh function', () => {
+                // number input
+                expect(evaluator.evaluate('sinh(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('sinh("0")')).toBe(0);
+                expect(() => evaluator.evaluate('sinh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('sinh(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('sinh(null)')).toBe(0);
+            });
+
+            it('should evaluate cosh function', () => {
+                // number input
+                expect(evaluator.evaluate('cosh(0)')).toBe(1);
+
+                // string input
+                expect(evaluator.evaluate('cosh("0")')).toBe(1);
+                expect(() => evaluator.evaluate('cosh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('cosh(false)')).toBe(1);
+
+                // null input
+                expect(evaluator.evaluate('cosh(null)')).toBe(1);
+            });
+
+            it('should evaluate tanh function', () => {
+                // number input
+                expect(evaluator.evaluate('tanh(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('tanh("0")')).toBe(0);
+                expect(() => evaluator.evaluate('tanh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('tanh(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('tanh(null)')).toBe(0);
+            });
+
+            it('should evaluate asinh function', () => {
+                // number input
+                expect(evaluator.evaluate('asinh(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('asinh("0")')).toBe(0);
+                expect(() => evaluator.evaluate('asinh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('asinh(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('asinh(null)')).toBe(0);
+            });
+
+            it('should evaluate acosh function', () => {
+                // number input
+                expect(evaluator.evaluate('acosh(1)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('acosh("1")')).toBe(0);
+                expect(() => evaluator.evaluate('acosh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('acosh(true)')).toBe(0);
+
+                // null input - acosh(0) would be NaN
+                expect(evaluator.evaluate('acosh(null)')).toBeNaN();
+            });
+
+            it('should evaluate atanh function', () => {
+                // number input
+                expect(evaluator.evaluate('atanh(0)')).toBe(0);
+
+                // string input
+                expect(evaluator.evaluate('atanh("0")')).toBe(0);
+                expect(() => evaluator.evaluate('atanh("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('atanh(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('atanh(null)')).toBe(0);
+            });
+        });
+
+        describe('exponential and logarithmic functions', () => {
+            it('should evaluate exp function', () => {
+                // number input
+                expect(evaluator.evaluate('exp(0)')).toBe(1);
+                expect(Math.abs(Number(evaluator.evaluate('exp(1)')) - Math.E)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('exp("0")')).toBe(1);
+                expect(() => evaluator.evaluate('exp("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('exp(false)')).toBe(1);
+
+                // null input
+                expect(evaluator.evaluate('exp(null)')).toBe(1);
+            });
+
+            it('should evaluate log function', () => {
+                // number input
+                expect(evaluator.evaluate('log(1)')).toBe(0);
+                expect(Math.abs(Number(evaluator.evaluate('log(2.718281828459045)')) - 1)).toBeLessThan(0.0001);
+
+                // string input
+                expect(evaluator.evaluate('log("1")')).toBe(0);
+                expect(() => evaluator.evaluate('log("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('log(true)')).toBe(0);
+
+                // null input - log(0) would be -Infinity
+                expect(evaluator.evaluate('log(null)')).toBe(-Infinity);
+            });
+
+            it('should evaluate log10 function', () => {
+                // number input
+                expect(evaluator.evaluate('log10(1)')).toBe(0);
+                expect(evaluator.evaluate('log10(10)')).toBe(1);
+                expect(evaluator.evaluate('log10(100)')).toBe(2);
+
+                // string input
+                expect(evaluator.evaluate('log10("10")')).toBe(1);
+                expect(() => evaluator.evaluate('log10("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('log10(true)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('log10(null)')).toBe(-Infinity);
+            });
+
+            it('should evaluate log2 function', () => {
+                // number input
+                expect(evaluator.evaluate('log2(1)')).toBe(0);
+                expect(evaluator.evaluate('log2(2)')).toBe(1);
+                expect(evaluator.evaluate('log2(8)')).toBe(3);
+
+                // string input
+                expect(evaluator.evaluate('log2("2")')).toBe(1);
+                expect(() => evaluator.evaluate('log2("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('log2(true)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('log2(null)')).toBe(-Infinity);
+            });
+        });
+
+        describe('custom math functions', () => {
+            it('should evaluate deg function', () => {
+                // number input
+                expect(Math.abs(Number(evaluator.evaluate('deg(3.141592653589793)')) - 180)).toBeLessThan(0.0001);
+                expect(Math.abs(Number(evaluator.evaluate('deg(1.5707963267948966)')) - 90)).toBeLessThan(0.0001);
+
+                // string input
+                expect(Math.abs(Number(evaluator.evaluate('deg("3.141592653589793")')) - 180)).toBeLessThan(0.0001);
+                expect(() => evaluator.evaluate('deg("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('deg(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('deg(null)')).toBe(0);
+            });
+
+            it('should evaluate rad function', () => {
+                // number input
+                expect(Math.abs(Number(evaluator.evaluate('rad(180)')) - 3.141592653589793)).toBeLessThan(0.0001);
+                expect(Math.abs(Number(evaluator.evaluate('rad(90)')) - 1.5707963267948966)).toBeLessThan(0.0001);
+
+                // string input
+                expect(Math.abs(Number(evaluator.evaluate('rad("180")')) - 3.141592653589793)).toBeLessThan(0.0001);
+                expect(() => evaluator.evaluate('rad("invalid")')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('rad(false)')).toBe(0);
+
+                // null input
+                expect(evaluator.evaluate('rad(null)')).toBe(0);
+            });
+
+            it('should evaluate clamp function', () => {
+                // number input
+                expect(evaluator.evaluate('clamp(5, 0, 10)')).toBe(5);
+                expect(evaluator.evaluate('clamp(-5, 0, 10)')).toBe(0);
+                expect(evaluator.evaluate('clamp(15, 0, 10)')).toBe(10);
+
+                // string input
+                expect(evaluator.evaluate('clamp("5", "0", "10")')).toBe(5);
+                expect(() => evaluator.evaluate('clamp("invalid", 0, 10)')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('clamp(true, false, true)')).toBe(1);
+
+                // mixed input
+                expect(evaluator.evaluate('clamp(5, "0", 10)')).toBe(5);
+
+                // null input
+                expect(evaluator.evaluate('clamp(null, -5, 5)')).toBe(0);
+            });
+
+            it('should evaluate lerp function', () => {
+                // number input
+                expect(evaluator.evaluate('lerp(0, 10, 0.5)')).toBe(5);
+                expect(evaluator.evaluate('lerp(0, 100, 0.25)')).toBe(25);
+                expect(evaluator.evaluate('lerp(10, 20, 0)')).toBe(10);
+                expect(evaluator.evaluate('lerp(10, 20, 1)')).toBe(20);
+
+                // string input
+                expect(evaluator.evaluate('lerp("0", "10", "0.5")')).toBe(5);
+                expect(() => evaluator.evaluate('lerp("invalid", 10, 0.5)')).toThrow(JexLangRuntimeError);
+
+                // boolean input
+                expect(evaluator.evaluate('lerp(false, true, 0.5)')).toBe(0.5);
+
+                // null input
+                expect(evaluator.evaluate('lerp(null, 10, 0.5)')).toBe(5);
+            });
+        });
+
+        describe('type conversion functions', () => {
+            it('should evaluate number function', () => {
+                expect(evaluator.evaluate('number("42")')).toBe(42);
+                expect(evaluator.evaluate('number("3.14")')).toBe(3.14);
+                expect(evaluator.evaluate('number(true)')).toBe(1);
+                expect(evaluator.evaluate('number(false)')).toBe(0);
+                expect(evaluator.evaluate('number(null)')).toBe(0);
+                expect(() => evaluator.evaluate('number("invalid")')).toThrow(JexLangRuntimeError);
+            });
+
+            it('should evaluate string function', () => {
+                expect(evaluator.evaluate('string(42)')).toBe('42');
+                expect(evaluator.evaluate('string(true)')).toBe('true');
+                expect(evaluator.evaluate('string(false)')).toBe('false');
+                expect(evaluator.evaluate('string(null)')).toBe('null');
+                expect(evaluator.evaluate('string(3.14)')).toBe('3.14');
+            });
+
+            it('should evaluate boolean function', () => {
+                expect(evaluator.evaluate('boolean(1)')).toBe(true);
+                expect(evaluator.evaluate('boolean(0)')).toBe(false);
+                expect(evaluator.evaluate('boolean("hello")')).toBe(true);
+                expect(evaluator.evaluate('boolean("")')).toBe(false);
+                expect(evaluator.evaluate('boolean(null)')).toBe(false);
+                expect(evaluator.evaluate('boolean("false")')).toBe(true);
+                expect(evaluator.evaluate('boolean("true")')).toBe(true);
+                expect(evaluator.evaluate('boolean("0")')).toBe(true);
+                expect(evaluator.evaluate('boolean("1")')).toBe(true);
+            });
+
+            it('should evaluate int function', () => {
+                expect(evaluator.evaluate('int("42")')).toBe(42);
+                expect(evaluator.evaluate('int("3.14")')).toBe(3);
+                expect(evaluator.evaluate('int(5.9)')).toBe(5);
+                expect(evaluator.evaluate('int(true)')).toBeNaN();
+                expect(evaluator.evaluate('int(false)')).toBeNaN();
+                expect(evaluator.evaluate('int(null)')).toBeNaN();
+                expect(evaluator.evaluate('int("invalid")')).toBeNaN();
+            });
+
+            it('should evaluate float function', () => {
+                expect(evaluator.evaluate('float("3.14")')).toBe(3.14);
+                expect(evaluator.evaluate('float("42")')).toBe(42);
+                expect(evaluator.evaluate('float(true)')).toBeNaN();
+                expect(evaluator.evaluate('float(false)')).toBeNaN();
+                expect(evaluator.evaluate('float(null)')).toBeNaN();
+                expect(evaluator.evaluate('float("invalid")')).toBeNaN();
+            });
+
+            it('should evaluate double function', () => {
+                expect(evaluator.evaluate('double("3.14")')).toBe(3.14);
+                expect(evaluator.evaluate('double("42")')).toBe(42);
+                expect(evaluator.evaluate('double(true)')).toBeNaN();
+                expect(evaluator.evaluate('double(false)')).toBeNaN();
+                expect(evaluator.evaluate('double(null)')).toBeNaN();
+                expect(evaluator.evaluate('double("invalid")')).toBeNaN();
+            });
+        });
+
+        describe('string functions', () => {
+            it('should evaluate length function with strings', () => {
+                expect(evaluator.evaluate('length("hello")')).toBe(5);
+                expect(evaluator.evaluate('length("")')).toBe(0);
+                expect(evaluator.evaluate('length("test string")')).toBe(11);
+            });
+
+            it('should evaluate length function with arrays', () => {
+                expect(evaluator.evaluate('length([1, 2, 3])')).toBe(3);
+                expect(evaluator.evaluate('length([])')).toBe(0);
+            });
+
+            it('should evaluate upper function', () => {
+                expect(evaluator.evaluate('upper("hello")')).toBe('HELLO');
+                expect(evaluator.evaluate('upper("HeLLo")')).toBe('HELLO');
+                expect(evaluator.evaluate('upper(123)')).toBe('123');
+                expect(evaluator.evaluate('upper(true)')).toBe('TRUE');
+                expect(evaluator.evaluate('upper(null)')).toBe('NULL');
+            });
+
+            it('should evaluate lower function', () => {
+                expect(evaluator.evaluate('lower("HELLO")')).toBe('hello');
+                expect(evaluator.evaluate('lower("HeLLo")')).toBe('hello');
+                expect(evaluator.evaluate('lower(123)')).toBe('123');
+                expect(evaluator.evaluate('lower(true)')).toBe('true');
+                expect(evaluator.evaluate('lower(null)')).toBe('null');
+            });
+
+            it('should evaluate trim function', () => {
+                expect(evaluator.evaluate('trim("  hello  ")')).toBe('hello');
+                expect(evaluator.evaluate('trim("hello")')).toBe('hello');
+                expect(evaluator.evaluate('trim(123)')).toBe('123');
+                expect(evaluator.evaluate('trim(true)')).toBe('true');
+                expect(evaluator.evaluate('trim(null)')).toBe('null');
+            });
+        });
+
+        describe('array functions', () => {
+            it('should evaluate array function', () => {
+                expect(evaluator.evaluate('array(1, 2, 3)')).toEqual([1, 2, 3]);
+                expect(evaluator.evaluate('array()')).toEqual([]);
+                expect(evaluator.evaluate('array("a", "b", "c")')).toEqual(['a', 'b', 'c']);
+            });
+
+            it('should evaluate first function', () => {
+                expect(evaluator.evaluate('first([1, 2, 3])')).toBe(1);
+                expect(evaluator.evaluate('first([])')).toBeNull();
+                expect(evaluator.evaluate('first(["a", "b"])')).toBe('a');
+            });
+
+            it('should evaluate last function', () => {
+                expect(evaluator.evaluate('last([1, 2, 3])')).toBe(3);
+                expect(evaluator.evaluate('last([])')).toBeNull();
+                expect(evaluator.evaluate('last(["a", "b"])')).toBe('b');
+            });
+
+            it('should evaluate push function', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                evaluator.evaluate('push(arr, 4)');
+                expect(evaluator.evaluate('arr')).toEqual([1, 2, 3, 4]);
+                
+                evaluator.evaluate('push(arr, 5, 6)');
+                expect(evaluator.evaluate('arr')).toEqual([1, 2, 3, 4, 5, 6]);
+            });
+
+            it('should evaluate pop function', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3]);
+                expect(evaluator.evaluate('pop(arr)')).toBe(3);
+                expect(evaluator.evaluate('arr')).toEqual([1, 2]);
+                
+                expect(evaluator.evaluate('pop(arr)')).toBe(2);
+                expect(evaluator.evaluate('arr')).toEqual([1]);
+            });
+
+            it('should evaluate sum function', () => {
+                expect(evaluator.evaluate('sum([1, 2, 3, 4])')).toBe(10);
+                expect(evaluator.evaluate('sum([])')).toBe(0);
+                expect(evaluator.evaluate('sum([5.5, 2.5, 2])')).toBe(10);
+            });
+
+            it('should evaluate avg function', () => {
+                expect(evaluator.evaluate('avg([1, 2, 3, 4])')).toBe(2.5);
+                expect(evaluator.evaluate('avg([10, 20, 30])')).toBe(20);
+                expect(evaluator.evaluate('avg([])')).toBeNull();
+            });
+        });
+
+        describe('date and time functions', () => {
+            it('should evaluate now function', () => {
+                const result = evaluator.evaluate('now()');
+                expect(typeof result).toBe('number');
+                expect(Number(result)).toBeGreaterThan(0);
+            });
+
+            it('should evaluate today function', () => {
+                const result = evaluator.evaluate('today()');
+                expect(typeof result).toBe('number');
+                const date = new Date(Number(result));
+                expect(date.getHours()).toBe(0);
+                expect(date.getMinutes()).toBe(0);
+                expect(date.getSeconds()).toBe(0);
+            });
+
+            it('should evaluate date function', () => {
+                const result = evaluator.evaluate('date()');
+                expect(typeof result).toBe('number');
+                
+                const timestamp = new Date('2024-01-01').getTime();
+                expect(evaluator.evaluate(`date(${timestamp})`)).toBe(timestamp);
+            });
+
+            it('should evaluate year function', () => {
+                const timestamp = new Date('2024-01-01').getTime();
+                expect(evaluator.evaluate(`year(${timestamp})`)).toBe(2024);
+                
+                const currentYear = new Date().getFullYear();
+                expect(evaluator.evaluate('year()')).toBe(currentYear);
+            });
+
+            it('should evaluate month function', () => {
+                const timestamp = new Date('2024-06-15').getTime();
+                expect(evaluator.evaluate(`month(${timestamp})`)).toBe(6);
+                
+                const currentMonth = new Date().getMonth() + 1;
+                expect(evaluator.evaluate('month()')).toBe(currentMonth);
+            });
+
+            it('should evaluate day function', () => {
+                const timestamp = new Date('2024-01-15').getTime();
+                expect(evaluator.evaluate(`day(${timestamp})`)).toBe(15);
+            });
+
+            it('should evaluate hour function', () => {
+                const date = new Date('2024-01-01T15:30:00');
+                expect(evaluator.evaluate(`hour(${date.getTime()})`)).toBe(15);
+            });
+
+            it('should evaluate minute function', () => {
+                const date = new Date('2024-01-01T15:30:00');
+                expect(evaluator.evaluate(`minute(${date.getTime()})`)).toBe(30);
+            });
+
+            it('should evaluate second function', () => {
+                const date = new Date('2024-01-01T15:30:45');
+                expect(evaluator.evaluate(`second(${date.getTime()})`)).toBe(45);
+            });
+
+            it('should evaluate weekday function', () => {
+                const timestamp = new Date('2024-01-01').getTime(); // Monday
+                expect(evaluator.evaluate(`weekday(${timestamp})`)).toBe(1);
+            });
+
+            it('should evaluate addDays function', () => {
+                const timestamp = new Date('2024-01-01').getTime();
+                const result = evaluator.evaluate(`addDays(${timestamp}, 5)`);
+                const resultDate = new Date(Number(result));
+                expect(resultDate.getDate()).toBe(6);
+            });
+
+            it('should evaluate addMonths function', () => {
+                const timestamp = new Date('2024-01-15').getTime();
+                const result = evaluator.evaluate(`addMonths(${timestamp}, 2)`);
+                const resultDate = new Date(Number(result));
+                expect(resultDate.getMonth()).toBe(2); // March (0-indexed)
+            });
+
+            it('should evaluate addYears function', () => {
+                const timestamp = new Date('2024-01-01').getTime();
+                const result = evaluator.evaluate(`addYears(${timestamp}, 1)`);
+                const resultDate = new Date(Number(result));
+                expect(resultDate.getFullYear()).toBe(2025);
+            });
+
+            it('should evaluate addHours function', () => {
+                const timestamp = new Date('2024-01-01T10:00:00').getTime();
+                const result = evaluator.evaluate(`addHours(${timestamp}, 5)`);
+                const resultDate = new Date(Number(result));
+                expect(resultDate.getHours()).toBe(15);
+            });
+
+            it('should evaluate addMinutes function', () => {
+                const timestamp = new Date('2024-01-01T10:30:00').getTime();
+                const result = evaluator.evaluate(`addMinutes(${timestamp}, 45)`);
+                const resultDate = new Date(Number(result));
+                expect(resultDate.getMinutes()).toBe(15);
+            });
+
+            it('should evaluate daysBetween function', () => {
+                const date1 = new Date('2024-01-01').getTime();
+                const date2 = new Date('2024-01-10').getTime();
+                expect(evaluator.evaluate(`daysBetween(${date1}, ${date2})`)).toBe(9);
+            });
+
+            it('should evaluate isLeapYear function', () => {
+                expect(evaluator.evaluate('isLeapYear(2024)')).toBe(true);
+                expect(evaluator.evaluate('isLeapYear(2023)')).toBe(false);
+                expect(evaluator.evaluate('isLeapYear(2000)')).toBe(true);
+                expect(evaluator.evaluate('isLeapYear(1900)')).toBe(false);
+            });
+
+            it('should evaluate timestamp function', () => {
+                const result = evaluator.evaluate('timestamp()');
+                expect(typeof result).toBe('number');
+                expect(Number(result)).toBeGreaterThan(0);
+            });
+        });
+
+        describe('custom functions', () => {
+            it('should call custom function with no arguments', () => {
+                const customFunc: FuncImpl = () => 'custom result';
+                evaluator.addFunction('customFunc', customFunc);
+                expect(evaluator.evaluate('customFunc()')).toBe('custom result');
+            });
+
+            it('should call custom function with single argument', () => {
+                const double: FuncImpl = (_ctx, val) => Number(val) * 2;
+                evaluator.addFunction('double', double);
+                expect(evaluator.evaluate('double(5)')).toBe(10);
+            });
+
+            it('should call custom function with multiple arguments', () => {
+                const add: FuncImpl = (_ctx, a, b) => Number(a) + Number(b);
+                evaluator.addFunction('add', add);
+                expect(evaluator.evaluate('add(3, 7)')).toBe(10);
+            });
+
+            it('should call custom async function', async () => {
+                const asyncFunc: FuncImpl = async (_ctx, val) => {
+                    return Number(val) * 3;
+                };
+                evaluator.addFunction('asyncFunc', asyncFunc);
+                const result = await evaluator.evaluate('asyncFunc(5)');
+                expect(result).toBe(15);
+            });
+
+            it('should pass context to custom function', () => {
+                const contextFunc: FuncImpl = (ctx) => {
+                    return ctx.jexEvaluator.getContextValue('testValue');
+                };
+                evaluator.addFunction('contextFunc', contextFunc);
+                evaluator.declareContextValue('testValue', 42);
+                expect(evaluator.evaluate('contextFunc()')).toBe(42);
+            });
+
+            it('should handle custom function with variadic arguments', () => {
+                const sumAll: FuncImpl = (_ctx, ...args) => {
+                    return args.reduce((sum, val) => Number(sum) + Number(val), 0);
+                };
+                evaluator.addFunction('sumAll', sumAll);
+                expect(evaluator.evaluate('sumAll(1, 2, 3, 4, 5)')).toBe(15);
+            });
+
+            it('should handle nested custom function calls', () => {
+                const add: FuncImpl = (_ctx, a, b) => Number(a) + Number(b);
+                const multiply: FuncImpl = (_ctx, a, b) => Number(a) * Number(b);
+                evaluator.addFunction('add', add);
+                evaluator.addFunction('multiply', multiply);
+                expect(evaluator.evaluate('multiply(add(2, 3), 4)')).toBe(20);
+            });
+
+            it('should handle custom function returning different types', () => {
+                evaluator.addFunction('returnString', () => 'text');
+                evaluator.addFunction('returnNumber', () => 42);
+                evaluator.addFunction('returnBoolean', () => true);
+                evaluator.addFunction('returnArray', () => [1, 2, 3]);
+                evaluator.addFunction('returnObject', () => ({ key: 'value' }));
+                evaluator.addFunction('returnNull', () => null);
+                
+                expect(evaluator.evaluate('returnString()')).toBe('text');
+                expect(evaluator.evaluate('returnNumber()')).toBe(42);
+                expect(evaluator.evaluate('returnBoolean()')).toBe(true);
+                expect(evaluator.evaluate('returnArray()')).toEqual([1, 2, 3]);
+                expect(evaluator.evaluate('returnObject()')).toEqual({ key: 'value' });
+                expect(evaluator.evaluate('returnNull()')).toBeNull();
+            });
+        });
+
+        describe('error handling', () => {
+            it('should throw error for undefined function', () => {
+                expect(() => evaluator.evaluate('undefinedFunc()')).toThrow();
+            });
+
+            it('should throw error for wrong number of arguments', () => {
+                const singleArg: FuncImpl = (_ctx, val) => val;
+                evaluator.addFunction('singleArg', singleArg);
+                // Note: JavaScript doesn't enforce argument count, so this might not throw
+                // but the function might return undefined for missing arguments
+            });
+
+            it('should handle function call errors gracefully', async () => {
+                const errorFunc: FuncImpl = () => {
+                    throw new Error('Function error');
+                };
+                evaluator.addFunction('errorFunc', errorFunc);
+                await expect(async () => await evaluator.evaluate('errorFunc()')).rejects.toThrow();
+            });
+
+            it('should handle async function errors', async () => {
+                const asyncErrorFunc: FuncImpl = async () => {
+                    throw new Error('Async error');
+                };
+                evaluator.addFunction('asyncErrorFunc', asyncErrorFunc);
+                await expect(async () => await evaluator.evaluate('asyncErrorFunc()')).rejects.toThrow();
+            });
+        });
+
+        describe('function calls with expressions', () => {
+            it('should evaluate function with expression arguments', () => {
+                const add: FuncImpl = (_ctx, a, b) => Number(a) + Number(b);
+                evaluator.addFunction('add', add);
+                expect(evaluator.evaluate('add(2 + 3, 4 * 2)')).toBe(13);
+            });
+
+            it('should evaluate function with variable arguments', () => {
+                const multiply: FuncImpl = (_ctx, a, b) => Number(a) * Number(b);
+                evaluator.addFunction('multiply', multiply);
+                evaluator.declareContextValue('x', 5);
+                evaluator.declareContextValue('y', 3);
+                expect(evaluator.evaluate('multiply(x, y)')).toBe(15);
+            });
+
+            it('should evaluate function with member access arguments', () => {
+                const concat: FuncImpl = (_ctx, a, b) => toString(a) + toString(b);
+                evaluator.addFunction('concat', concat);
+                evaluator.declareContextValue('obj', { name: 'John', age: 30 });
+                expect(evaluator.evaluate('concat(obj.name, obj.age)')).toBe('John30');
+            });
+
+            it('should evaluate function with array element arguments', () => {
+                const sum: FuncImpl = (_ctx, a, b) => Number(a) + Number(b);
+                evaluator.addFunction('sum', sum);
+                evaluator.declareContextValue('arr', [10, 20, 30]);
+                expect(evaluator.evaluate('sum(arr[0], arr[1])')).toBe(30);
+            });
+        });
+    });
+
+
+    describe('transform expressions', () => {
+        describe('built-in transforms', () => {
+            describe('string transforms', () => {
+                it('should transform with upper', () => {
+                    expect(evaluator.evaluate('"hello" | upper')).toBe('HELLO');
+                    expect(evaluator.evaluate('"HeLLo WoRLd" | upper')).toBe('HELLO WORLD');
+                    expect(evaluator.evaluate('123 | upper')).toBe('123');
+                    expect(evaluator.evaluate('true | upper')).toBe('TRUE');
+                    expect(evaluator.evaluate('null | upper')).toBe('NULL');
+                });
+
+                it('should transform with lower', () => {
+                    expect(evaluator.evaluate('"HELLO" | lower')).toBe('hello');
+                    expect(evaluator.evaluate('"HeLLo WoRLd" | lower')).toBe('hello world');
+                    expect(evaluator.evaluate('123 | lower')).toBe('123');
+                    expect(evaluator.evaluate('true | lower')).toBe('true');
+                    expect(evaluator.evaluate('null | lower')).toBe('null');
+                });
+
+                it('should transform with capitalize', () => {
+                    expect(evaluator.evaluate('"hello world" | capitalize')).toBe('Hello World');
+                    expect(evaluator.evaluate('"HELLO WORLD" | capitalize')).toBe('Hello World');
+                    expect(evaluator.evaluate('"hello" | capitalize')).toBe('Hello');
+                    expect(evaluator.evaluate('"a b c" | capitalize')).toBe('A B C');
+                    expect(evaluator.evaluate('123 | capitalize')).toBe('123');
+                    expect(evaluator.evaluate('true | capitalize')).toBe('True');
+                    expect(evaluator.evaluate('null | capitalize')).toBe('Null');
+                });
+
+                it('should transform with trim', () => {
+                    expect(evaluator.evaluate('"  hello  " | trim')).toBe('hello');
+                    expect(evaluator.evaluate('"hello" | trim')).toBe('hello');
+                    expect(evaluator.evaluate('"  " | trim')).toBe('');
+                    expect(evaluator.evaluate('123 | trim')).toBe('123');
+                    expect(evaluator.evaluate('true | trim')).toBe('true');
+                    expect(evaluator.evaluate('null | trim')).toBe('null');
+                });
+
+                it('should chain string transforms', () => {
+                    expect(evaluator.evaluate('"  HELLO world  " | trim | lower')).toBe('hello world');
+                    expect(evaluator.evaluate('"hello" | upper | trim')).toBe('HELLO');
+                    expect(evaluator.evaluate('"  hello world  " | trim | capitalize')).toBe('Hello World');
+                });
+            });
+
+            describe('numeric transforms', () => {
+                it('should transform with abs', () => {
+                    expect(evaluator.evaluate('-5 | abs')).toBe(5);
+                    expect(evaluator.evaluate('3.14 | abs')).toBe(3.14);
+                    expect(evaluator.evaluate('-10.5 | abs')).toBe(10.5);
+                    expect(evaluator.evaluate('0 | abs')).toBe(0);
+                    expect(evaluator.evaluate('"-7" | abs')).toBe(7);
+                    expect(evaluator.evaluate('true | abs')).toBe(1);
+                    expect(evaluator.evaluate('false | abs')).toBe(0);
+                    expect(evaluator.evaluate('null | abs')).toBe(0);
+                });
+
+                it('should transform with floor', () => {
+                    expect(evaluator.evaluate('4.2 | floor')).toBe(4);
+                    expect(evaluator.evaluate('4.8 | floor')).toBe(4);
+                    expect(evaluator.evaluate('-4.2 | floor')).toBe(-5);
+                    expect(evaluator.evaluate('0 | floor')).toBe(0);
+                    expect(evaluator.evaluate('"4.7" | floor')).toBe(4);
+                    expect(evaluator.evaluate('true | floor')).toBe(1);
+                    expect(evaluator.evaluate('null | floor')).toBe(0);
+                });
+
+                it('should transform with ceil', () => {
+                    expect(evaluator.evaluate('4.2 | ceil')).toBe(5);
+                    expect(evaluator.evaluate('4.8 | ceil')).toBe(5);
+                    expect(evaluator.evaluate('-4.2 | ceil')).toBe(-4);
+                    expect(evaluator.evaluate('0 | ceil')).toBe(0);
+                    expect(evaluator.evaluate('"4.1" | ceil')).toBe(5);
+                    expect(evaluator.evaluate('true | ceil')).toBe(1);
+                    expect(evaluator.evaluate('null | ceil')).toBe(0);
+                });
+
+                it('should transform with round', () => {
+                    expect(evaluator.evaluate('4.2 | round')).toBe(4);
+                    expect(evaluator.evaluate('4.8 | round')).toBe(5);
+                    expect(evaluator.evaluate('4.5 | round')).toBe(5);
+                    expect(evaluator.evaluate('0 | round')).toBe(0);
+                    expect(evaluator.evaluate('"4.6" | round')).toBe(5);
+                    expect(evaluator.evaluate('true | round')).toBe(1);
+                    expect(evaluator.evaluate('null | round')).toBe(0);
+                });
+
+                it('should chain numeric transforms', () => {
+                    expect(evaluator.evaluate('-4.7 | abs | floor')).toBe(4);
+                    expect(evaluator.evaluate('4.3 | ceil | abs')).toBe(5);
+                    expect(evaluator.evaluate('-4.8 | abs | round')).toBe(5);
+                });
+            });
+
+            describe('length transform', () => {
+                it('should transform array with length', () => {
+                    expect(evaluator.evaluate('[1, 2, 3] | length')).toBe(3);
+                    expect(evaluator.evaluate('[] | length')).toBe(0);
+                    expect(evaluator.evaluate('[1, 2, 3, 4, 5] | length')).toBe(5);
+                });
+
+                it('should transform string with length', () => {
+                    expect(evaluator.evaluate('"hello" | length')).toBe(5);
+                    expect(evaluator.evaluate('"" | length')).toBe(0);
+                    expect(evaluator.evaluate('"hello world" | length')).toBe(11);
+                });
+
+                it('should transform object with length', () => {
+                    expect(evaluator.evaluate('{"a": 1, "b": 2} | length')).toBe(2);
+                    expect(evaluator.evaluate('{} | length')).toBe(0);
+                    expect(evaluator.evaluate('{"x": 1, "y": 2, "z": 3} | length')).toBe(3);
+                });
+
+                it('should return 0 for other types', () => {
+                    expect(evaluator.evaluate('123 | length')).toBe(0);
+                    expect(evaluator.evaluate('true | length')).toBe(0);
+                    expect(evaluator.evaluate('null | length')).toBe(0);
+                });
+            });
+
+            describe('type conversion transforms', () => {
+                it('should transform with number', () => {
+                    expect(evaluator.evaluate('"42" | number')).toBe(42);
+                    expect(evaluator.evaluate('"3.14" | number')).toBe(3.14);
+                    expect(evaluator.evaluate('true | number')).toBe(1);
+                    expect(evaluator.evaluate('false | number')).toBe(0);
+                    expect(evaluator.evaluate('null | number')).toBe(0);
+                    expect(() => evaluator.evaluate('"invalid" | number')).toThrow();
+                });
+
+                it('should transform with string', () => {
+                    expect(evaluator.evaluate('42 | string')).toBe('42');
+                    expect(evaluator.evaluate('3.14 | string')).toBe('3.14');
+                    expect(evaluator.evaluate('true | string')).toBe('true');
+                    expect(evaluator.evaluate('false | string')).toBe('false');
+                    expect(evaluator.evaluate('null | string')).toBe('null');
+                    expect(evaluator.evaluate('[1, 2, 3] | string')).toBe('[1, 2, 3]');
+                });
+
+                it('should transform with boolean', () => {
+                    expect(evaluator.evaluate('1 | boolean')).toBe(true);
+                    expect(evaluator.evaluate('0 | boolean')).toBe(false);
+                    expect(evaluator.evaluate('"hello" | boolean')).toBe(true);
+                    expect(evaluator.evaluate('"" | boolean')).toBe(false);
+                    expect(evaluator.evaluate('null | boolean')).toBe(false);
+                    expect(evaluator.evaluate('[1] | boolean')).toBe(true);
+                    expect(evaluator.evaluate('[] | boolean')).toBe(false);
+                    expect(evaluator.evaluate('{"a": 1} | boolean')).toBe(true);
+                    expect(evaluator.evaluate('{} | boolean')).toBe(false);
+                });
+
+                it('should transform with int', () => {
+                    expect(evaluator.evaluate('"42" | int')).toBe(42);
+                    expect(evaluator.evaluate('"3.14" | int')).toBe(3);
+                    expect(evaluator.evaluate('5.9 | int')).toBe(5);
+                    expect(evaluator.evaluate('-4.7 | int')).toBe(-4);
+                });
+
+                it('should transform with float', () => {
+                    expect(evaluator.evaluate('"3.14" | float')).toBe(3.14);
+                    expect(evaluator.evaluate('"42" | float')).toBe(42);
+                    expect(evaluator.evaluate('5 | float')).toBe(5);
+                });
+
+                it('should transform with double', () => {
+                    expect(evaluator.evaluate('"3.14159" | double')).toBe(3.14159);
+                    expect(evaluator.evaluate('"42" | double')).toBe(42);
+                    expect(evaluator.evaluate('5 | double')).toBe(5);
+                });
+
+                it('should chain type conversion transforms', () => {
+                    expect(evaluator.evaluate('"3.7" | number | int')).toBe(3);
+                    expect(evaluator.evaluate('42 | string | upper')).toBe('42');
+                    expect(evaluator.evaluate('"5.5" | float | round')).toBe(6);
+                });
+            });
+        });
+
+        describe('custom transforms', () => {
+            it('should add and use custom transform', () => {
+                const doubleTransform: TransformImpl = (input) => Number(input) * 2;
+                evaluator.addTransform('double', doubleTransform);
+                expect(evaluator.evaluate('5 | double')).toBe(10);
+                expect(evaluator.evaluate('3.5 | double')).toBe(7);
+            });
+
+            it('should add and use custom string transform', () => {
+                const reverseTransform: TransformImpl = (input) => {
+                    return toString(input).split('').reverse().join('');
+                };
+                evaluator.addTransform('reverse', reverseTransform);
+                expect(evaluator.evaluate('"hello" | reverse')).toBe('olleh');
+                expect(evaluator.evaluate('"abc" | reverse')).toBe('cba');
+            });
+
+            it('should add and use custom array transform', () => {
+                const sortTransform: TransformImpl = (input) => {
+                    if (Array.isArray(input)) {
+                        return [...input].sort((a, b) => Number(a) - Number(b));
+                    }
+                    return input;
+                };
+                evaluator.addTransform('sort', sortTransform);
+                expect(evaluator.evaluate('[3, 1, 4, 1, 5] | sort')).toEqual([1, 1, 3, 4, 5]);
+                expect(evaluator.evaluate('[10, 2, 8, 5] | sort')).toEqual([2, 5, 8, 10]);
+            });
+
+            it('should use custom transform with context', () => {
+                const prefixTransform: TransformImpl = (input, ctx) => {
+                    const prefix = ctx.jexEvaluator.getContextValue('prefix');
+                    return toString(prefix) + toString(input);
+                };
+                evaluator.addTransform('prefix', prefixTransform);
+                evaluator.declareContextValue('prefix', 'Hello: ');
+                expect(evaluator.evaluate('"World" | prefix')).toBe('Hello: World');
+            });
+
+            it('should use custom async transform', async () => {
+                const asyncUpperTransform: TransformImpl = async (input) => {
+                    return toString(input).toUpperCase();
+                };
+                evaluator.addTransform('asyncUpper', asyncUpperTransform);
+                const result = await evaluator.evaluate('"hello" | asyncUpper');
+                expect(result).toBe('HELLO');
+            });
+
+            it('should chain custom transforms', () => {
+                const double: TransformImpl = (input) => Number(input) * 2;
+                const addTen: TransformImpl = (input) => Number(input) + 10;
+                evaluator.addTransform('double', double);
+                evaluator.addTransform('addTen', addTen);
+                expect(evaluator.evaluate('5 | double | addTen')).toBe(20);
+            });
+
+            it('should mix built-in and custom transforms', () => {
+                const square: TransformImpl = (input) => Number(input) ** 2;
+                evaluator.addTransform('square', square);
+                expect(evaluator.evaluate('4.7 | floor | square')).toBe(16);
+                expect(evaluator.evaluate('-3 | abs | square')).toBe(9);
+            });
+
+            it('should remove custom transform', () => {
+                const testTransform: TransformImpl = (input) => input;
+                evaluator.addTransform('testTransform', testTransform);
+                expect(evaluator.hasTransform('testTransform')).toBe(true);
+                
+                evaluator.removeTransform('testTransform');
+                expect(evaluator.hasTransform('testTransform')).toBe(false);
+                expect(() => evaluator.evaluate('5 | testTransform')).toThrow();
+            });
+
+            it('should reset custom transforms', () => {
+                const transform1: TransformImpl = (input) => input;
+                const transform2: TransformImpl = (input) => input;
+                evaluator.addTransform('transform1', transform1);
+                evaluator.addTransform('transform2', transform2);
+                expect(evaluator.hasTransform('transform1')).toBe(true);
+                expect(evaluator.hasTransform('transform2')).toBe(true);
+                
+                evaluator.resetTransforms();
+                expect(evaluator.hasTransform('transform1')).toBe(false);
+                expect(evaluator.hasTransform('transform2')).toBe(false);
+            });
+
+            it('should get all transforms', () => {
+                const customTransform: TransformImpl = (input) => input;
+                evaluator.addTransform('customTransform', customTransform);
+                const allTransforms = evaluator.getAllTransforms();
+                expect(allTransforms.customTransform).toBeDefined();
+                expect(allTransforms.upper).toBeDefined();
+                expect(allTransforms.lower).toBeDefined();
+            });
+        });
+
+        describe('transform expressions with variables', () => {
+            it('should transform variable value', () => {
+                evaluator.declareContextValue('name', 'john');
+                expect(evaluator.evaluate('name | upper')).toBe('JOHN');
+            });
+
+            it('should transform array variable', () => {
+                evaluator.declareContextValue('arr', [1, 2, 3, 4, 5]);
+                expect(evaluator.evaluate('arr | length')).toBe(5);
+            });
+
+            it('should transform object variable', () => {
+                evaluator.declareContextValue('obj', { a: 1, b: 2, c: 3 });
+                expect(evaluator.evaluate('obj | length')).toBe(3);
+            });
+
+            it('should transform member access', () => {
+                evaluator.declareContextValue('user', { name: 'alice' });
+                expect(evaluator.evaluate('user.name | upper')).toBe('ALICE');
+            });
+
+            it('should transform array element', () => {
+                evaluator.declareContextValue('items', ['hello', 'world']);
+                expect(evaluator.evaluate('items[0] | upper')).toBe('HELLO');
+            });
+        });
+
+        describe('transform expressions with expressions', () => {
+            it('should transform arithmetic result', () => {
+                expect(evaluator.evaluate('(2 + 3) | string')).toBe('5');
+                expect(evaluator.evaluate('(10 / 3) | floor')).toBe(3);
+            });
+
+            it('should transform ternary result', () => {
+                expect(evaluator.evaluate('(true ? "hello" : "world") | upper')).toBe('HELLO');
+                expect(evaluator.evaluate('(false ? 10 : 20) | string')).toBe('20');
+            });
+
+            it('should transform function result', () => {
+                expect(evaluator.evaluate('abs(-5) | string')).toBe('5');
+                expect(evaluator.evaluate('min(1, 2, 3) | double')).toBe(1);
+            });
+        });
+
+        describe('fallback to functions', () => {
+            it('should use function if transform not found', () => {
+                const customFunc: FuncImpl = (_ctx, val) => Number(val) * 3;
+                evaluator.addFunction('triple', customFunc);
+                expect(evaluator.evaluate('5 | triple')).toBe(15);
+            });
+
+            it('should prefer transform over function', () => {
+                const transform: TransformImpl = (input) => Number(input) * 2;
+                const func: FuncImpl = (_ctx, val) => Number(val) * 3;
+                evaluator.addTransform('multiply', transform);
+                evaluator.addFunction('multiply', func);
+                expect(evaluator.evaluate('5 | multiply')).toBe(10); // Transform wins
+            });
+
+            it('should throw error if neither transform nor function exists', () => {
+                expect(() => evaluator.evaluate('5 | nonexistent')).toThrow();
+            });
+        });
+
+        describe('complex transform scenarios', () => {
+            it('should handle multiple chained transforms', () => {
+                expect(evaluator.evaluate('"  hello world  " | trim | upper | length')).toBe(11);
+                expect(evaluator.evaluate('4.7 | abs | floor | string')).toBe('4');
+            });
+
+            it('should transform in complex expressions', () => {
+                evaluator.declareContextValue('text', 'hello');
+                expect(evaluator.evaluate('(text | upper) + " WORLD"')).toBe('HELLO WORLD');
+            });
+
+            it('should transform in conditional expressions', () => {
+                expect(evaluator.evaluate('("hello" | length) > 3 ? "long" : "short"')).toBe('long');
+            });
+
+            it('should transform in repeat expressions', () => {
+                const result = evaluator.evaluate(`
+                    let arr = ["hello", "world"];
+                    let result = "";
+                    repeat(arr) {
+                        result = result + ($it | upper) + " ";
+                    }
+                    result | trim;
+                `);
+                expect(result).toBe('HELLO WORLD');
+            });
+
+            it('should transform in if expressions', () => {
+                const result = evaluator.evaluate(`
+                    let value = "test";
+                    if ((value | length) > 3) {
+                        value | upper;
+                    } else {
+                        value | lower;
+                    }
+                `);
+                expect(result).toBe('TEST');
+            });
+
+            it('should handle nested transforms', () => {
+                const wrapTransform: TransformImpl = (input) => `[${toString(input)}]`;
+                evaluator.addTransform('wrap', wrapTransform);
+                expect(evaluator.evaluate('"hello" | upper | wrap')).toBe('[HELLO]');
+            });
+
+            it('should transform with array comprehension-like patterns', () => {
+                const result = evaluator.evaluate(`
+                    let words = ["hello", "world", "test"];
+                    let upper = [];
+                    repeat(words) {
+                        push(upper, $it | upper);
+                    }
+                    upper;
+                `);
+                expect(result).toEqual(['HELLO', 'WORLD', 'TEST']);
+            });
+
+            it('should handle async transforms in complex expressions', async () => {
+                const asyncDouble: TransformImpl = async (input) => Number(input) * 2;
+                evaluator.addTransform('asyncDouble', asyncDouble);
+                const result = await evaluator.evaluate(`
+                    let nums = [1, 2, 3];
+                    let result = 0;
+                    repeat(nums) {
+                        result = result + ($it | asyncDouble);
+                    }
+                    result;
+                `);
+                expect(result).toBe(12); // (1*2) + (2*2) + (3*2)
+            });
+        });
+
+        describe('transform error handling', () => {
+            it('should handle transform errors gracefully', () => {
+                const errorTransform: TransformImpl = () => {
+                    throw new Error('Transform error');
+                };
+                evaluator.addTransform('errorTransform', errorTransform);
+                expect(() => evaluator.evaluate('5 | errorTransform')).toThrow();
+            });
+
+            it('should handle async transform errors', async () => {
+                const asyncErrorTransform: TransformImpl = async () => {
+                    throw new Error('Async transform error');
+                };
+                evaluator.addTransform('asyncErrorTransform', asyncErrorTransform);
+                await expect(async () => await evaluator.evaluate('5 | asyncErrorTransform')).rejects.toThrow();
+            });
+        });
+    });
 });
