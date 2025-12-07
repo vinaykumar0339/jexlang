@@ -557,17 +557,17 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         Number rightNum = Utils.toNumber(right, "multiplicative expression");
 
         if (ctx.MULTIPLY() != null) {
-            return new JexNumber(leftNum.doubleValue() * rightNum.doubleValue());
+            return JexValue.fromNumber(leftNum.doubleValue() * rightNum.doubleValue());
         } else if (ctx.DIVIDE() != null) {
             if (rightNum.doubleValue() == 0) {
                 throw new DivisionByZeroError();
             }
-            return new JexNumber(leftNum.doubleValue() / rightNum.doubleValue());
+            return JexValue.fromNumber(leftNum.doubleValue() / rightNum.doubleValue());
         } else if (ctx.MODULO() != null) {
             if (rightNum.doubleValue() == 0) {
                 throw new DivisionByZeroError();
             }
-            return new JexNumber(leftNum.doubleValue() % rightNum.doubleValue());
+            return JexValue.fromNumber(leftNum.doubleValue() % rightNum.doubleValue());
         }
 
         throw new JexLangRuntimeError("Unknown multiplicative operator " + ctx.getChild(1).getText());
@@ -620,9 +620,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         JexValue right = this.visit(ctx.singleExpression(1));
 
         if (ctx.EQ() != null) {
-            return new JexBoolean(Utils.isEqual(left, right));
+            return new JexBoolean(left.isEqual(right));
         } else if (ctx.NEQ() != null) {
-            return new JexBoolean(!Utils.isEqual(left, right));
+            return new JexBoolean(!left.isEqual(right));
         }
 
         throw new JexLangRuntimeError("Unknown equality operator " + ctx.getChild(1).getText());
@@ -776,7 +776,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
             JexValue value = this.scope.getVariable(varName);
             Number numberValue = Utils.toNumber(value, "prefix expression");
-            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
+            JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
             this.scope.assignVariable(varName, newValue);
             return newValue;
         }
@@ -788,7 +788,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                 throw new JexLangRuntimeError("Cannot use prefix operator on a non-object property");
             }
             Number currentValue = Utils.toNumber(object.asObject("prefix expression").getOrDefault(propertyName.asString("prefix expression"), new JexNull()), "prefix expression");
-            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+            JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
             object.asObject("prefix expression").put(propertyName.asString("prefix expression"), newValue);
             return newValue;
         } else if (expr instanceof JexLangParser.MemberIndexExpressionContext) {
@@ -803,7 +803,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                 }
                 if (normalizedIndex >= 0 && normalizedIndex < array.size()) {
                     Number currentValue = Utils.toNumber(array.get(normalizedIndex), "prefix expression");
-                    JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                    JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                     array.set(normalizedIndex, newValue);
                     return newValue;
                 } else {
@@ -812,7 +812,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             } else if (object != null && object.isObject()) {
                 String key = Utils.toString(propertyKey, "prefix expression");
                 Number currentValue = Utils.toNumber(object.asObject("prefix expression").getOrDefault(key, new JexNull()), "prefix expression");
-                JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                 object.asObject("prefix expression").put(key, newValue);
                 return newValue;
             }
@@ -821,9 +821,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
             JexValue value = this.visit(expr);
             Number number = Utils.toNumber(value, "prefix expression");
             if (ctx.DECREMENT() != null) {
-                return new JexNumber(number.doubleValue() - 1);
+                return JexValue.fromNumber(number.doubleValue() - 1);
             } else if (ctx.INCREMENT() != null) {
-                return new JexNumber(number.doubleValue() + 1);
+                return JexValue.fromNumber(number.doubleValue() + 1);
             }
             return new JexNull();
         }
@@ -844,7 +844,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
 
             JexValue value = this.scope.getVariable(varName);
             Number numberValue = Utils.toNumber(value, "postfix expression");
-            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
+            JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? numberValue.doubleValue() + 1 : numberValue.doubleValue() - 1);
             this.scope.assignVariable(varName, newValue);
             return value; // return the original value before increment/decrement
         }
@@ -856,9 +856,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                 throw new JexLangRuntimeError("Cannot use postfix operator on a non-object property");
             }
             Number currentValue = Utils.toNumber(object.asObject("postfix expression").getOrDefault(propertyName.asString("postfix expression"), new JexNull()), "postfix expression");
-            JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+            JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
             object.asObject("postfix expression").put(propertyName.asString("postfix expression"), newValue);
-            return new JexNumber(currentValue); // return the original value before increment/decrement
+            return JexValue.fromNumber(currentValue); // return the original value before increment/decrement
         } else if (expr instanceof JexLangParser.MemberIndexExpressionContext) {
             JexValue object = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).singleExpression());
             JexValue propertyKey = this.visit(((JexLangParser.MemberIndexExpressionContext) expr).expressionSequence());
@@ -871,27 +871,27 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                 }
                 if (normalizedIndex >= 0 && normalizedIndex < array.size()) {
                     Number currentValue = Utils.toNumber(array.get(normalizedIndex), "postfix expression");
-                    JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                    JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                     array.set(normalizedIndex, newValue);
-                    return new JexNumber(currentValue); // return the original value before increment/decrement
+                    return JexValue.fromNumber(currentValue); // return the original value before increment/decrement
                 } else {
                     throw new JexLangRuntimeError("Array index out of bounds in postfix expression");
                 }
             } else if (object != null && object.isObject()) {
                 String key = Utils.toString(propertyKey, "postfix expression");
                 Number currentValue = Utils.toNumber(object.asObject("postfix expression").getOrDefault(key, new JexNull()), "postfix expression");
-                JexNumber newValue = new JexNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
+                JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                 object.asObject("postfix expression").put(key, newValue);
-                return new JexNumber(currentValue); // return the original value before increment/decrement
+                return JexValue.fromNumber(currentValue); // return the original value before increment/decrement
             }
         } else {
             // For other expressions, we'll just calculate but not store
             JexValue value = this.visit(expr);
             Number number = Utils.toNumber(value, "postfix expression");
             if (ctx.DECREMENT() != null) {
-                return new JexNumber(number.doubleValue() - 1);
+                return JexValue.fromNumber(number.doubleValue() - 1);
             } else if (ctx.INCREMENT() != null) {
-                return new JexNumber(number.doubleValue() + 1);
+                return JexValue.fromNumber(number.doubleValue() + 1);
             }
             return new JexNull();
         }

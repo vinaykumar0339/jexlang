@@ -115,7 +115,7 @@ public class JexEvaluator {
         this.cacheExpressions = cacheExpressions;
     }
 
-    public boolean getCacheExpressions(boolean cacheExpressions) {
+    public boolean getCacheExpressions() {
         return this.cacheExpressions;
     }
 
@@ -142,11 +142,29 @@ public class JexEvaluator {
         this.globalScope.assignVariable(name, jexValue);
     }
 
+    public void setContextValue(String name, JexValue jexValue) {
+        this.context.put(name, jexValue);
+        this.globalScope.assignVariable(name, jexValue);
+    }
+
     public JexValue declareContextValue(String name, Object value, boolean isConst) {
         JexValue jexValue = JexValue.from(value);
         this.context.put(name, jexValue);
         this.globalScope.declareVariable(name, jexValue, isConst);
         return jexValue;
+    }
+
+    /**
+     * Declare a context value with JexValue where it uses when comparing the types for arrays and objects with reference equality
+     * @param name
+     * @param value
+     * @param isConst
+     * @return
+     */
+    public JexValue declareContextValue(String name, JexValue value, boolean isConst) {
+        this.context.put(name, value);
+        this.globalScope.declareVariable(name, value, isConst);
+        return value;
     }
 
     public JexValue setContextOrDeclareContextValue(String name, Object value, boolean isConst) {
@@ -158,6 +176,23 @@ public class JexEvaluator {
             this.globalScope.declareVariable(name, jexValue, isConst);
         }
         return jexValue;
+    }
+
+    /**
+     * Set a context value with JexValue where it uses when comparing the types for arrays and objects with reference equality
+     * @param name
+     * @param value
+     * @param isConst
+     * @return
+     */
+    public JexValue setContextOrDeclareContextValue(String name, JexValue value, boolean isConst) {
+        this.context.put(name, value);
+        if (this.globalScope.hasVariable(name)) {
+            this.globalScope.assignVariable(name, value);
+        } else {
+            this.globalScope.declareVariable(name, value, isConst);
+        }
+        return value;
     }
 
     public void resetContext() {
@@ -185,6 +220,10 @@ public class JexEvaluator {
         return null;
     }
 
+    public JexValue getContextValue(String name, boolean asJexValue) {
+        return this.context.get(name);
+    }
+
     public Map<String, Object> getGlobalScopeVariables() {
         Map<String, JexValue> globalVariables = this.evalVisitor.getGlobalScopeVariables();
         if (globalVariables != null) {
@@ -196,6 +235,11 @@ public class JexEvaluator {
     public void addFunction(String name, FuncImpl function) {
         funcsMap.put(name, function);
         evalVisitor.addFunction(name, function);
+    }
+
+    public void removeFunction(String name) {
+        funcsMap.remove(name);
+        evalVisitor.removeFunction(name);
     }
 
     public Map<String, FuncImpl> getAllFunctions() {
@@ -217,6 +261,11 @@ public class JexEvaluator {
     public void addTransform(String name, TransformImpl transform) {
         transformMap.put(name, transform);
         evalVisitor.addTransform(name, transform);
+    }
+
+    public  void removeTransform(String name) {
+        transformMap.remove(name);
+        evalVisitor.removeTransform(name);
     }
 
     public void addFunctions(Map<String, FuncImpl> functions) {

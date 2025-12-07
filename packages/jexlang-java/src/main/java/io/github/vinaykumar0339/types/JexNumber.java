@@ -1,5 +1,7 @@
 package io.github.vinaykumar0339.types;
 
+import io.github.vinaykumar0339.Utils;
+
 public class JexNumber implements JexValue {
     private final Number value;
     public JexNumber(Number value) { this.value = value; }
@@ -38,4 +40,10 @@ public class JexNumber implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        JexNumber num = JexValue.fromNumber(Utils.toNumber(other, "comparison isEqual in JexNumber"));
+        return this.value.equals(num.asNumber("comparison isEqual in JexNumber"));
+    }
 }

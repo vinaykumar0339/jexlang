@@ -456,6 +456,7 @@ describe('JexEvaluator', () => {
 
         it('equality operator with mixed types', () => {
             expect(evaluator.evaluate('5 == "5"')).toBe(true);
+            expect(evaluator.evaluate('"5" == 5')).toBe(true);
             expect(evaluator.evaluate('0 == false')).toBe(true);
         });
 

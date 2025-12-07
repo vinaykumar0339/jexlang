@@ -143,11 +143,22 @@ public class JexEvaluator {
         try self.globalScope.assignVariable(key, value: jexValue)
     }
     
+    public func setContextValue(_ key: String, _ value: JexValue) throws {
+        self.context[key] = value
+        try self.globalScope.assignVariable(key, value: value)
+    }
+    
     public func declareGlobalVariable(_ key: String, value: AnyObject, isConst: Bool = false) throws -> JexValue {
         let jexValue = JexValueFactory.from(value)
         self.context[key] = jexValue
         try self.globalScope.assignVariable(key, value: jexValue)
         return jexValue
+    }
+    
+    public func declareGlobalVariable(_ key: String, value: JexValue, isConst: Bool = false) throws -> JexValue {
+        self.context[key] = value
+        try self.globalScope.assignVariable(key, value: value)
+        return value
     }
     
     public func setContextOrDeclareContextValue(
@@ -201,6 +212,14 @@ public class JexEvaluator {
         let jexValue = self.context[name] ?? nil
         if let jexValue = jexValue {
             return jexValue.toObject()
+        }
+        return nil
+    }
+    
+    public func getContextValue(_ name: String, _ asJexValue: Bool) -> JexValue? {
+        let jexValue = self.context[name] ?? nil
+        if let jexValue = jexValue {
+            return jexValue
         }
         return nil
     }

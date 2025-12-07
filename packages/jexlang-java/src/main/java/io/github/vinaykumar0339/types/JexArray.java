@@ -46,4 +46,10 @@ public class JexArray implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { return value; }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        // For Array, it should reference equality
+        return this == other || this.value == other.asArray("comparison isEqual in JexArray");
+    }
 }

@@ -4,7 +4,7 @@ public final class Values {
     private Values() {}
     public static JexValue integer(double v) { return new JexInteger((int) v); }
     public static JexValue doubleValue(double v) { return new JexDouble(v); }
-    public static JexValue num(double v) { return new JexNumber(v); }
+    public static JexValue num(double v) { return JexValue.fromNumber(v); }
     public static JexValue bool(boolean v) { return new JexBoolean(v); }
     public static JexValue str(String v) { return new JexString(v); }
     public static JexValue nil() { return new JexNull(); }

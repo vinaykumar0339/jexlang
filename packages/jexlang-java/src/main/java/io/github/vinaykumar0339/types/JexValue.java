@@ -24,6 +24,8 @@ public interface JexValue {
     java.util.List<JexValue> asArray(String context);
     java.util.Map<String, JexValue> asObject(String context);
 
+    boolean isEqual(JexValue other);
+
     static RuntimeException typeError(String want, String ctx, JexValue actualValue) {
         return new RuntimeException("Expected " + want + " in '" + ctx +
                 "', but got type '" + actualValue.getType() + "' of value " + actualValue);

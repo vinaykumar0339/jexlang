@@ -48,4 +48,10 @@ public class JexObject implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { return value; }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        // For Object, it should reference equality
+        return this == other || this.value == other.asObject("comparison isEqual in JexObject");
+    }
 }

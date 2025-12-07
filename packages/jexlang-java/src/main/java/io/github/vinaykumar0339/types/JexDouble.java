@@ -1,5 +1,7 @@
 package io.github.vinaykumar0339.types;
 
+import io.github.vinaykumar0339.Utils;
+
 public class JexDouble implements JexValue {
     private final Double value;
     public JexDouble(Double value) { this.value = value; }
@@ -34,4 +36,10 @@ public class JexDouble implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        double dbl = Utils.toDouble(other, "comparison isEqual in JexDouble");
+        return this.value.equals(dbl);
+    }
 }

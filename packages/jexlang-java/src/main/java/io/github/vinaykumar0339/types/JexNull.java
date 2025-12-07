@@ -33,4 +33,9 @@ public class JexNull implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        return other.isNull();
+    }
 }

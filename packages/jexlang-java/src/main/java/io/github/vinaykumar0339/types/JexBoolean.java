@@ -1,5 +1,7 @@
 package io.github.vinaykumar0339.types;
 
+import io.github.vinaykumar0339.Utils;
+
 public class JexBoolean implements JexValue {
     private final boolean value;
     public JexBoolean(boolean value) { this.value = value; }
@@ -34,4 +36,25 @@ public class JexBoolean implements JexValue {
     public String asString(String ctx) { throw JexValue.typeError("string", ctx, this); }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        // TO have common check with js like behavior we allow number and boolean comparison
+        // we can allow string numbers of 1 and 0
+        if (!(other.isNumber() || other.isBoolean())) {
+            if (other.isString()) {
+                String str = other.asString("comparison isEqual in JexBoolean");
+                if (str.equals("1")) {
+                    return this.value;
+                } else if (str.equals("0")) {
+                    return !this.value;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+        boolean bool = Utils.toBoolean(other, "comparison isEqual in JexBoolean");
+        return this.value == bool;
+    }
 }

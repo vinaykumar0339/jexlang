@@ -1,5 +1,7 @@
 package io.github.vinaykumar0339.types;
 
+import io.github.vinaykumar0339.Utils;
+
 public class JexString implements JexValue {
     private final String value;
     public JexString(String value) { this.value = value; }
@@ -34,4 +36,10 @@ public class JexString implements JexValue {
     public String asString(String ctx) { return value; }
     public java.util.List<JexValue> asArray(String ctx) { throw JexValue.typeError("array", ctx, this); }
     public java.util.Map<String, JexValue> asObject(String ctx) { throw JexValue.typeError("object", ctx, this); }
+
+    @Override
+    public boolean isEqual(JexValue other) {
+        String str = Utils.toString(other, "comparison isEqual in JexString");
+        return this.value.equals(str);
+    }
 }

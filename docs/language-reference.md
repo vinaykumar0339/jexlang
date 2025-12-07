@@ -135,6 +135,12 @@ x < y;                 // true
 y > x;                 // true
 x <= 5;                // true
 y >= 10;               // true
+
+> ⚠️ For Arrays and Objects
+>
+> Please use your own `JexArray` and `JexObject` in the Java library to have reference equality checks for arrays or objects.
+> If you pass a plain `List` or `Map`, internally it creates a new `JexArray` or `JexObject`, which will lose the reference, breaking JS-style `==` checks.
+
 ```
 
 ### Logical Operators
