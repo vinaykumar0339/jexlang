@@ -1356,6 +1356,32 @@ describe('JexEvaluator', () => {
             `);
             expect(result).toBe(30);
         });
+
+        it('should return last evaluated expression in the block', () => {
+            const result = evaluator.evaluate(`
+                {
+                    let x = 3;
+                    let y = 4;
+                    x * y;
+                }
+            `);
+            expect(result).toBe(12);
+        });
+
+        it('should handle async execution within blocks', async () => {
+            const asyncFunc: FuncImpl = async () => {
+                return 5
+            };
+            evaluator.addFunction('asyncFunc', asyncFunc);
+            const result = await evaluator.evaluate(`
+                {
+                    let abc = asyncFunc();
+                    let bcc = 10;
+                    abc + bcc;
+                }
+            `);
+            expect(result).toBe(15);
+        });
     });
 
     describe('repeat expressions', () => {
@@ -1687,7 +1713,8 @@ describe('JexEvaluator', () => {
                 const result = await evaluator.evaluate(`
                     let sum = 0;
                     repeat(2) {
-                        sum = sum + asyncFunc();
+                        let asyncVal = asyncFunc();
+                        sum = sum + asyncVal;
                     }  
                     sum;
                 `);
