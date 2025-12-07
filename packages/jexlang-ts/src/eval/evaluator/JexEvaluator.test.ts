@@ -1764,4 +1764,490 @@ describe('JexEvaluator', () => {
             });
         });
     });
+
+    describe('if-else expressions', () => {
+        describe('basic if expressions', () => {
+            it('should execute if block when condition is true', () => {
+                const result = evaluator.evaluate(`
+                    if (true) {
+                        42;
+                    }
+                `);
+                expect(result).toBe(42);
+            });
+
+            it('should return null when condition is false and no else', () => {
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        42;
+                    }
+                `);
+                expect(result).toBeNull();
+            });
+
+            it('should evaluate condition expressions', () => {
+                const result = evaluator.evaluate(`
+                    if (5 > 3) {
+                        "greater";
+                    }
+                `);
+                expect(result).toBe('greater');
+            });
+
+            it('should handle falsy values', () => {
+                expect(evaluator.evaluate('if (0) { "yes"; }')).toBeNull();
+                expect(evaluator.evaluate('if ("") { "yes"; }')).toBeNull();
+                expect(evaluator.evaluate('if (null) { "yes"; }')).toBeNull();
+                expect(evaluator.evaluate('if (false) { "yes"; }')).toBeNull();
+            });
+
+            it('should handle truthy values', () => {
+                expect(evaluator.evaluate('if (1) { "yes"; }')).toBe('yes');
+                expect(evaluator.evaluate('if ("hello") { "yes"; }')).toBe('yes');
+                expect(evaluator.evaluate('if (true) { "yes"; }')).toBe('yes');
+                expect(evaluator.evaluate('if ([1]) { "yes"; }')).toBe('yes');
+                expect(evaluator.evaluate('if ({"a": 1}) { "yes"; }')).toBe('yes');
+            });
+
+            it('should handle empty arrays and objects as falsy', () => {
+                expect(evaluator.evaluate('if ([]) { "yes"; }')).toBeNull();
+                expect(evaluator.evaluate('if ({}) { "yes"; }')).toBeNull();
+            });
+        });
+
+        describe('if-else expressions', () => {
+            it('should execute else block when condition is false', () => {
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                `);
+                expect(result).toBe('else');
+            });
+
+            it('should execute if block when condition is true', () => {
+                const result = evaluator.evaluate(`
+                    if (true) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                `);
+                expect(result).toBe('if');
+            });
+
+            it('should handle complex expressions in blocks', () => {
+                const result = evaluator.evaluate(`
+                    if (10 > 5) {
+                        let x = 20;
+                        x * 2;
+                    } else {
+                        let y = 10;
+                        y * 3;
+                    }
+                `);
+                expect(result).toBe(40);
+            });
+        });
+
+        describe('if-else-if expressions', () => {
+            it('should execute first true condition', () => {
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        "first";
+                    } else if (true) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                `);
+                expect(result).toBe('second');
+            });
+
+            it('should execute else when all conditions are false', () => {
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                `);
+                expect(result).toBe('third');
+            });
+
+            it('should handle multiple else-if clauses', () => {
+                evaluator.declareContextValue('score', 85);
+                const result = evaluator.evaluate(`
+                    if (score >= 90) {
+                        "A";
+                    } else if (score >= 80) {
+                        "B";
+                    } else if (score >= 70) {
+                        "C";
+                    } else {
+                        "F";
+                    }
+                `);
+                expect(result).toBe('B');
+            });
+
+            it('should return null when all conditions are false and no else', () => {
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    }
+                `);
+                expect(result).toBeNull();
+            });
+
+            it('should stop at first true condition', () => {
+                evaluator.declareContextValue('counter', 0);
+                const result = evaluator.evaluate(`
+                    if (false) {
+                        counter = counter + 1;
+                        "first";
+                    } else if (true) {
+                        counter = counter + 10;
+                        "second";
+                    } else if (true) {
+                        counter = counter + 100;
+                        "third";
+                    }
+                    counter;
+                `);
+                expect(result).toBe(10);
+            });
+        });
+
+        describe('nested if expressions', () => {
+            it('should handle nested if statements', () => {
+                const result = evaluator.evaluate(`
+                    if (true) {
+                        if (true) {
+                            "nested";
+                        }
+                    }
+                `);
+                expect(result).toBe('nested');
+            });
+
+            it('should handle nested if-else statements', () => {
+                const result = evaluator.evaluate(`
+                    if (true) {
+                        if (false) {
+                            "inner-if";
+                        } else {
+                            "inner-else";
+                        }
+                    } else {
+                        "outer-else";
+                    }
+                `);
+                expect(result).toBe('inner-else');
+            });
+
+            it('should handle deeply nested conditions', () => {
+                evaluator.declareContextValue('x', 5);
+                evaluator.declareContextValue('y', 10);
+                const result = evaluator.evaluate(`
+                    if (x < y) {
+                        if (x > 0) {
+                            if (y > 5) {
+                                "all conditions met";
+                            }
+                        }
+                    }
+                `);
+                expect(result).toBe('all conditions met');
+            });
+        });
+
+        describe('if expressions with variables', () => {
+            it('should access outer scope variables', () => {
+                const result = evaluator.evaluate(`
+                    let x = 10;
+                    if (x > 5) {
+                        x * 2;
+                    }
+                `);
+                expect(result).toBe(20);
+            });
+
+            it('should modify outer scope variables', () => {
+                const result = evaluator.evaluate(`
+                    let count = 0;
+                    if (true) {
+                        count = count + 5;
+                    }
+                    count;
+                `);
+                expect(result).toBe(5);
+            });
+
+            it('should declare variables in if block scope', () => {
+                expect(() => evaluator.evaluate(`
+                    if (true) {
+                        let blockVar = 10;
+                    }
+                    blockVar;
+                `)).toThrow(JexLangRuntimeError);
+            });
+
+            it('should handle variable declarations in different branches', () => {
+                evaluator.declareContextValue('flag', true);
+                const result = evaluator.evaluate(`
+                    let result = 0;
+                    if (flag) {
+                        let temp = 10;
+                        result = temp;
+                    } else {
+                        let temp = 20;
+                        result = temp;
+                    }
+                    result;
+                `);
+                expect(result).toBe(10);
+            });
+        });
+
+        describe('async if expressions', () => {
+            it('should handle async condition evaluation', async () => {
+                const asyncCheck: FuncImpl = async () => true;
+                evaluator.addFunction('asyncCheck', asyncCheck);
+                const result = await evaluator.evaluate(`
+                    if (asyncCheck()) {
+                        "async-true";
+                    } else {
+                        "async-false";
+                    }
+                `);
+                expect(result).toBe('async-true');
+            });
+
+            it('should handle async operations in if block', async () => {
+                const asyncValue: FuncImpl = async () => 42;
+                evaluator.addFunction('asyncValue', asyncValue);
+                const result = await evaluator.evaluate(`
+                    if (true) {
+                        let val = asyncValue();
+                        val * 2;
+                    }
+                `);
+                expect(result).toBe(84);
+            });
+
+            it('should handle async operations in else block', async () => {
+                const asyncValue: FuncImpl = async () => 100;
+                evaluator.addFunction('asyncValue', asyncValue);
+                const result = await evaluator.evaluate(`
+                    if (false) {
+                        50;
+                    } else {
+                        asyncValue();
+                    }
+                `);
+                expect(result).toBe(100);
+            });
+
+            it('should handle async operations in else-if block', async () => {
+                const asyncCheck: FuncImpl = async (_ctx, val) => Number(val) > 10;
+                evaluator.addFunction('asyncCheck', asyncCheck);
+                const result = await evaluator.evaluate(`
+                    if (false) {
+                        "first";
+                    } else if (asyncCheck(15)) {
+                        "async-true";
+                    } else {
+                        "final";
+                    }
+                `);
+                expect(result).toBe('async-true');
+            });
+
+            it('should handle multiple async operations in if-else chain', async () => {
+                const asyncValue: FuncImpl = async (_ctx, val) => Number(val);
+                evaluator.addFunction('asyncValue', asyncValue);
+                const result = await evaluator.evaluate(`
+                    let sum = 0;
+                    if (asyncValue(5) > 3) {
+                        sum = sum + asyncValue(10);
+                    } else if (asyncValue(2) > 1) {
+                        sum = sum + asyncValue(20);
+                    } else {
+                        sum = sum + asyncValue(30);
+                    }
+                    sum;
+                `);
+                expect(result).toBe(10);
+            });
+
+            it('should handle nested async if statements', async () => {
+                const asyncCheck: FuncImpl = async (_ctx, val) => Boolean(val);
+                evaluator.addFunction('asyncCheck', asyncCheck);
+                const result = await evaluator.evaluate(`
+                    if (asyncCheck(true)) {
+                        if (asyncCheck(true)) {
+                            "nested-async";
+                        }
+                    }
+                `);
+                expect(result).toBe('nested-async');
+            });
+
+            it('should handle async in condition with sync in block', async () => {
+                const asyncGreater: FuncImpl = async (_ctx, a, b) => Number(a) > Number(b);
+                evaluator.addFunction('asyncGreater', asyncGreater);
+                const result = await evaluator.evaluate(`
+                    if (asyncGreater(10, 5)) {
+                        let x = 20;
+                        x + 30;
+                    }
+                `);
+                expect(result).toBe(50);
+            });
+
+            it('should handle sync condition with async in block', async () => {
+                const asyncMultiply: FuncImpl = async (_ctx, a, b) => Number(a) * Number(b);
+                evaluator.addFunction('asyncMultiply', asyncMultiply);
+                const result = await evaluator.evaluate(`
+                    if (5 > 3) {
+                        asyncMultiply(4, 5);
+                    }
+                `);
+                expect(result).toBe(20);
+            });
+
+            it('should handle complex async expressions in conditions', async () => {
+                const asyncCompare: FuncImpl = async (_ctx, a, b, op) => {
+                    const numA = Number(a);
+                    const numB = Number(b);
+                    if (op === '>') return numA > numB;
+                    if (op === '<') return numA < numB;
+                    return numA === numB;
+                };
+                evaluator.addFunction('asyncCompare', asyncCompare);
+                const result = await evaluator.evaluate(`
+                    if (asyncCompare(10, 5, ">") && asyncCompare(3, 8, "<")) {
+                        "both true";
+                    } else {
+                        "at least one false";
+                    }
+                `);
+                expect(result).toBe('both true');
+            });
+
+            it('should handle async with variable assignments across branches', async () => {
+                const asyncCalc: FuncImpl = async (_ctx, val) => Number(val) * 3;
+                evaluator.addFunction('asyncCalc', asyncCalc);
+                const result = await evaluator.evaluate(`
+                    let result = 0;
+                    if (false) {
+                        result = asyncCalc(10);
+                    } else if (true) {
+                        result = asyncCalc(20);
+                    } else {
+                        result = asyncCalc(30);
+                    }
+                    result;
+                `);
+                expect(result).toBe(60);
+            });
+        });
+
+        describe('sync if expressions', () => {
+            it('should handle multiple sync operations in if block', () => {
+                const result = evaluator.evaluate(`
+                    let total = 0;
+                    if (true) {
+                        total = total + 10;
+                        total = total * 2;
+                        total = total + 5;
+                    }
+                    total;
+                `);
+                expect(result).toBe(25);
+            });
+
+            it('should handle sync expressions with context variables', () => {
+                evaluator.declareContextValue('multiplier', 3);
+                evaluator.declareContextValue('base', 10);
+                const result = evaluator.evaluate(`
+                    if (multiplier > 2) {
+                        base * multiplier;
+                    } else {
+                        base;
+                    }
+                `);
+                expect(result).toBe(30);
+            });
+
+            it('should handle sync function calls in conditions', () => {
+                const syncCheck: FuncImpl = (_ctx, val) => Number(val) % 2 === 0;
+                evaluator.addFunction('syncCheck', syncCheck);
+                const result = evaluator.evaluate(`
+                    if (syncCheck(10)) {
+                        "even";
+                    } else {
+                        "odd";
+                    }
+                `);
+                expect(result).toBe('even');
+            });
+
+            it('should handle complex sync expressions in if-else chain', () => {
+                evaluator.declareContextValue('nums', [1, 2, 3, 4, 5]);
+                const result = evaluator.evaluate(`
+                    let sum = 0;
+                    if (length(nums) > 3) {
+                        let index = 0;
+                        repeat(nums) {
+                            sum = sum + $it;
+                        }
+                        sum;
+                    } else {
+                        -1;
+                    }
+                `);
+                expect(result).toBe(15);
+            });
+        });
+
+        describe('if expressions with different return types', () => {
+            it('should return numbers from if blocks', () => {
+                expect(evaluator.evaluate('if (true) { 42; }')).toBe(42);
+                expect(evaluator.evaluate('if (false) { 42; } else { 100; }')).toBe(100);
+            });
+
+            it('should return strings from if blocks', () => {
+                expect(evaluator.evaluate('if (true) { "hello"; }')).toBe('hello');
+                expect(evaluator.evaluate('if (false) { "a"; } else { "b"; }')).toBe('b');
+            });
+
+            it('should return booleans from if blocks', () => {
+                expect(evaluator.evaluate('if (5 > 3) { true; }')).toBe(true);
+                expect(evaluator.evaluate('if (5 < 3) { true; } else { false; }')).toBe(false);
+            });
+
+            it('should return arrays from if blocks', () => {
+                expect(evaluator.evaluate('if (true) { [1, 2, 3]; }')).toEqual([1, 2, 3]);
+                expect(evaluator.evaluate('if (false) { [1]; } else { [2, 3]; }')).toEqual([2, 3]);
+            });
+
+            it('should return objects from if blocks', () => {
+                expect(evaluator.evaluate('if (true) { {"x": 1}; }')).toEqual({x: 1});
+                expect(evaluator.evaluate('if (false) { {"a": 1}; } else { {"b": 2}; }')).toEqual({b: 2});
+            });
+
+            it('should return null from if blocks', () => {
+                expect(evaluator.evaluate('if (true) { null; }')).toBeNull();
+                expect(evaluator.evaluate('if (false) { 1; } else { null; }')).toBeNull();
+            });
+        });
+    });
 });
