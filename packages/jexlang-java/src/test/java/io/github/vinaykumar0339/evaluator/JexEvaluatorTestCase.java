@@ -2672,5 +2672,495 @@ public class JexEvaluatorTestCase {
         }
     }
 
+    @Nested
+    @DisplayName("prefix expressions")
+    class PrefixExpressionsTests {
+
+        @Nested
+        @DisplayName("prefix increment/decrement with variables")
+        class PrefixIncrementDecrementVariables {
+
+            @Test
+            @DisplayName("should increment variable with prefix operator")
+            void testPrefixIncrementVariable() {
+                evaluator.declareContextValue("x", 5, false);
+                assertEquals(6, evaluator.evaluate("++x"));
+                assertEquals(6, evaluator.evaluate("x"));
+            }
+
+            @Test
+            @DisplayName("should decrement variable with prefix operator")
+            void testPrefixDecrementVariable() {
+                evaluator.declareContextValue("y", 10, false);
+                assertEquals(9, evaluator.evaluate("--y"));
+                assertEquals(9, evaluator.evaluate("y"));
+            }
+
+            @Test
+            @DisplayName("should return new value after prefix increment")
+            void testNewValueAfterPrefixIncrement() {
+                evaluator.declareContextValue("count", 0, false);
+                assertEquals(1, evaluator.evaluate("++count"));
+                assertEquals(2, evaluator.evaluate("++count"));
+                assertEquals(2, evaluator.evaluate("count"));
+            }
+
+            @Test
+            @DisplayName("should return new value after prefix decrement")
+            void testNewValueAfterPrefixDecrement() {
+                evaluator.declareContextValue("count", 5, false);
+                assertEquals(4, evaluator.evaluate("--count"));
+                assertEquals(3, evaluator.evaluate("--count"));
+                assertEquals(3, evaluator.evaluate("count"));
+            }
+
+            @Test
+            @DisplayName("should handle multiple prefix operations")
+            void testMultiplePrefixOperations() {
+                evaluator.declareContextValue("a", 0, false);
+                evaluator.declareContextValue("b", 0, false);
+                assertEquals(2, evaluator.evaluate("++a + ++b"));
+                assertEquals(1, evaluator.evaluate("a"));
+                assertEquals(1, evaluator.evaluate("b"));
+            }
+
+            @Test
+            @DisplayName("should throw error for undefined variable")
+            void testPrefixUndefinedVariable() {
+                assertThrows(Exception.class, () -> evaluator.evaluate("++undefinedVar"));
+                assertThrows(Exception.class, () -> evaluator.evaluate("--undefinedVar"));
+            }
+        }
+
+        @Nested
+        @DisplayName("prefix increment/decrement with array elements")
+        class PrefixIncrementDecrementArray {
+
+            @Test
+            @DisplayName("should increment array element with positive index")
+            void testPrefixIncrementPositiveIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(2, evaluator.evaluate("++arr[0]"));
+                assertEquals(2, evaluator.evaluate("arr[0]"));
+            }
+
+            @Test
+            @DisplayName("should decrement array element with positive index")
+            void testPrefixDecrementPositiveIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(10, 20, 30));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(19, evaluator.evaluate("--arr[1]"));
+                assertEquals(19, evaluator.evaluate("arr[1]"));
+            }
+
+            @Test
+            @DisplayName("should increment array element with negative index")
+            void testPrefixIncrementNegativeIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(5, 10, 15));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(16, evaluator.evaluate("++arr[-1]"));
+                assertEquals(16, evaluator.evaluate("arr[-1]"));
+                assertEquals(16, evaluator.evaluate("arr[2]"));
+            }
+
+            @Test
+            @DisplayName("should decrement array element with negative index")
+            void testPrefixDecrementNegativeIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(100, 200, 300));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(199, evaluator.evaluate("--arr[-2]"));
+                assertEquals(199, evaluator.evaluate("arr[-2]"));
+                assertEquals(199, evaluator.evaluate("arr[1]"));
+            }
+
+            @Test
+            @DisplayName("should handle prefix operations with expression as index")
+            void testPrefixExpressionAsIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3, 4, 5));
+                evaluator.declareContextValue("arr", arr, false);
+                evaluator.declareContextValue("idx", 2, false);
+                assertEquals(5, evaluator.evaluate("++arr[idx + 1]"));
+                assertEquals(5, evaluator.evaluate("arr[3]"));
+            }
+
+            @Test
+            @DisplayName("should return null for out of bounds array index")
+            void testOutOfBoundsArrayIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3));
+                evaluator.declareContextValue("arr", arr, false);
+                assertNull(evaluator.evaluate("++arr[10]"));
+            }
+
+            @Test
+            @DisplayName("should handle nested array increment")
+            void testNestedArrayIncrement() {
+                List<List<Integer>> matrix = new ArrayList<>();
+                matrix.add(new ArrayList<>(List.of(1, 2)));
+                matrix.add(new ArrayList<>(List.of(3, 4)));
+                evaluator.declareContextValue("matrix", matrix, false);
+                assertEquals(3, evaluator.evaluate("++matrix[0][1]"));
+                assertEquals(3, evaluator.evaluate("matrix[0][1]"));
+            }
+        }
+
+        @Nested
+        @DisplayName("prefix increment/decrement with object properties")
+        class PrefixIncrementDecrementObject {
+
+            @Test
+            @DisplayName("should increment object property with dot notation")
+            void testPrefixIncrementDotNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("count", 5);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(6, evaluator.evaluate("++obj.count"));
+                assertEquals(6, evaluator.evaluate("obj.count"));
+            }
+
+            @Test
+            @DisplayName("should decrement object property with dot notation")
+            void testPrefixDecrementDotNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("value", 20);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(19, evaluator.evaluate("--obj.value"));
+                assertEquals(19, evaluator.evaluate("obj.value"));
+            }
+
+            @Test
+            @DisplayName("should increment object property with bracket notation")
+            void testPrefixIncrementBracketNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("score", 10);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(11, evaluator.evaluate("++obj[\"score\"]"));
+                assertEquals(11, evaluator.evaluate("obj.score"));
+            }
+
+            @Test
+            @DisplayName("should decrement object property with bracket notation")
+            void testPrefixDecrementBracketNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("points", 50);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(49, evaluator.evaluate("--obj[\"points\"]"));
+                assertEquals(49, evaluator.evaluate("obj.points"));
+            }
+
+            @Test
+            @DisplayName("should handle prefix operations with dynamic property names")
+            void testDynamicPropertyName() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("x", 5);
+                obj.put("y", 10);
+                evaluator.declareContextValue("obj", obj, false);
+                evaluator.declareContextValue("key", "x", false);
+                assertEquals(6, evaluator.evaluate("++obj[key]"));
+                assertEquals(6, evaluator.evaluate("obj.x"));
+            }
+
+            @Test
+            @DisplayName("should handle nested object property increment")
+            void testNestedObjectPropertyIncrement() {
+                Map<String, Object> user = new HashMap<>();
+                user.put("age", 25);
+                Map<String, Object> data = new HashMap<>();
+                data.put("user", user);
+                evaluator.declareContextValue("data", data, false);
+                assertEquals(26, evaluator.evaluate("++data.user.age"));
+                assertEquals(26, evaluator.evaluate("data.user.age"));
+            }
+
+            @Test
+            @DisplayName("should throw error for non-object property access")
+            void testNonObjectPropertyAccessThrows() {
+                evaluator.declareContextValue("num", 42, false);
+                assertThrows(Exception.class, () -> evaluator.evaluate("++num.prop"));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("postfix expressions")
+    class PostfixExpressionsTests {
+
+        @Nested
+        @DisplayName("postfix increment/decrement with variables")
+        class PostfixIncrementDecrementVariables {
+
+            @Test
+            @DisplayName("should increment variable with postfix operator")
+            void testPostfixIncrementVariable() {
+                evaluator.declareContextValue("x", 5, false);
+                assertEquals(5, evaluator.evaluate("x++"));
+                assertEquals(6, evaluator.evaluate("x"));
+            }
+
+            @Test
+            @DisplayName("should decrement variable with postfix operator")
+            void testPostfixDecrementVariable() {
+                evaluator.declareContextValue("y", 10, false);
+                assertEquals(10, evaluator.evaluate("y--"));
+                assertEquals(9, evaluator.evaluate("y"));
+            }
+
+            @Test
+            @DisplayName("should return old value after postfix increment")
+            void testOldValueAfterPostfixIncrement() {
+                evaluator.declareContextValue("count", 0, false);
+                assertEquals(0, evaluator.evaluate("count++"));
+                assertEquals(1, evaluator.evaluate("count"));
+                assertEquals(1, evaluator.evaluate("count++"));
+                assertEquals(2, evaluator.evaluate("count"));
+            }
+
+            @Test
+            @DisplayName("should return old value after postfix decrement")
+            void testOldValueAfterPostfixDecrement() {
+                evaluator.declareContextValue("count", 5, false);
+                assertEquals(5, evaluator.evaluate("count--"));
+                assertEquals(4, evaluator.evaluate("count"));
+                assertEquals(4, evaluator.evaluate("count--"));
+                assertEquals(3, evaluator.evaluate("count"));
+            }
+
+            @Test
+            @DisplayName("should handle multiple postfix operations")
+            void testMultiplePostfixOperations() {
+                evaluator.declareContextValue("a", 0, false);
+                evaluator.declareContextValue("b", 0, false);
+                assertEquals(0, evaluator.evaluate("a++ + b++"));
+                assertEquals(1, evaluator.evaluate("a"));
+                assertEquals(1, evaluator.evaluate("b"));
+            }
+
+            @Test
+            @DisplayName("should handle mix of prefix and postfix")
+            void testMixPrefixPostfix() {
+                evaluator.declareContextValue("x", 5, false);
+                assertEquals(12, evaluator.evaluate("++x + x++")); // 6 + 6, then x = 7
+                assertEquals(7, evaluator.evaluate("x"));
+            }
+
+            @Test
+            @DisplayName("should throw error for undefined variable")
+            void testUndefinedVariablePostfix() {
+                assertThrows(Exception.class, () -> evaluator.evaluate("undefinedVar++"));
+                assertThrows(Exception.class, () -> evaluator.evaluate("undefinedVar--"));
+            }
+        }
+
+        @Nested
+        @DisplayName("postfix increment/decrement with array elements")
+        class PostfixIncrementDecrementArray {
+
+            @Test
+            @DisplayName("should increment array element with positive index")
+            void testPostfixIncrementPositiveIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(1, evaluator.evaluate("arr[0]++"));
+                assertEquals(2, evaluator.evaluate("arr[0]"));
+            }
+
+            @Test
+            @DisplayName("should decrement array element with positive index")
+            void testPostfixDecrementPositiveIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(10, 20, 30));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(20, evaluator.evaluate("arr[1]--"));
+                assertEquals(19, evaluator.evaluate("arr[1]"));
+            }
+
+            @Test
+            @DisplayName("should increment array element with negative index")
+            void testPostfixIncrementNegativeIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(5, 10, 15));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(15, evaluator.evaluate("arr[-1]++"));
+                assertEquals(16, evaluator.evaluate("arr[-1]"));
+                assertEquals(16, evaluator.evaluate("arr[2]"));
+            }
+
+            @Test
+            @DisplayName("should decrement array element with negative index")
+            void testPostfixDecrementNegativeIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(100, 200, 300));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(200, evaluator.evaluate("arr[-2]--"));
+                assertEquals(199, evaluator.evaluate("arr[-2]"));
+                assertEquals(199, evaluator.evaluate("arr[1]"));
+            }
+
+            @Test
+            @DisplayName("should handle postfix operations with expression as index")
+            void testPostfixExpressionAsIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3, 4, 5));
+                evaluator.declareContextValue("arr", arr, false);
+                evaluator.declareContextValue("idx", 2, false);
+                assertEquals(4, evaluator.evaluate("arr[idx + 1]++"));
+                assertEquals(5, evaluator.evaluate("arr[3]"));
+            }
+
+            @Test
+            @DisplayName("should handle postfix with computed index expression")
+            void testPostfixComputedIndex() {
+                List<Integer> arr = new ArrayList<>(List.of(10, 20, 30, 40));
+                evaluator.declareContextValue("arr", arr, false);
+                assertEquals(30, evaluator.evaluate("arr[1 + 1]++"));
+                assertEquals(31, evaluator.evaluate("arr[2]"));
+            }
+
+            @Test
+            @DisplayName("should return null for out of bounds array index")
+            void testPostfixOutOfBounds() {
+                List<Integer> arr = new ArrayList<>(List.of(1, 2, 3));
+                evaluator.declareContextValue("arr", arr, false);
+                assertNull(evaluator.evaluate("arr[10]++"));
+            }
+
+            @Test
+            @DisplayName("should handle nested array decrement")
+            void testPostfixNestedArrayDecrement() {
+                List<List<Integer>> matrix = new ArrayList<>();
+                matrix.add(new ArrayList<>(List.of(1, 2)));
+                matrix.add(new ArrayList<>(List.of(3, 4)));
+                evaluator.declareContextValue("matrix", matrix, false);
+                assertEquals(3, evaluator.evaluate("matrix[1][0]--"));
+                assertEquals(2, evaluator.evaluate("matrix[1][0]"));
+            }
+        }
+
+        @Nested
+        @DisplayName("postfix increment/decrement with object properties")
+        class PostfixIncrementDecrementObject {
+
+            @Test
+            @DisplayName("should increment object property with dot notation")
+            void testPostfixIncrementDotNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("count", 5);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(5, evaluator.evaluate("obj.count++"));
+                assertEquals(6, evaluator.evaluate("obj.count"));
+            }
+
+            @Test
+            @DisplayName("should decrement object property with dot notation")
+            void testPostfixDecrementDotNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("value", 20);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(20, evaluator.evaluate("obj.value--"));
+                assertEquals(19, evaluator.evaluate("obj.value"));
+            }
+
+            @Test
+            @DisplayName("should increment object property with bracket notation")
+            void testPostfixIncrementBracketNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("score", 10);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(10, evaluator.evaluate("obj[\"score\"]++"));
+                assertEquals(11, evaluator.evaluate("obj.score"));
+            }
+
+            @Test
+            @DisplayName("should decrement object property with bracket notation")
+            void testPostfixDecrementBracketNotation() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("points", 50);
+                evaluator.declareContextValue("obj", obj, false);
+                assertEquals(50, evaluator.evaluate("obj[\"points\"]--"));
+                assertEquals(49, evaluator.evaluate("obj.points"));
+            }
+
+            @Test
+            @DisplayName("should handle postfix operations with dynamic property names")
+            void testPostfixDynamicProperty() {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("x", 5);
+                obj.put("y", 10);
+                evaluator.declareContextValue("obj", obj, false);
+                evaluator.declareContextValue("key", "y", false);
+                assertEquals(10, evaluator.evaluate("obj[key]++"));
+                assertEquals(11, evaluator.evaluate("obj.y"));
+            }
+
+            @Test
+            @DisplayName("should handle nested object property decrement")
+            void testPostfixNestedObjectProperty() {
+                Map<String, Object> user = new HashMap<>();
+                user.put("age", 25);
+                Map<String, Object> data = new HashMap<>();
+                data.put("user", user);
+                evaluator.declareContextValue("data", data, false);
+                assertEquals(25, evaluator.evaluate("data.user.age--"));
+                assertEquals(24, evaluator.evaluate("data.user.age"));
+            }
+
+            @Test
+            @DisplayName("should throw error for non-object property access")
+            void testPostfixNonObjectPropertyAccess() {
+                evaluator.declareContextValue("str", "test", false);
+                assertThrows(Exception.class, () -> evaluator.evaluate("str.length++"));
+            }
+        }
+
+        @Nested
+        @DisplayName("complex postfix/prefix scenarios")
+        class PostfixPrefixComplex {
+
+            @Test
+            @DisplayName("should handle array of objects with postfix")
+            void testArrayOfObjectsPostfix() {
+                List<Map<String, Object>> users = new ArrayList<>();
+                users.add(new HashMap<>() {{ put("score", 10); }});
+                users.add(new HashMap<>() {{ put("score", 20); }});
+                evaluator.declareContextValue("users", users, false);
+                assertEquals(10, evaluator.evaluate("users[0].score++"));
+                assertEquals(11, evaluator.evaluate("users[0].score"));
+            }
+
+            @Test
+            @DisplayName("should handle object with array property and prefix")
+            void testObjectWithArrayPrefix() {
+                Map<String, Object> data = new HashMap<>();
+                data.put("values", new ArrayList<>(List.of(5, 10, 15)));
+                evaluator.declareContextValue("data", data, false);
+                assertEquals(11, evaluator.evaluate("++data.values[1]"));
+                assertEquals(11, evaluator.evaluate("data.values[1]"));
+            }
+
+            @Test
+            @DisplayName("should handle negative index with postfix in nested array")
+            void testNegativeIndexNestedArray() {
+                List<List<Integer>> matrix = new ArrayList<>();
+                matrix.add(new ArrayList<>(List.of(1, 2)));
+                matrix.add(new ArrayList<>(List.of(3, 4)));
+                matrix.add(new ArrayList<>(List.of(5, 6)));
+                evaluator.declareContextValue("matrix", matrix, false);
+                assertEquals(6, evaluator.evaluate("matrix[-1][-1]++"));
+                assertEquals(7, evaluator.evaluate("matrix[-1][-1]"));
+                assertEquals(7, evaluator.evaluate("matrix[2][1]"));
+            }
+
+            @Test
+            @DisplayName("should handle expression in both array and object access")
+            void testExpressionArrayObject() {
+                List<Map<String, Object>> items = new ArrayList<>();
+                items.add(new HashMap<>() {{ put("count", 0); }});
+                items.add(new HashMap<>() {{ put("count", 5); }});
+                Map<String, Object> complex = new HashMap<>();
+                complex.put("items", items);
+                evaluator.declareContextValue("complex", complex, false);
+                evaluator.declareContextValue("idx", 0, false);
+                assertEquals(5, evaluator.evaluate("complex.items[idx + 1].count++"));
+                assertEquals(6, evaluator.evaluate("complex.items[1].count"));
+            }
+        }
+    }
+
 
 }

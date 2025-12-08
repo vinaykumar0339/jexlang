@@ -806,9 +806,8 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                     JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                     array.set(normalizedIndex, newValue);
                     return newValue;
-                } else {
-                    throw new JexLangRuntimeError("Array index out of bounds in prefix expression");
                 }
+                return new JexNull(); // if out of bounds just return JexNull, don't throw any errors.
             } else if (object != null && object.isObject()) {
                 String key = Utils.toString(propertyKey, "prefix expression");
                 Number currentValue = Utils.toNumber(object.asObject("prefix expression").getOrDefault(key, new JexNull()), "prefix expression");
@@ -874,9 +873,8 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
                     JexNumber newValue = JexValue.fromNumber(ctx.INCREMENT() != null ? currentValue.doubleValue() + 1 : currentValue.doubleValue() - 1);
                     array.set(normalizedIndex, newValue);
                     return JexValue.fromNumber(currentValue); // return the original value before increment/decrement
-                } else {
-                    throw new JexLangRuntimeError("Array index out of bounds in postfix expression");
                 }
+                return new JexNull(); // if out of bounds just return JexNull, don't throw any errors.
             } else if (object != null && object.isObject()) {
                 String key = Utils.toString(propertyKey, "postfix expression");
                 Number currentValue = Utils.toNumber(object.asObject("postfix expression").getOrDefault(key, new JexNull()), "postfix expression");
