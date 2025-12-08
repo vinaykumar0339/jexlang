@@ -3592,5 +3592,176 @@ public class JexEvaluatorTestCase {
                 assertEquals(0, evaluator.evaluate("atan2(null, 1)"));
             }
         }
+
+        @Nested
+        @DisplayName("hyperbolic functions")
+        class HyperbolicFunctions {
+
+            @Test
+            @DisplayName("should evaluate sinh function")
+            void testEvaluateSinhFunction() {
+                assertEquals(0, evaluator.evaluate("sinh(0)"));
+                assertEquals(0, evaluator.evaluate("sinh(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sinh(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("sinh(false)"));
+                assertEquals(0, evaluator.evaluate("sinh(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate cosh function")
+            void testEvaluateCoshFunction() {
+                assertEquals(1, evaluator.evaluate("cosh(0)"));
+                assertEquals(1, evaluator.evaluate("cosh(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("cosh(\"invalid\")"));
+                assertEquals(1, evaluator.evaluate("cosh(false)"));
+                assertEquals(1, evaluator.evaluate("cosh(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate tanh function")
+            void testEvaluateTanhFunction() {
+                assertEquals(0, evaluator.evaluate("tanh(0)"));
+                assertEquals(0, evaluator.evaluate("tanh(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("tanh(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("tanh(false)"));
+                assertEquals(0, evaluator.evaluate("tanh(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate asinh function")
+            void testEvaluateAsinhFunction() {
+                assertEquals(0, evaluator.evaluate("asinh(0)"));
+                assertEquals(0, evaluator.evaluate("asinh(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("asinh(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("asinh(false)"));
+                assertEquals(0, evaluator.evaluate("asinh(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate acosh function")
+            void testEvaluateAcoshFunction() {
+                assertEquals(0, evaluator.evaluate("acosh(1)"));
+                assertEquals(0, evaluator.evaluate("acosh(\"1\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("acosh(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("acosh(true)"));
+
+                // null input - acosh(0) would be NaN
+                assertEquals(Double.NaN, evaluator.evaluate("acosh(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate atanh function")
+            void testEvaluateAtanhFunction() {
+                assertEquals(0, evaluator.evaluate("atanh(0)"));
+                assertEquals(0, evaluator.evaluate("atanh(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("atanh(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("atanh(false)"));
+                assertEquals(0, evaluator.evaluate("atanh(null)"));
+            }
+        }
+
+        @Nested
+        @DisplayName("exponential and logarithmic functions")
+        class ExponentialLogFunctions {
+
+            @Test
+            @DisplayName("should evaluate exp function")
+            void testEvaluateExpFunction() {
+                assertEquals(1, evaluator.evaluate("exp(0)"));
+                assertEquals(Math.E, (Double) evaluator.evaluate("exp(1)"), 0.0001);
+                assertEquals(1, evaluator.evaluate("exp(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("exp(\"invalid\")"));
+                assertEquals(1, evaluator.evaluate("exp(false)"));
+                assertEquals(1, evaluator.evaluate("exp(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate log function")
+            void testEvaluateLogFunction() {
+                assertEquals(0, evaluator.evaluate("log(1)"));
+                assertEquals(1, (Integer) evaluator.evaluate("log(2.718281828459045)"), 0.0001);
+                assertEquals(0, evaluator.evaluate("log(\"1\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("log(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("log(true)"));
+                assertEquals(Double.NEGATIVE_INFINITY, (Double) evaluator.evaluate("log(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate log10 function")
+            void testEvaluateLog10Function() {
+                assertEquals(0, evaluator.evaluate("log10(1)"));
+                assertEquals(1, evaluator.evaluate("log10(10)"));
+                assertEquals(2, evaluator.evaluate("log10(100)"));
+                assertEquals(1, evaluator.evaluate("log10(\"10\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("log10(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("log10(true)"));
+                assertEquals(Double.NEGATIVE_INFINITY, (Double) evaluator.evaluate("log10(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate log2 function")
+            void testEvaluateLog2Function() {
+                assertEquals(0, evaluator.evaluate("log2(1)"));
+                assertEquals(1, evaluator.evaluate("log2(2)"));
+                assertEquals(3, evaluator.evaluate("log2(8)"));
+                assertEquals(1, evaluator.evaluate("log2(\"2\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("log2(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("log2(true)"));
+                assertEquals(Double.NEGATIVE_INFINITY, (Double) evaluator.evaluate("log2(null)"));
+            }
+        }
+
+        @Nested
+        @DisplayName("custom math functions")
+        class CustomMathFunctions {
+
+            @Test
+            @DisplayName("should evaluate deg function")
+            void testEvaluateDegFunction() {
+                assertEquals(180, (Integer) evaluator.evaluate("deg(3.141592653589793)"), 0.0001);
+                assertEquals(90, (Integer) evaluator.evaluate("deg(1.5707963267948966)"), 0.0001);
+                assertEquals(180, (Integer) evaluator.evaluate("deg(\"3.141592653589793\")"), 0.0001);
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("deg(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("deg(false)"));
+                assertEquals(0, evaluator.evaluate("deg(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate rad function")
+            void testEvaluateRadFunction() {
+                assertEquals(3.141592653589793, (Double) evaluator.evaluate("rad(180)"), 0.0001);
+                assertEquals(1.5707963267948966, (Double) evaluator.evaluate("rad(90)"), 0.0001);
+                assertEquals(3.141592653589793, (Double) evaluator.evaluate("rad(\"180\")"), 0.0001);
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("rad(\"invalid\")"));
+                assertEquals(0, evaluator.evaluate("rad(false)"));
+                assertEquals(0, evaluator.evaluate("rad(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate clamp function")
+            void testEvaluateClampFunction() {
+                assertEquals(5, evaluator.evaluate("clamp(5, 0, 10)"));
+                assertEquals(0, evaluator.evaluate("clamp(-5, 0, 10)"));
+                assertEquals(10, evaluator.evaluate("clamp(15, 0, 10)"));
+                assertEquals(5, evaluator.evaluate("clamp(\"5\", \"0\", \"10\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("clamp(\"invalid\", 0, 10)"));
+                assertEquals(1, evaluator.evaluate("clamp(true, false, true)"));
+                assertEquals(5, evaluator.evaluate("clamp(5, \"0\", 10)"));
+                assertEquals(0, evaluator.evaluate("clamp(null, -5, 5)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate lerp function")
+            void testEvaluateLerpFunction() {
+                assertEquals(5, evaluator.evaluate("lerp(0, 10, 0.5)"));
+                assertEquals(25, evaluator.evaluate("lerp(0, 100, 0.25)"));
+                assertEquals(10, evaluator.evaluate("lerp(10, 20, 0)"));
+                assertEquals(20, evaluator.evaluate("lerp(10, 20, 1)"));
+                assertEquals(5, evaluator.evaluate("lerp(\"0\", \"10\", \"0.5\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("lerp(\"invalid\", 10, 0.5)"));
+                assertEquals(0.5, evaluator.evaluate("lerp(false, true, 0.5)"));
+                assertEquals(5, evaluator.evaluate("lerp(null, 10, 0.5)"));
+            }
+        }
     }
 }

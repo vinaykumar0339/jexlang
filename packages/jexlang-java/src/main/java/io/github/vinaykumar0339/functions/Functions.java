@@ -44,15 +44,15 @@ public class Functions {
 
                 Map.entry("exp", Utils.n1(FastMath::exp, "exp function")),
                 Map.entry("log", Utils.n1(x -> {
-                    Utils.checkPositive("log", x, false);
+                    Utils.checkPositive("log", x, true);
                     return Math.log(x);
                 }, "log")),
                 Map.entry("log10", Utils.n1(x -> {
-                    Utils.checkPositive("log10", x, false);
+                    Utils.checkPositive("log10", x, true);
                     return Math.log10(x);
                 }, "log10")),
                 Map.entry("log2", Utils.n1(x -> {
-                    Utils.checkPositive("log2", x, false);
+                    Utils.checkPositive("log2", x, true);
                     return Math.log(x) / Math.log(2.0);
                 }, "log2")),
                 Map.entry("sqrt", Utils.n1(x -> {
@@ -75,7 +75,6 @@ public class Functions {
                         double v = Utils.toNumber(args[i], "min arg " + (i + 1)).doubleValue();
                         if (v < best) best = v;
                     }
-                    Utils.assertFinite("min", best);
                     return Utils.num(best);
                 }),
                 Map.entry("max", (ctx, args) -> {
@@ -85,7 +84,6 @@ public class Functions {
                         double v = Utils.toNumber(args[i], "max arg " + (i + 1)).doubleValue();
                         if (v > best) best = v;
                     }
-                    Utils.assertFinite("max", best);
                     return Utils.num(best);
                 }),
                 Map.entry("pow", Utils.n2(FastMath::pow, "pow base function", "pow exponent function")),
@@ -157,7 +155,6 @@ public class Functions {
                     if (vs.isEmpty()) return Utils.num(0.0);
                     double s = 0.0;
                     for (int i = 0; i < vs.size(); i++) s += Utils.toNumber(vs.get(i), "sum[" + i + "]").doubleValue();
-                    Utils.assertFinite("sum", s);
                     return Utils.num(s);
                 }),
                 Map.entry("avg", (ctx, args) -> {
@@ -169,7 +166,6 @@ public class Functions {
                     double s = 0.0;
                     for (int i = 0; i < vs.size(); i++) s += Utils.toNumber(vs.get(i), "avg[" + i + "]").doubleValue();
                     double v = s / vs.size();
-                    Utils.assertFinite("avg", v);
                     return Utils.num(v);
                 }),
 

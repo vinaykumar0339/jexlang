@@ -35,7 +35,6 @@ public class Utils {
         return (ctx, args) -> {
             double x = toNumber(args.length > 0 ? args[0] : JexValue.from(0), ctxName).doubleValue();
             double v = f.apply(x);
-            assertFinite(ctxName, v);
             return num(v);
         };
     }
@@ -45,7 +44,6 @@ public class Utils {
             double a = toNumber(args.length > 0 ? args[0] : JexValue.from(0), aCtx).doubleValue();
             double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double v = f.apply(a, b);
-            assertFinite("binary", v);
             return num(v);
         };
     }
@@ -56,7 +54,6 @@ public class Utils {
             double b = toNumber(args.length > 1 ? args[1] : JexValue.from(0), bCtx).doubleValue();
             double c = toNumber(args.length > 2 ? args[2] : JexValue.from(0), cCtx).doubleValue();
             double v = f.apply(a, b, c);
-            assertFinite("ternary", v);
             return num(v);
         };
     }

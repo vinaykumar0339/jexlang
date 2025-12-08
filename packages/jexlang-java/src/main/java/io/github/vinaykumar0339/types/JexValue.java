@@ -34,19 +34,23 @@ public interface JexValue {
     static JexNumber fromNumber(Number number) {
         double d = number.doubleValue();
 
-        // Case 1: whole number (like 2.0)
+        // 1. Handle special double values first
+        if (Double.isNaN(d) || Double.isInfinite(d)) {
+            return new JexNumber(d);   // store exactly as double
+        }
+
+        // 2. Whole number check
         if (d == Math.rint(d)) {
             long longVal = (long) d;
 
-            // If long fits into int → use int
             if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
-                return new JexNumber((int) longVal);   // store as int
+                return new JexNumber((int) longVal);
             }
 
-            return new JexNumber(longVal);             // store as long
+            return new JexNumber(longVal);
         }
 
-        // Case 2: fractional value → store as double
+        // 3. Fractional → store as double
         return new JexNumber(d);
     }
 
