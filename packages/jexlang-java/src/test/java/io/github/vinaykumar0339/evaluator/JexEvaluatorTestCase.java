@@ -4,6 +4,7 @@ import io.github.vinaykumar0339.eval.errors.JexLangRuntimeError;
 import io.github.vinaykumar0339.functions.FuncImpl;
 import io.github.vinaykumar0339.transforms.TransformImpl;
 import io.github.vinaykumar0339.types.JexArray;
+import io.github.vinaykumar0339.types.JexNumber;
 import io.github.vinaykumar0339.types.JexObject;
 import io.github.vinaykumar0339.types.JexValue;
 import org.junit.jupiter.api.BeforeEach;
@@ -1416,6 +1417,439 @@ public class JexEvaluatorTestCase {
             Map<String, Object> resultObj = new HashMap<>();
             resultObj.put("result", true);
             assertEquals(resultObj, evaluator.evaluate("(5 > 3) && (10 < 20) ? {\"result\": true} : {\"result\": false}"));
+        }
+    }
+
+    @Nested
+    @DisplayName("elvis operator")
+    class ElvisOperatorTests {
+        @Test
+        @DisplayName("should return left operand if truthy")
+        void testElvisOperatorLeftTruthy() {
+            assertEquals(42, evaluator.evaluate("42 ?: 0"));
+            assertEquals("hello", evaluator.evaluate("\"hello\" ?: \"world\""));
+            assertEquals(true, evaluator.evaluate("true ?: false"));
+        }
+
+        @Test
+        @DisplayName("should return right operand if left is falsy")
+        void testElvisOperatorLeftFalsy() {
+            assertEquals(42, evaluator.evaluate("0 ?: 42"));
+            assertEquals("default", evaluator.evaluate("\"\" ?: \"default\""));
+            assertEquals(true, evaluator.evaluate("false ?: true"));
+            assertEquals("fallback", evaluator.evaluate("null ?: \"fallback\""));
+        }
+
+        @Test
+        @DisplayName("should work with context variables")
+        void testElvisOperatorWithContextVariables() {
+            evaluator.declareContextValue("name", "", false);
+            assertEquals("Anonymous", evaluator.evaluate("name ?: \"Anonymous\""));
+            evaluator.declareContextValue("name", "John", false);
+            assertEquals("John", evaluator.evaluate("name ?: \"Anonymous\""));
+        }
+
+        @Test
+        @DisplayName("should work with nested elvis operators")
+        void testElvisOperatorWithNestedOperators() {
+            assertEquals("default", evaluator.evaluate("null ?: \"\" ?: \"default\""));
+            assertEquals(100, evaluator.evaluate("0 ?: false ?: 100"));
+        }
+
+        @Test
+        @DisplayName("should work with complex expressions")
+        void testElvisOperatorWithComplexExpressions() {
+            Map<String, Object> user = new HashMap<>();
+            user.put("name", "");
+            user.put("age", 0);
+            evaluator.declareContextValue("user", user, false);
+            assertEquals("Unknown", evaluator.evaluate("user.name ?: \"Unknown\""));
+            assertEquals(18, evaluator.evaluate("user.age ?: 18"));
+        }
+    }
+
+    @Nested
+    @DisplayName("identifier expressions")
+    class IdentifierExpressionsTests {
+        @Test
+        @DisplayName("should evaluate identifiers from context")
+        void testEvaluateIdentifiersFromContext() {
+            evaluator.declareContextValue("x", 10, false);
+            evaluator.declareContextValue("y", 20, false);
+            evaluator.declareContextValue("name", "Test", false);
+
+            assertEquals(10, evaluator.evaluate("x"));
+            assertEquals(20, evaluator.evaluate("y"));
+            assertEquals("Test", evaluator.evaluate("name"));
+        }
+
+        @Test
+        @DisplayName("should throw error for undefined identifiers")
+        void testThrowErrorForUndefinedIdentifiers() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("undefinedVar"));
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("anotherUndefined"));
+        }
+
+        @Test
+        @DisplayName("should evaluate number identifier")
+        void testEvaluateNumberIdentifier() {
+            evaluator.declareContextValue("num", 42, false);
+            assertEquals(42, evaluator.evaluate("num"));
+
+            evaluator.declareContextValue("decimal", 3.14, false);
+            assertEquals(3.14, evaluator.evaluate("decimal"));
+
+            evaluator.declareContextValue("negative", -100, false);
+            assertEquals(-100, evaluator.evaluate("negative"));
+        }
+
+        @Test
+        @DisplayName("should evaluate string identifier")
+        void testEvaluateStringIdentifier() {
+            evaluator.declareContextValue("str", "hello", false);
+            assertEquals("hello", evaluator.evaluate("str"));
+
+            evaluator.declareContextValue("empty", "", false);
+            assertEquals("", evaluator.evaluate("empty"));
+        }
+
+        @Test
+        @DisplayName("should evaluate boolean identifier")
+        void testEvaluateBooleanIdentifier() {
+            evaluator.declareContextValue("isTrue", true, false);
+            assertEquals(true, evaluator.evaluate("isTrue"));
+
+            evaluator.declareContextValue("isFalse", false, false);
+            assertEquals(false, evaluator.evaluate("isFalse"));
+        }
+
+        @Test
+        @DisplayName("should evaluate null identifier")
+        void testEvaluateNullIdentifier() {
+            evaluator.declareContextValue("nullValue", null, false);
+            assertNull(evaluator.evaluate("nullValue"));
+        }
+
+        @Test
+        @DisplayName("should evaluate array identifier")
+        void testEvaluateArrayIdentifier() {
+            evaluator.declareContextValue("arr", Arrays.asList(1, 2, 3), false);
+            assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("arr"));
+
+            evaluator.declareContextValue("emptyArr", new ArrayList<>(), false);
+            assertEquals(new ArrayList<>(), evaluator.evaluate("emptyArr"));
+
+            evaluator.declareContextValue("mixedArr", Arrays.asList(1, "test", true, null), false);
+            assertEquals(Arrays.asList(1, "test", true, null), evaluator.evaluate("mixedArr"));
+        }
+
+        @Test
+        @DisplayName("should evaluate object identifier")
+        void testEvaluateObjectIdentifier() {
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("key", "value");
+            evaluator.declareContextValue("obj", obj, false);
+            assertEquals(obj, evaluator.evaluate("obj"));
+
+            Map<String, Object> emptyObj = new HashMap<>();
+            evaluator.declareContextValue("emptyObj", emptyObj, false);
+            assertEquals(emptyObj, evaluator.evaluate("emptyObj"));
+
+            Map<String, Object> complexObj = new HashMap<>();
+            complexObj.put("name", "test");
+            complexObj.put("count", 42);
+            complexObj.put("active", true);
+            complexObj.put("data", null);
+
+            evaluator.declareContextValue("complexObj", complexObj, false);
+            assertEquals(complexObj, evaluator.evaluate("complexObj"));
+        }
+
+        @Test
+        @DisplayName("should evaluate nested object identifier")
+        void testEvaluateNestedObjectIdentifier() {
+            Map<String, Object> level2 = new HashMap<>();
+            level2.put("value", "deep");
+            Map<String, Object> level1 = new HashMap<>();
+            level1.put("level2", level2);
+            Map<String, Object> nested = new HashMap<>();
+            nested.put("level1", level1);
+            evaluator.declareContextValue("nested", nested, false);
+            assertEquals(nested, evaluator.evaluate("nested"));
+        }
+
+        @Test
+        @DisplayName("should evaluate array of objects identifier")
+        void testEvaluateArrayOfObjectsIdentifier() {
+            List<Map<String, Object>> users = new ArrayList<>();
+            Map<String, Object> user1 = new HashMap<>();
+            user1.put("name", "Alice");
+            user1.put("age", 25);
+            users.add(user1);
+            Map<String, Object> user2 = new HashMap<>();
+            user2.put("name", "Bob");
+            user2.put("age", 30);
+            users.add(user2);
+            evaluator.declareContextValue("users", users, false);
+            assertEquals(users, evaluator.evaluate("users"));
+        }
+    }
+
+    @Nested
+    @DisplayName("var declaration expressions")
+    class VarDeclarationExpressionsTests {
+        @Test
+        @DisplayName("should declare variable with let keyword")
+        void testDeclareVariableWithLetKeyword() {
+            assertEquals(10, evaluator.evaluate("let x = 10; x;"));
+            assertEquals(5.54, evaluator.evaluate("let y = 5.54; y;"));
+            assertEquals("Test", evaluator.evaluate("let name = \"Test\"; name;"));
+            assertEquals(false, evaluator.evaluate("let isTrue = false; isTrue;"));
+            assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("let arr = [1, 2, 3]; arr;"));
+            assertEquals(Arrays.asList(1, "two", true, null), evaluator.evaluate("let mixed = [1, \"two\", true, null]; mixed;"));
+            Map<String, Object> expectedObj = new HashMap<>();
+            expectedObj.put("key", "value");
+            assertEquals(expectedObj, evaluator.evaluate("let obj = {\"key\": \"value\"}; obj;"));
+            Map<String, Object> expectedNestedObj = new HashMap<>();
+            Map<String, Object> levelA = new HashMap<>();
+            levelA.put("b", 2);
+            expectedNestedObj.put("a", levelA);
+            assertEquals(expectedNestedObj, evaluator.evaluate("let nested = {\"a\": {\"b\": 2}}; nested;"));
+        }
+
+        @Test
+        @DisplayName("should declare variable with const keyword")
+        void testDeclareVariableWithConstKeyword() {
+            assertEquals(20, evaluator.evaluate("const x = 20; x;"));
+            assertEquals("Hello", evaluator.evaluate("const greeting = \"Hello\"; greeting;"));
+            assertEquals(true, evaluator.evaluate("const isValid = true; isValid;"));
+            assertEquals(Arrays.asList(4, 5, 6), evaluator.evaluate("const nums = [4, 5, 6]; nums;"));
+            Map<String, Object> expectedSettings = new HashMap<>();
+            expectedSettings.put("theme", "dark");
+            assertEquals(expectedSettings, evaluator.evaluate("const settings = {\"theme\": \"dark\"}; settings;"));
+        }
+
+        @Test
+        @DisplayName("should throw error for redeclaration of variable")
+        void testThrowErrorForRedeclarationOfVariable() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("let x = 10; let x = 20;"));
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("const y = 5; const y = 15;"));
+        }
+
+        @Test
+        @DisplayName("should throw error for reassignment of const variable")
+        void testThrowErrorForReassignmentOfConstVariable() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("const z = 30; z = 40;"));
+        }
+
+        @Test
+        @DisplayName("should allow reassignment of let variable")
+        void testAllowReassignmentOfLetVariable() {
+            assertEquals(2, evaluator.evaluate("let a = 1; a = 2; a;"));
+        }
+
+        @Test
+        @DisplayName("should handle variable scope correctly")
+        void testHandleVariableScopeCorrectly() {
+            assertEquals(20, evaluator.evaluate("""
+                        let x = 10;
+                        {
+                            let x = 20;
+                            x;
+                        }
+                    """));
+            assertEquals(5, evaluator.evaluate("""
+                        let y = 5;
+                        {
+                            let y = 15;
+                        }
+                        y;
+                    """));
+        }
+
+        @Test
+        @DisplayName("should create a variable in the global scope by declaring with global keyword")
+        void testCreateGlobalVariable() {
+            evaluator.evaluate("global let gVar = 100;");
+            assertEquals(100, evaluator.getGlobalScopeVariables().get("gVar"));
+
+            evaluator.evaluate("global const gConst = \"global\";");
+            assertEquals("global", evaluator.getGlobalScopeVariables().get("gConst"));
+        }
+
+        @Test
+        @DisplayName("should allow access to global variables from local scope")
+        void testAccessGlobalVariablesFromLocalScope() {
+            evaluator.evaluate("global let gNum = 50;");
+            assertEquals(75, evaluator.evaluate("""
+                        {
+                            let localNum = gNum + 25;
+                            localNum;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("global scope variables redeclaration is allowed and it should not throw error")
+        void testGlobalScopeVariablesRedeclaration() {
+            evaluator.evaluate("global let gVar = 200; global let gVar = 300;");
+            assertEquals(300, evaluator.getGlobalScopeVariables().get("gVar"));
+            assertDoesNotThrow(() -> evaluator.evaluate("global let gVar = 400;"));
+
+            evaluator.evaluate("global const gConst = \"first\"; global const gConst = \"second\";");
+            assertEquals("second", evaluator.getGlobalScopeVariables().get("gConst"));
+            assertDoesNotThrow(() -> evaluator.evaluate("global const gConst = \"third\";"));
+        }
+    }
+
+    @Nested
+    @DisplayName("block statements")
+    class BlockStatementsTests {
+        @Test
+        @DisplayName("should evaluate block statements correctly")
+        void testEvaluateBlockStatementsCorrectly() {
+            assertEquals(30, evaluator.evaluate("""
+                        {
+                            let x = 10;
+                            let y = 20;
+                            x + y;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should maintain variable scope within blocks")
+        void testMaintainVariableScopeWithinBlocks() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                        {
+                            let x = 5;
+                        }
+                        x;
+                    """));
+        }
+
+        @Test
+        @DisplayName("should allow nested blocks")
+        void testAllowNestedBlocks() {
+            assertEquals(6, evaluator.evaluate("""
+                        {
+                            let x = 2;
+                            {
+                                let y = 3;
+                                x * y;
+                            }
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should access outer scope variables within inner blocks")
+        void testAccessOuterScopeVariablesWithinInnerBlocks() {
+            assertEquals(9, evaluator.evaluate("""
+                        let a = 4;
+                        {
+                            let b = 5;
+                            a + b;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should not allow inner block variables to leak to outer scope")
+        void testNotAllowInnerBlockVariablesToLeakToOuterScope() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                        {
+                            let m = 7;
+                        }
+                        m;
+                    """));
+        }
+
+        @Test
+        @DisplayName("should handle multiple statements in a block")
+        void testHandleMultipleStatementsInABlock() {
+            assertEquals(6, evaluator.evaluate("""
+                        {
+                            let x = 1;
+                            x = x + 1;
+                            x = x * 3;
+                            x;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should handle blocks with only variable declarations")
+        void testHandleBlocksWithOnlyVariableDeclarations() {
+            assertEquals(20, evaluator.evaluate("""
+                        {
+                            let x = 10;
+                            const y = 20;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should handle blocks with global variable declarations")
+        void testHandleBlocksWithGlobalVariableDeclarations() {
+            evaluator.evaluate("""
+                        {
+                            global let gVar = 123;
+                            global const gConst = "block";
+                        }
+                    """);
+            assertEquals(123, evaluator.getGlobalScopeVariables().get("gVar"));
+            assertEquals("block", evaluator.getGlobalScopeVariables().get("gConst"));
+        }
+
+        @Test
+        @DisplayName("should handle blocks with nested variable declarations")
+        void testHandleBlocksWithNestedVariableDeclarations() {
+            assertEquals(30, evaluator.evaluate("""
+                        {
+                            let x = 5;
+                            {
+                                let y = 10;
+                                {
+                                    let z = 15;
+                                    x + y + z;
+                                }
+                            }
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should return last evaluated expression in the block")
+        void testReturnLastEvaluatedExpressionInTheBlock() {
+            assertEquals(12, evaluator.evaluate("""
+                        {
+                            let x = 3;
+                            let y = 4;
+                            x * y;
+                        }
+                    """));
+        }
+
+        @Test
+        @DisplayName("should handle async execution within blocks")
+        void testHandleAsyncExecutionWithinBlocks() {
+            FuncImpl asyncFunc = (ctx, args) -> {;
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return new JexNumber(5);
+            };
+            evaluator.addFunction("asyncFunc", asyncFunc);
+            assertEquals(15, evaluator.evaluate("""
+                        {
+                            let abc = asyncFunc();
+                            let bcc = 10;
+                            abc + bcc;
+                        }
+                    """));
         }
     }
 }
