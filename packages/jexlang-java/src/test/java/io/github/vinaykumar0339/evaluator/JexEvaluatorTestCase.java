@@ -3162,5 +3162,435 @@ public class JexEvaluatorTestCase {
         }
     }
 
+    @Nested
+    @DisplayName("function call expressions")
+    class FunctionCallExpressionsTests {
+        @Nested
+        @DisplayName("math functions")
+        class MathFunctions {
+            @Test
+            @DisplayName("should evaluate abs function")
+            void testEvaluateAbsFunction() {
+                // number input
+                assertEquals(5, evaluator.evaluate("abs(-5)"));
+                assertEquals(3.14, evaluator.evaluate("abs(3.14)"));
+                assertEquals(10.5, evaluator.evaluate("abs(-10.5)"));
+                assertEquals(10, evaluator.evaluate("abs(10.0)"));
+                assertEquals(0, evaluator.evaluate("abs(0)"));
 
+                // string input
+                assertEquals(7, evaluator.evaluate("abs(\"-7\")"));
+                assertEquals(4.2, evaluator.evaluate("abs(\"4.2\")"));
+                assertEquals(0, evaluator.evaluate("abs(\"-0\")"));
+                assertEquals(0, evaluator.evaluate("abs(\"0\")"));
+                assertEquals(10, evaluator.evaluate("abs(\"-10.0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("abs(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("abs(true)"));
+                assertEquals(0, evaluator.evaluate("abs(false)"));
+                assertEquals(0, evaluator.evaluate("abs(-false)"));
+                assertEquals(1, evaluator.evaluate("abs(-true)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("abs(null)"));
+
+            }
+
+            @Test
+            @DisplayName("should evaluate ceil function")
+            void testEvaluateCeilFunction() {
+                // number input
+                assertEquals(5, evaluator.evaluate("ceil(4.2)"));
+                assertEquals(5, evaluator.evaluate("ceil(4.8)"));
+                assertEquals(-4, evaluator.evaluate("ceil(-4.2)"));
+                assertEquals(0, evaluator.evaluate("ceil(0)"));
+
+                // string input
+                assertEquals(5, evaluator.evaluate("ceil(\"4.2\")"));
+                assertEquals(5, evaluator.evaluate("ceil(\"4.8\")"));
+                assertEquals(-4, evaluator.evaluate("ceil(\"-4.2\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("ceil(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("ceil(true)"));
+                assertEquals(0, evaluator.evaluate("ceil(false)"));
+                assertEquals(1, evaluator.evaluate("ceil(0.3)"));
+                assertEquals(0, evaluator.evaluate("ceil(-0.3)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("ceil(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate floor function")
+            void testEvaluateFloorFunction() {
+                // number input
+                assertEquals(4, evaluator.evaluate("floor(4.2)"));
+                assertEquals(4, evaluator.evaluate("floor(4.8)"));
+                assertEquals(-5, evaluator.evaluate("floor(-4.2)"));
+                assertEquals(0, evaluator.evaluate("floor(0)"));
+
+                // string input
+                assertEquals(4, evaluator.evaluate("floor(\"4.2\")"));
+                assertEquals(4, evaluator.evaluate("floor(\"4.8\")"));
+                assertEquals(-5, evaluator.evaluate("floor(\"-4.2\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("floor(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("floor(true)"));
+                assertEquals(0, evaluator.evaluate("floor(false)"));
+                assertEquals(0, evaluator.evaluate("floor(0.7)"));
+                assertEquals(-1, evaluator.evaluate("floor(-0.3)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("floor(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate round function")
+            void testEvaluateRoundFunction() {
+                // number input
+                assertEquals(4, evaluator.evaluate("round(4.2)"));
+                assertEquals(5, evaluator.evaluate("round(4.8)"));
+                assertEquals(5, evaluator.evaluate("round(4.5)"));
+                assertEquals(0, evaluator.evaluate("round(0)"));
+
+                // string input
+                assertEquals(4, evaluator.evaluate("round(\"4.2\")"));
+                assertEquals(5, evaluator.evaluate("round(\"4.8\")"));
+                assertEquals(5, evaluator.evaluate("round(\"4.5\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("round(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("round(true)"));
+                assertEquals(0, evaluator.evaluate("round(false)"));
+                assertEquals(1, evaluator.evaluate("round(0.5)"));
+                assertEquals(0, evaluator.evaluate("round(-0.5)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("round(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate trunc function")
+            void testEvaluateTruncFunction() {
+                // number input
+                assertEquals(4, evaluator.evaluate("trunc(4.9)"));
+                assertEquals(-4, evaluator.evaluate("trunc(-4.9)"));
+                assertEquals(0, evaluator.evaluate("trunc(0)"));
+
+                // string input
+                assertEquals(4, evaluator.evaluate("trunc(\"4.9\")"));
+                assertEquals(-4, evaluator.evaluate("trunc(\"-4.9\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("trunc(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("trunc(true)"));
+                assertEquals(0, evaluator.evaluate("trunc(false)"));
+                assertEquals(0, evaluator.evaluate("trunc(0.9)"));
+                assertEquals(0, evaluator.evaluate("trunc(-0.9)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("trunc(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate min function")
+            void testEvaluateMinFunction() {
+                // number input
+                assertEquals(1, evaluator.evaluate("min(1, 2, 3)"));
+                assertEquals(-2, evaluator.evaluate("min(5, -2, 10)"));
+                assertEquals(1.41, evaluator.evaluate("min(3.14, 2.71, 1.41)"));
+                assertEquals(0, evaluator.evaluate("min(0)"));
+
+                // string input
+                assertEquals(1, evaluator.evaluate("min(\"1\", \"2\", \"3\")"));
+                assertEquals(-2, evaluator.evaluate("min(\"5\", \"-2\", \"10\")"));
+                assertEquals(1.41, evaluator.evaluate("min(\"3.14\", \"2.71\", \"1.41\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("min(\"invalid\", \"1\")"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("min(true, false)"));
+                assertEquals(0, evaluator.evaluate("min(false, false)"));
+                assertEquals(1, evaluator.evaluate("min(true, true)"));
+
+                // mixed input
+                assertEquals(0, evaluator.evaluate("min(3, \"2\", true, false)"));
+                assertEquals(0, evaluator.evaluate("min(5, \"3\", false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("min(null, 1, 2)"));
+                assertEquals(0, evaluator.evaluate("min(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate max function")
+            void testEvaluateMaxFunction() {
+                // number input
+                assertEquals(3, evaluator.evaluate("max(1, 2, 3)"));
+                assertEquals(10, evaluator.evaluate("max(5, -2, 10)"));
+                assertEquals(3.14, evaluator.evaluate("max(3.14, 2.71, 1.41)"));
+                assertEquals(0, evaluator.evaluate("max(0)"));
+
+                // string input
+                assertEquals(3, evaluator.evaluate("max(\"1\", \"2\", \"3\")"));
+                assertEquals(10, evaluator.evaluate("max(\"5\", \"-2\", \"10\")"));
+                assertEquals(3.14, evaluator.evaluate("max(\"3.14\", \"2.71\", \"1.41\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("max(\"invalid\", \"1\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("max(true, false)"));
+                assertEquals(0, evaluator.evaluate("max(false, false)"));
+                assertEquals(1, evaluator.evaluate("max(true, true)"));
+
+                // mixed input
+                assertEquals(3, evaluator.evaluate("max(3, \"2\", true, false)"));
+                assertEquals(2, evaluator.evaluate("max(1, \"2\", true)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("max(null, -1, 0)"));
+                assertEquals(0, evaluator.evaluate("max(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate pow function")
+            void testEvaluatePowFunction() {
+                // number input
+                assertEquals(8, evaluator.evaluate("pow(2, 3)"));
+                assertEquals(25, evaluator.evaluate("pow(5, 2)"));
+                assertEquals(1, evaluator.evaluate("pow(10, 0)"));
+                assertEquals(0, evaluator.evaluate("pow(0, 5)"));
+
+                // string input
+                assertEquals(8, evaluator.evaluate("pow(\"2\", \"3\")"));
+                assertEquals(25, evaluator.evaluate("pow(\"5\", \"2\")"));
+                assertEquals(1, evaluator.evaluate("pow(\"10\", \"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("pow(\"invalid\", 2)"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("pow(2, \"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("pow(true, false)"));
+                assertEquals(0, evaluator.evaluate("pow(false, true)"));
+                assertEquals(1, evaluator.evaluate("pow(true, true)"));
+                assertEquals(1, evaluator.evaluate("pow(false, false)"));
+
+                // mixed input
+                assertEquals(8, evaluator.evaluate("pow(2, \"3\")"));
+                assertEquals(25, evaluator.evaluate("pow(\"5\", 2)"));
+                assertEquals(1, evaluator.evaluate("pow(true, 3)"));
+                assertEquals(1, evaluator.evaluate("pow(5, false)"));
+                assertEquals(0, evaluator.evaluate("pow(false, 3)"));
+                assertEquals(5, evaluator.evaluate("pow(5, true)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("pow(null, 3)"));
+                assertEquals(1, evaluator.evaluate("pow(5, null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate sqrt function")
+            void testEvaluateSqrtFunction() {
+                // number input
+                assertEquals(4, evaluator.evaluate("sqrt(16)"));
+                assertEquals(1.5, evaluator.evaluate("sqrt(2.25)"));
+                assertEquals(0, evaluator.evaluate("sqrt(0)"));
+
+                // string input
+                assertEquals(4, evaluator.evaluate("sqrt(\"16\")"));
+                assertEquals(1.5, evaluator.evaluate("sqrt(\"2.25\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sqrt(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("sqrt(true)"));
+                assertEquals(0, evaluator.evaluate("sqrt(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("sqrt(null)"));
+
+                // negative number should throw
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sqrt(-4)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate cbrt function")
+            void testEvaluateCbrtFunction() {
+                // number input
+                assertEquals(2, evaluator.evaluate("cbrt(8)"));
+                assertEquals(3, evaluator.evaluate("cbrt(27)"));
+                assertEquals(0, evaluator.evaluate("cbrt(0)"));
+                assertEquals(-2, evaluator.evaluate("cbrt(-8)"));
+
+                // string input
+                assertEquals(2, evaluator.evaluate("cbrt(\"8\")"));
+                assertEquals(3, evaluator.evaluate("cbrt(\"27\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("cbrt(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("cbrt(true)"));
+                assertEquals(0, evaluator.evaluate("cbrt(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("cbrt(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate random function")
+            void testEvaluateRandomFunction() {
+                double result = (Double) evaluator.evaluate("random()");
+                assertTrue(result >= 0);
+                assertTrue(result < 1);
+            }
+
+            @Test
+            @DisplayName("should evaluate sign function")
+            void testEvaluateSignFunction() {
+                // number input
+                assertEquals(1, evaluator.evaluate("sign(5)"));
+                assertEquals(-1, evaluator.evaluate("sign(-5)"));
+                assertEquals(0, evaluator.evaluate("sign(0)"));
+
+                // string input
+                assertEquals(1, evaluator.evaluate("sign(\"5\")"));
+                assertEquals(-1, evaluator.evaluate("sign(\"-5\")"));
+                assertEquals(0, evaluator.evaluate("sign(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sign(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("sign(true)"));
+                assertEquals(0, evaluator.evaluate("sign(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("sign(null)"));
+            }
+        }
+
+        @Nested
+        @DisplayName("trigonometric functions")
+        class TrigonometricFunctions {
+
+            @Test
+            @DisplayName("should evaluate sin function")
+            void testEvaluateSinFunction() {
+                // number input
+                assertEquals(0, evaluator.evaluate("sin(0)"));
+                assertTrue(Math.abs((Integer) evaluator.evaluate("sin(1.5707963267948966)") - 1) < 0.0001);
+
+                // string input
+                assertEquals(0, evaluator.evaluate("sin(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sin(\"invalid\")"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("sin(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("sin(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate cos function")
+            void testEvaluateCosFunction() {
+                // number input
+                assertEquals(1, evaluator.evaluate("cos(0)"));
+                assertTrue(Math.abs((Integer) evaluator.evaluate("cos(3.141592653589793)") + 1) < 0.0001);
+
+                // string input
+                assertEquals(1, evaluator.evaluate("cos(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("cos(\"invalid\")"));
+
+                // boolean input
+                assertEquals(1, evaluator.evaluate("cos(false)"));
+
+                // null input
+                assertEquals(1, evaluator.evaluate("cos(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate tan function")
+            void testEvaluateTanFunction() {
+                // number input
+                assertEquals(0, evaluator.evaluate("tan(0)"));
+
+                // string input
+                assertEquals(0, evaluator.evaluate("tan(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("tan(\"invalid\")"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("tan(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("tan(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate asin function")
+            void testEvaluateAsinFunction() {
+                // number input
+                assertEquals(0, evaluator.evaluate("asin(0)"));
+                assertTrue(Math.abs((Double) evaluator.evaluate("asin(1)") - 1.5707963267948966) < 0.0001);
+
+                // string input
+                assertEquals(0, evaluator.evaluate("asin(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("asin(\"invalid\")"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("asin(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("asin(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate acos function")
+            void testEvaluateAcosFunction() {
+                // number input
+                assertTrue(Math.abs((Integer) evaluator.evaluate("acos(1)")) < 0.0001);
+
+                // string input
+                assertTrue(Math.abs((Integer) evaluator.evaluate("acos(\"1\")")) < 0.0001);
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("acos(\"invalid\")"));
+
+                // boolean input
+                assertTrue(Math.abs((Integer) evaluator.evaluate("acos(true)")) < 0.0001);
+
+                // null input
+                assertTrue(Math.abs((Double) evaluator.evaluate("acos(null)") - 1.5707963267948966) < 0.0001);
+            }
+
+            @Test
+            @DisplayName("should evaluate atan function")
+            void testEvaluateAtanFunction() {
+                // number input
+                assertEquals(0, evaluator.evaluate("atan(0)"));
+
+                // string input
+                assertEquals(0, evaluator.evaluate("atan(\"0\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("atan(\"invalid\")"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("atan(false)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("atan(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate atan2 function")
+            void testEvaluateAtan2Function() {
+                // number input
+                assertEquals(0, evaluator.evaluate("atan2(0, 1)"));
+                assertTrue(Math.abs((Double) evaluator.evaluate("atan2(1, 0)") - 1.5707963267948966) < 0.0001);
+
+                // string input
+                assertEquals(0, evaluator.evaluate("atan2(\"0\", \"1\")"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("atan2(\"invalid\", 1)"));
+
+                // boolean input
+                assertEquals(0, evaluator.evaluate("atan2(false, true)"));
+
+                // null input
+                assertEquals(0, evaluator.evaluate("atan2(null, 1)"));
+            }
+        }
+    }
 }
