@@ -39,22 +39,6 @@ public class JexBoolean implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        // TO have common check with js like behavior we allow number and boolean comparison
-        // we can allow string numbers of 1 and 0
-        if (!(other.isNumber() || other.isBoolean())) {
-            if (other.isString()) {
-                String str = other.asString("comparison isEqual in JexBoolean");
-                if (str.equals("1")) {
-                    return this.value;
-                } else if (str.equals("0")) {
-                    return !this.value;
-                } else {
-                    return false;
-                }
-            }
-            return false;
-        }
-        boolean bool = Utils.toBoolean(other, "comparison isEqual in JexBoolean");
-        return this.value == bool;
+        return Utils.jsEqual(this, other);
     }
 }

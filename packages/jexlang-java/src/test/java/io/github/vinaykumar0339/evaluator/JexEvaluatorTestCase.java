@@ -566,31 +566,65 @@ public class JexEvaluatorTestCase {
         @DisplayName("boolean with numbers")
         void testBooleanWithNumbers() {
             assertEquals(Boolean.TRUE, evaluator.evaluate("true == 1"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("1 == true"));
+
+            assertEquals(Boolean.FALSE, evaluator.evaluate("true == -1"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("-1 == true"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("false == 0"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("0 == false"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("true != 0"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("0 != true"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("false != 1"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("1 != false"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("true == 0"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("0 == true"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("false == 1"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("1 == false"));
         }
 
         @Test
         @DisplayName("boolean with strings")
         void testBooleanWithStrings() {
             assertEquals(Boolean.FALSE, evaluator.evaluate("true == \"true\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"true\" == true"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("false == \"false\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"false\" == false"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("true != \"false\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"false\" != true"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("false != \"true\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"true\" != false"));
 
             assertEquals(Boolean.FALSE, evaluator.evaluate("true == \"false\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"false\" == true"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("false == \"true\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"true\" == false"));
 
             assertEquals(Boolean.TRUE, evaluator.evaluate("true == \"1\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"1\" == true"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("false == \"0\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"0\" == false"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("true == \"0\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"0\" == true"));
+
             assertEquals(Boolean.FALSE, evaluator.evaluate("false == \"1\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"1\" == false"));
 
             assertEquals(Boolean.TRUE, evaluator.evaluate("true != \"0\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"0\" != true"));
+
             assertEquals(Boolean.TRUE, evaluator.evaluate("false != \"1\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"1\" != false"));
         }
 
         @Test
@@ -633,6 +667,7 @@ public class JexEvaluatorTestCase {
         @DisplayName("inequality operator with mixed types")
         void testMixedInequality() {
             assertEquals(Boolean.FALSE, evaluator.evaluate("5 != \"5\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"5\" != 5"));
             assertEquals(Boolean.FALSE, evaluator.evaluate("0 != false"));
         }
 
@@ -659,11 +694,9 @@ public class JexEvaluatorTestCase {
             evaluator.declareContextValue("plainList2", list2, false);
             assertEquals(Boolean.TRUE, evaluator.evaluate("plainList != plainList2"));
 
-            JexArray jexArrayList3 = jexArrayList;
-            evaluator.declareContextValue("list3", jexArrayList3, false);
+            evaluator.declareContextValue("list3", jexArrayList, false);
             assertEquals(Boolean.TRUE, evaluator.evaluate("list == list3"));
-            List<Integer> plainList3 = list;
-            evaluator.declareContextValue("plainList3", plainList3, false);
+            evaluator.declareContextValue("plainList3", list, false);
             assertEquals(Boolean.FALSE, evaluator.evaluate("plainList == plainList3"));
         }
 
@@ -694,11 +727,9 @@ public class JexEvaluatorTestCase {
             evaluator.declareContextValue("hashObj2", obj2, false);
             assertEquals(Boolean.TRUE, evaluator.evaluate("hashObj != hashObj2"));
 
-            JexObject jexObject3 = jexObject;
-            evaluator.declareContextValue("obj3", jexObject3, false);
+            evaluator.declareContextValue("obj3", jexObject, false);
             assertEquals(Boolean.TRUE, evaluator.evaluate("obj == obj3"));
-            Map<String, Object> hashObj3 = obj;
-            evaluator.declareContextValue("hashObj3", hashObj3, false);
+            evaluator.declareContextValue("hashObj3", obj, false);
             assertEquals(Boolean.FALSE, evaluator.evaluate("hashObj == hashObj3"));
         }
     }

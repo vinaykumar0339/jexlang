@@ -409,29 +409,65 @@ describe('JexEvaluator', () => {
 
         it('boolean with numbers', () => {
             expect(evaluator.evaluate('true == 1')).toBe(true);
+            expect(evaluator.evaluate('1 == true')).toBe(true);
+
+
+            expect(evaluator.evaluate('true == -1')).toBe(false);
+            expect(evaluator.evaluate('-1 == true')).toBe(false);
+
             expect(evaluator.evaluate('false == 0')).toBe(true);
+            expect(evaluator.evaluate('0 == false')).toBe(true);
+            
             expect(evaluator.evaluate('true != 0')).toBe(true);
+            expect(evaluator.evaluate('0 != true')).toBe(true);
+            
             expect(evaluator.evaluate('false != 1')).toBe(true);
+            expect(evaluator.evaluate('1 != false')).toBe(true);
+            
             expect(evaluator.evaluate('true == 0')).toBe(false);
+            expect(evaluator.evaluate('0 == true')).toBe(false);
+            
             expect(evaluator.evaluate('false == 1')).toBe(false);
+            expect(evaluator.evaluate('1 == false')).toBe(false);
         });
 
         it('boolean with strings', () => {
             expect(evaluator.evaluate('true == "true"')).toBe(false);
+            expect(evaluator.evaluate('"true" == true')).toBe(false);
+
+
             expect(evaluator.evaluate('false == "false"')).toBe(false);
+            expect(evaluator.evaluate('"false" == false')).toBe(false);
+            
             expect(evaluator.evaluate('true != "false"')).toBe(true);
+            expect(evaluator.evaluate('"false" != true')).toBe(true);
+            
             expect(evaluator.evaluate('false != "true"')).toBe(true);
+            expect(evaluator.evaluate('"true" != false')).toBe(true);
 
             expect(evaluator.evaluate('true == "false"')).toBe(false);
+            expect(evaluator.evaluate('"false" == true')).toBe(false);
+            
             expect(evaluator.evaluate('false == "true"')).toBe(false);
+            expect(evaluator.evaluate('"true" == false')).toBe(false);
 
             expect(evaluator.evaluate('true == "1"')).toBe(true);
+            expect(evaluator.evaluate('"1" == true')).toBe(true);
+            
             expect(evaluator.evaluate('false == "0"')).toBe(true);
+            expect(evaluator.evaluate('"0" == false')).toBe(true);
+            
             expect(evaluator.evaluate('true == "0"')).toBe(false);
+            expect(evaluator.evaluate('"0" == true')).toBe(false);
+            
             expect(evaluator.evaluate('false == "1"')).toBe(false);
+            expect(evaluator.evaluate('"1" == false')).toBe(false);
 
             expect(evaluator.evaluate('true != "0"')).toBe(true);
+            expect(evaluator.evaluate('"0" != true')).toBe(true);
+            
             expect(evaluator.evaluate('false != "1"')).toBe(true);
+            expect(evaluator.evaluate('"1" != false')).toBe(true);
         });
 
         it('equality operator with numbers', () => {
@@ -457,11 +493,13 @@ describe('JexEvaluator', () => {
         it('equality operator with mixed types', () => {
             expect(evaluator.evaluate('5 == "5"')).toBe(true);
             expect(evaluator.evaluate('"5" == 5')).toBe(true);
+
             expect(evaluator.evaluate('0 == false')).toBe(true);
         });
 
         it('inequality operator with mixed types', () => {
             expect(evaluator.evaluate('5 != "5"')).toBe(false);
+            expect(evaluator.evaluate('"5" != 5')).toBe(false);
             expect(evaluator.evaluate('0 != false')).toBe(false);
         });
 

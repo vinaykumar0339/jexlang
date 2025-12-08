@@ -39,7 +39,6 @@ public class JexDouble implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        double dbl = Utils.toDouble(other, "comparison isEqual in JexDouble");
-        return this.value.equals(dbl);
+        return Utils.jsEqual(this, other);
     }
 }

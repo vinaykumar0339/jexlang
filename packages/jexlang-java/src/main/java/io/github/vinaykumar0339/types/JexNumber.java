@@ -43,7 +43,6 @@ public class JexNumber implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        JexNumber num = JexValue.fromNumber(Utils.toNumber(other, "comparison isEqual in JexNumber"));
-        return this.value.equals(num.asNumber("comparison isEqual in JexNumber"));
+        return Utils.jsEqual(this, other);
     }
 }

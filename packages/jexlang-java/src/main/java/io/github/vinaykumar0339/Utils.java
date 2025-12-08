@@ -75,14 +75,14 @@ public class Utils {
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
         if (v instanceof JexBoolean) return v.asBoolean(ctx);
-        if (v instanceof JexInteger) return v.asInteger(ctx) != 0;
+        if (v instanceof JexInteger) return v.asInteger(ctx) != 0 || (v.asInteger(ctx) == 1 && v.asInteger(ctx) != -1); // JS Compatible
         if (v instanceof JexDouble) {
             double d = v.asDouble(ctx);
-            return d != 0.0 && !Double.isNaN(d);
+            return ((d != 0.0 && !Double.isNaN(d)) || (d == 1.0)) && d != -1.0; // JS Compatible
         }
         if (v instanceof JexNumber) {
             double d = v.asNumber(ctx).doubleValue();
-            return d != 0.0 && !Double.isNaN(d);
+            return ((d != 0.0 && !Double.isNaN(d)) || d == 1.0) && d != -1.0; // JS Compatible
         }
         if (v instanceof JexString) return !v.asString(ctx).isEmpty();
         if (v instanceof JexArray) return !v.asArray(ctx).isEmpty();
@@ -334,4 +334,92 @@ public class Utils {
         scope.declareVariable("__CLIENT_LANGUAGE", new JexString("java"), true);
         return scope;
     }
+
+    public static boolean jsEqual(JexValue a, JexValue b) {
+        // 1. If both are null → true
+        if (a.isNull() && b.isNull()) return true;
+
+        // 2. null == undefined behavior (you can choose if you support undefined)
+        // For now: null is only equal to null in JexLang.
+        if (a.isNull() || b.isNull()) return false;
+
+        // 3. If types match → direct compare
+        if (a.isString() && b.isString()) {
+            return a.asString("==").equals(b.asString("=="));
+        }
+        if (a.isBoolean() && b.isBoolean()) {
+            return a.asBoolean("==") == b.asBoolean("==");
+        }
+        if (a.isNumber() && b.isNumber()) {
+            double da = a.asNumber("==").doubleValue();
+            double db = b.asNumber("==").doubleValue();
+            return Double.compare(da, db) == 0;
+        }
+
+        // 4. boolean → number conversion
+        if (a.isBoolean()) {
+            return jsEqual(JexValue.fromNumber(a.asBoolean("==") ? 1 : 0), b);
+        }
+        if (b.isBoolean()) {
+            return jsEqual(a, JexValue.fromNumber(b.asBoolean("==") ? 1 : 0));
+        }
+
+        // 5. string ↔ number conversion
+        if (a.isString() && b.isNumber()) {
+            try {
+                double num = Double.parseDouble(a.asString("=="));
+                return jsEqual(JexValue.fromNumber(num), b);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        if (a.isNumber() && b.isString()) {
+            try {
+                double num = Double.parseDouble(b.asString("=="));
+                return jsEqual(a, JexValue.fromNumber(num));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        // 6. object → primitive conversion (like JS ToPrimitive)
+        if (a.isObject() && !b.isObject()) {
+            return jsEqual(toPrimitive(a), b);
+        }
+        if (b.isObject() && !a.isObject()) {
+            return jsEqual(a, toPrimitive(b));
+        }
+
+        // 7. object == object → reference equality
+        if (a.isObject() && b.isObject()) {
+            return a == b;
+        }
+
+        // fallback
+        return false;
+    }
+
+    private static JexValue toPrimitive(JexValue value) {
+        if (value.isString() || value.isNumber() || value.isBoolean() || value.isNull()) {
+            return value;
+        }
+
+        if (value.isArray()) {
+            StringBuilder sb = new StringBuilder();
+            var list = value.asArray("ToPrimitive");
+            for (int i = 0; i < list.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append(list.get(i).asString("ToPrimitive"));
+            }
+            return JexValue.fromString(sb.toString());
+        }
+
+        if (value.isObject()) {
+            return JexValue.fromString("[object Object]");
+        }
+
+        return JexValue.fromString(value.toString());
+    }
+
+
 }

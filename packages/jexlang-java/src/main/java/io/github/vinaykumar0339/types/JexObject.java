@@ -52,6 +52,9 @@ public class JexObject implements JexValue {
     @Override
     public boolean isEqual(JexValue other) {
         // For Object, it should reference equality
+        if (!other.isObject()) {
+            return false;
+        }
         return this == other || this.value == other.asObject("comparison isEqual in JexObject");
     }
 }

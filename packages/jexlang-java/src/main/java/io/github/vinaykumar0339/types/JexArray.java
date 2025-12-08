@@ -49,6 +49,9 @@ public class JexArray implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
+        if (!other.isArray()) {
+            return false;
+        }
         // For Array, it should reference equality
         return this == other || this.value == other.asArray("comparison isEqual in JexArray");
     }

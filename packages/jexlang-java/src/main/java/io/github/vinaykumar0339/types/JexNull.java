@@ -1,5 +1,7 @@
 package io.github.vinaykumar0339.types;
 
+import io.github.vinaykumar0339.Utils;
+
 public class JexNull implements JexValue {
     public JexNull() {}
 
@@ -36,6 +38,6 @@ public class JexNull implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        return other.isNull();
+        return Utils.jsEqual(this, other);
     }
 }

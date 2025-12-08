@@ -39,7 +39,6 @@ public class JexInteger implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        int intVal = Utils.toInteger(other, "comparison isEqual in JexInteger");
-        return this.value.equals(intVal);
+        return Utils.jsEqual(this, other);
     }
 }

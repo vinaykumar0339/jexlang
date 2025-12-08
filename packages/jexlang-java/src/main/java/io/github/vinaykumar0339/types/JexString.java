@@ -39,7 +39,6 @@ public class JexString implements JexValue {
 
     @Override
     public boolean isEqual(JexValue other) {
-        String str = Utils.toString(other, "comparison isEqual in JexString");
-        return this.value.equals(str);
+        return Utils.jsEqual(this, other);
     }
 }
