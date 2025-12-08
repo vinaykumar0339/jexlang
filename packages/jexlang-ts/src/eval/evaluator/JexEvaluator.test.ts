@@ -3298,28 +3298,28 @@ describe('JexEvaluator', () => {
                 expect(evaluator.evaluate('int("42")')).toBe(42);
                 expect(evaluator.evaluate('int("3.14")')).toBe(3);
                 expect(evaluator.evaluate('int(5.9)')).toBe(5);
-                expect(evaluator.evaluate('int(true)')).toBeNaN();
-                expect(evaluator.evaluate('int(false)')).toBeNaN();
-                expect(evaluator.evaluate('int(null)')).toBeNaN();
-                expect(evaluator.evaluate('int("invalid")')).toBeNaN();
+                expect(evaluator.evaluate('int(true)')).toBe(1);
+                expect(evaluator.evaluate('int(false)')).toBe(0);
+                expect(evaluator.evaluate('int(null)')).toBe(0);
+                expect(() => evaluator.evaluate('int("invalid")')).toThrow(JexLangRuntimeError);
             });
 
             it('should evaluate float function', () => {
                 expect(evaluator.evaluate('float("3.14")')).toBe(3.14);
                 expect(evaluator.evaluate('float("42")')).toBe(42);
-                expect(evaluator.evaluate('float(true)')).toBeNaN();
-                expect(evaluator.evaluate('float(false)')).toBeNaN();
-                expect(evaluator.evaluate('float(null)')).toBeNaN();
-                expect(evaluator.evaluate('float("invalid")')).toBeNaN();
+                expect(evaluator.evaluate('float(true)')).toBe(1);
+                expect(evaluator.evaluate('float(false)')).toBe(0);
+                expect(evaluator.evaluate('float(null)')).toBe(0);
+                expect(() => evaluator.evaluate('float("invalid")')).toThrow(JexLangRuntimeError);
             });
 
             it('should evaluate double function', () => {
                 expect(evaluator.evaluate('double("3.14")')).toBe(3.14);
                 expect(evaluator.evaluate('double("42")')).toBe(42);
-                expect(evaluator.evaluate('double(true)')).toBeNaN();
-                expect(evaluator.evaluate('double(false)')).toBeNaN();
-                expect(evaluator.evaluate('double(null)')).toBeNaN();
-                expect(evaluator.evaluate('double("invalid")')).toBeNaN();
+                expect(evaluator.evaluate('double(true)')).toBe(1);
+                expect(evaluator.evaluate('double(false)')).toBe(0);
+                expect(evaluator.evaluate('double(null)')).toBe(0);
+                expect(() => evaluator.evaluate('double("invalid")')).toThrow(JexLangRuntimeError);
             });
         });
 

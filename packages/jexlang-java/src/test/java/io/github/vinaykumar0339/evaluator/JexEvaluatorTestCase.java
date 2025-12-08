@@ -3763,5 +3763,94 @@ public class JexEvaluatorTestCase {
                 assertEquals(5, evaluator.evaluate("lerp(null, 10, 0.5)"));
             }
         }
+
+        @Nested
+        @DisplayName("type conversion functions")
+        class TypeConversionFunctions {
+
+            @Test
+            @DisplayName("should evaluate number function")
+            void testEvaluateNumberFunction() {
+                assertEquals(42, evaluator.evaluate("number(\"42\")"));
+                assertEquals(3.14, (Double) evaluator.evaluate("number(\"3.14\")"), 0.0001);
+                assertEquals(1, evaluator.evaluate("number(true)"));
+                assertEquals(0, evaluator.evaluate("number(false)"));
+                assertEquals(0, evaluator.evaluate("number(null)"));
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("number(\"invalid\")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate string function")
+            void testEvaluateStringFunction() {
+                assertEquals("42", evaluator.evaluate("string(42)"));
+                assertEquals("true", evaluator.evaluate("string(true)"));
+                assertEquals("false", evaluator.evaluate("string(false)"));
+                assertEquals("null", evaluator.evaluate("string(null)"));
+                assertEquals("3.14", evaluator.evaluate("string(3.14)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate boolean function")
+            void testEvaluateBooleanFunction() {
+                assertEquals(true, evaluator.evaluate("boolean(1)"));
+                assertEquals(false, evaluator.evaluate("boolean(0)"));
+                assertEquals(true, evaluator.evaluate("boolean(\"hello\")"));
+                assertEquals(false, evaluator.evaluate("boolean(\"\")"));
+                assertEquals(false, evaluator.evaluate("boolean(null)"));
+
+                // JS truthiness rules
+                assertEquals(true, evaluator.evaluate("boolean(\"false\")"));
+                assertEquals(true, evaluator.evaluate("boolean(\"true\")"));
+                assertEquals(true, evaluator.evaluate("boolean(\"0\")"));
+                assertEquals(true, evaluator.evaluate("boolean(\"1\")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate int function")
+            void testEvaluateIntFunction() {
+                assertEquals(42, evaluator.evaluate("int(\"42\")"));
+                assertEquals(3, evaluator.evaluate("int(\"3.14\")"));
+                assertEquals(5, evaluator.evaluate("int(5.9)"));
+
+                assertEquals(1, (Integer) evaluator.evaluate("int(true)"));
+                assertEquals(0, (Integer) evaluator.evaluate("int(false)"));
+                assertEquals(0, evaluator.evaluate("int(null)"));
+                assertThrows(
+                        JexLangRuntimeError.class,
+                        () -> evaluator.evaluate("int(\"invalid\")")
+                );
+            }
+
+            @Test
+            @DisplayName("should evaluate float function")
+            void testEvaluateFloatFunction() {
+                assertEquals(3.14f, ((Double) evaluator.evaluate("float(\"3.14\")")).floatValue(), 0.0001);
+                assertEquals(42f, ((Double) evaluator.evaluate("float(\"42\")")).floatValue(), 0.0001);
+
+                assertEquals(1, (double) evaluator.evaluate("float(true)"));
+                assertEquals(0, (double) evaluator.evaluate("float(false)"));
+                assertEquals(0, (double) evaluator.evaluate("float(null)"));
+                assertThrows(
+                        JexLangRuntimeError.class,
+                        () -> evaluator.evaluate("float(\"invalid\")")
+                );
+            }
+
+            @Test
+            @DisplayName("should evaluate double function")
+            void testEvaluateDoubleFunction() {
+                assertEquals(3.14, (Double) evaluator.evaluate("double(\"3.14\")"), 0.0001);
+                assertEquals(42.0, (Double) evaluator.evaluate("double(\"42\")"), 0.0001);
+
+                assertEquals(1, (double) evaluator.evaluate("double(true)"));
+                assertEquals(0, (double) evaluator.evaluate("double(false)"));
+                assertEquals(0, (double) evaluator.evaluate("double(null)"));
+                assertThrows(
+                        JexLangRuntimeError.class,
+                        () -> evaluator.evaluate("double(\"invalid\")")
+                );
+            }
+        }
+
     }
 }

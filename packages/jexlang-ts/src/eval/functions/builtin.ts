@@ -55,9 +55,20 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
     'number': (_, x: JexValue) => toNumber(x),
     'string': (_, x: JexValue) => toString(x),
     'boolean': (_, x: JexValue) => toBoolean(x),
-    'int': (_, x: JexValue) => parseInt(toString(x)),
-    'float': (_, x: JexValue) => parseFloat(toString(x)),
-    'double': (_, x: JexValue) => parseFloat(toString(x)),
+    'int': (_, x) => {
+            const n = toNumber(x);
+            return Number.isFinite(n) ? Math.trunc(n) : NaN;
+        },
+
+    'float': (_, x) => {
+        const n = toNumber(x);
+        return Number.isFinite(n) ? n : NaN;
+    },
+
+    'double': (_, x) => {
+        const n = toNumber(x);
+        return Number.isFinite(n) ? n : NaN;
+    },
 
     // String functions
     'length': (_, x: JexValue) => {
