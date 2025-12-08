@@ -91,7 +91,7 @@ public class JexEvaluatorTestCase {
         @Test
         @DisplayName("should evaluate simple literal expressions")
         void testEvaluate_Literals() {
-            assertEquals(42L, evaluator.evaluate("42"));
+            assertEquals(42, evaluator.evaluate("42"));
             assertEquals(true, evaluator.evaluate("true"));
             assertEquals("hello", evaluator.evaluate("\"hello\""));
             assertNull(evaluator.evaluate("null"));
@@ -100,10 +100,10 @@ public class JexEvaluatorTestCase {
         @Test
         @DisplayName("should evaluate arithmetic expressions")
         void testEvaluate_Arithmetic() {
-            assertEquals(5L, evaluator.evaluate("2 + 3"));
-            assertEquals(6L, evaluator.evaluate("10 - 4"));
-            assertEquals(15L, evaluator.evaluate("5 * 3"));
-            assertEquals(5L, evaluator.evaluate("10 / 2"));
+            assertEquals(5, evaluator.evaluate("2 + 3"));
+            assertEquals(6, evaluator.evaluate("10 - 4"));
+            assertEquals(15, evaluator.evaluate("5 * 3"));
+            assertEquals(5, evaluator.evaluate("10 / 2"));
         }
 
         @Test
@@ -113,7 +113,7 @@ public class JexEvaluatorTestCase {
 
             Object result = evaluator.evaluate("x + y", ctx);
 
-            assertEquals(15L, result);
+            assertEquals(15, result);
         }
 
         @Test
@@ -133,7 +133,7 @@ public class JexEvaluatorTestCase {
         @Test
         @DisplayName("should evaluate synchronously")
         void testEvaluate_AsyncFunctionCalls() {
-            assertEquals(5L, evaluator.evaluate("2 + 3"));
+            assertEquals(5, evaluator.evaluate("2 + 3"));
         }
 
         @Test
@@ -143,7 +143,7 @@ public class JexEvaluatorTestCase {
 
             Object result = evaluator.evaluate("a * b", ctx);
 
-            assertEquals(20L, result);
+            assertEquals(20, result);
         }
 
     }
@@ -396,10 +396,10 @@ public class JexEvaluatorTestCase {
             String expr = "2 + 3";
 
             // First evaluation parses and caches
-            assertEquals(5L, evaluator.evaluate(expr));
+            assertEquals(5, evaluator.evaluate(expr));
 
             // Second evaluation should hit cache
-            assertEquals(5L, evaluator.evaluate(expr));
+            assertEquals(5, evaluator.evaluate(expr));
         }
 
         @Test
@@ -411,7 +411,7 @@ public class JexEvaluatorTestCase {
             evaluator.clearCachedParsedExpressions();
 
             // After clearing, evaluation still works
-            assertEquals(5L, evaluator.evaluate("2 + 3"));
+            assertEquals(5, evaluator.evaluate("2 + 3"));
         }
     }
 
@@ -440,7 +440,7 @@ public class JexEvaluatorTestCase {
         @Test
         @DisplayName("should handle complex expressions")
         void testComplexExpressions() {
-            assertEquals(27L, evaluator.evaluate("(10 + 5) * 2 - 3"));
+            assertEquals(27, evaluator.evaluate("(10 + 5) * 2 - 3"));
         }
 
         @Test
@@ -456,7 +456,7 @@ public class JexEvaluatorTestCase {
                 return JexValue.from(val.longValue() * 2);
             });
 
-            assertEquals(20L, evaluator.evaluate("double(x) + 10"));
+            assertEquals(20, evaluator.evaluate("double(x) + 10"));
         }
 
         @Test
@@ -467,7 +467,7 @@ public class JexEvaluatorTestCase {
             evaluator.setContextValue("arr", new ArrayList<>(asList(1, 2, 3)));
 
             // Assuming evaluator has a built-in `length` function for arrays
-            assertEquals(3L, evaluator.evaluate("length(arr)"));
+            assertEquals(3, evaluator.evaluate("length(arr)"));
         }
     }
 
@@ -479,35 +479,35 @@ public class JexEvaluatorTestCase {
         @DisplayName("simple addition")
         void testSimpleAddition() {
             Object result = evaluator.evaluate("1 + 2");
-            assertEquals(3L, result);
+            assertEquals(3, result);
         }
 
         @Test
         @DisplayName("addition with negative number")
         void testAdditionWithNegative() {
             Object result = evaluator.evaluate("5 + -3");
-            assertEquals(2L, result);
+            assertEquals(2, result);
         }
 
         @Test
         @DisplayName("multiple additions")
         void testMultipleAdditions() {
             Object result = evaluator.evaluate("1 + 2 + 3 + 4");
-            assertEquals(10L, result);
+            assertEquals(10, result);
         }
 
         @Test
         @DisplayName("addition and subtraction")
         void testAdditionAndSubtraction() {
             Object result = evaluator.evaluate("10 + 5 - 3 + 2 - 1");
-            assertEquals(13L, result);
+            assertEquals(13, result);
         }
 
         @Test
         @DisplayName("addition with parentheses")
         void testAdditionWithParentheses() {
             Object result = evaluator.evaluate("(1 + 2) + (3 + 4)");
-            assertEquals(10L, result);
+            assertEquals(10, result);
         }
 
         @Test
@@ -872,4 +872,35 @@ public class JexEvaluatorTestCase {
         }
     }
 
+    @Nested
+    @DisplayName("multiplicative expressions")
+    class MultiplicativeExpressionsTests {
+        @Test
+        @DisplayName("simple multiplication")
+        void testSimpleMultiplication() {
+            Object result = evaluator.evaluate("2 * 3");
+            assertEquals(6, result);
+        }
+
+        @Test
+        @DisplayName("simple division")
+        void testSimpleDivision() {
+            Object result = evaluator.evaluate("8 / 2");
+            assertEquals(4, result);
+        }
+
+        @Test
+        @DisplayName("multiplication and division")
+        void testMultiplicationAndDivision() {
+            Object result = evaluator.evaluate("10 * 2 / 5 * 3");
+            assertEquals(12, result);
+        }
+
+        @Test
+        @DisplayName("multiplicative expressions with parentheses")
+        void testMultiplicativeExpressionsWithParentheses() {
+            Object result = evaluator.evaluate("(2 + 3) * (4 - 1) / 5");
+            assertEquals(3, result);
+        }
+    }
 }

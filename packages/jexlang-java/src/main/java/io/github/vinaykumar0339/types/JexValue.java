@@ -34,12 +34,20 @@ public interface JexValue {
     static JexNumber fromNumber(Number number) {
         double d = number.doubleValue();
 
-        // Check if it is whole number → 2.0 becomes 2
+        // Case 1: whole number (like 2.0)
         if (d == Math.rint(d)) {
-            return new JexNumber((long) d);  // store as integer
+            long longVal = (long) d;
+
+            // If long fits into int → use int
+            if (longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE) {
+                return new JexNumber((int) longVal);   // store as int
+            }
+
+            return new JexNumber(longVal);             // store as long
         }
 
-        return new JexNumber(d);  // store as double
+        // Case 2: fractional value → store as double
+        return new JexNumber(d);
     }
 
     static JexInteger fromInteger(Integer number) {
