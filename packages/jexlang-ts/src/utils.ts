@@ -61,3 +61,13 @@ export function createGlobalScope(): Scope {
     scope.declareVariable("__CLIENT_LANGUAGE", "javascript", true);
     return scope;
 }
+
+export function toInt(value: JexValue): number {
+    const num = toNumber(value);
+    return Number.isFinite(num) ? Math.trunc(num) : NaN;
+}
+
+export function toFloat(value: JexValue): number {
+    const num = toNumber(value);
+    return Number.isFinite(num) ? num : NaN;
+}

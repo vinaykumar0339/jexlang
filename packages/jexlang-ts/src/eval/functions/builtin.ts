@@ -1,5 +1,5 @@
 import type { FuncImpl, JexValue } from "../../types";
-import { getJexValueType, toBoolean, toNumber, toString } from "../../utils";
+import { getJexValueType, toBoolean, toFloat, toInt, toNumber, toString } from "../../utils";
 import { TypeMismatchError } from "../errors";
 
 // Built-in functions
@@ -56,18 +56,15 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
     'string': (_, x: JexValue) => toString(x),
     'boolean': (_, x: JexValue) => toBoolean(x),
     'int': (_, x) => {
-            const n = toNumber(x);
-            return Number.isFinite(n) ? Math.trunc(n) : NaN;
+            return toInt(x);
         },
 
     'float': (_, x) => {
-        const n = toNumber(x);
-        return Number.isFinite(n) ? n : NaN;
+        return toFloat(x);
     },
 
     'double': (_, x) => {
-        const n = toNumber(x);
-        return Number.isFinite(n) ? n : NaN;
+        return toFloat(x);
     },
 
     // String functions

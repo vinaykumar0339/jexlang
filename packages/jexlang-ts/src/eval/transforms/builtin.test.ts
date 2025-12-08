@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { BUILT_IN_TRANSFORMS } from './builtin';
 import { JexEvaluator } from '../evaluator';
+import { JexLangRuntimeError } from '../errors';
 
 
 
@@ -163,7 +164,7 @@ describe('BUILT_IN_TRANSFORMS', () => {
       it('should convert to float', () => {
         expect(BUILT_IN_TRANSFORMS.float('3.14', evaluatorContext)).toBe(3.14);
         expect(BUILT_IN_TRANSFORMS.float(5, evaluatorContext)).toBe(5);
-        expect(BUILT_IN_TRANSFORMS.float('invalid', evaluatorContext)).toBeNaN();
+        expect(() => BUILT_IN_TRANSFORMS.float('invalid', evaluatorContext)).toThrow(JexLangRuntimeError);
       });
     });
 
@@ -171,7 +172,7 @@ describe('BUILT_IN_TRANSFORMS', () => {
       it('should convert to double (same as float)', () => {
         expect(BUILT_IN_TRANSFORMS.double('3.14159', evaluatorContext)).toBe(3.14159);
         expect(BUILT_IN_TRANSFORMS.double(7, evaluatorContext)).toBe(7);
-        expect(BUILT_IN_TRANSFORMS.double('invalid', evaluatorContext)).toBeNaN();
+        expect(() => BUILT_IN_TRANSFORMS.double('invalid', evaluatorContext)).toThrow(JexLangRuntimeError);
       });
     });
   });
