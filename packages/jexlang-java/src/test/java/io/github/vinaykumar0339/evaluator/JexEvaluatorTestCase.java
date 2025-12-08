@@ -1,12 +1,10 @@
 package io.github.vinaykumar0339.evaluator;
 
+import io.github.vinaykumar0339.Utils;
 import io.github.vinaykumar0339.eval.errors.JexLangRuntimeError;
 import io.github.vinaykumar0339.functions.FuncImpl;
 import io.github.vinaykumar0339.transforms.TransformImpl;
-import io.github.vinaykumar0339.types.JexArray;
-import io.github.vinaykumar0339.types.JexNumber;
-import io.github.vinaykumar0339.types.JexObject;
-import io.github.vinaykumar0339.types.JexValue;
+import io.github.vinaykumar0339.types.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -1852,4 +1850,455 @@ public class JexEvaluatorTestCase {
                     """));
         }
     }
+
+    @Nested
+    @DisplayName("repeat expressions")
+    class RepeatExpressionsTests {
+
+        @Nested
+        @DisplayName("numeric repeat")
+        class NumericRepeatTests {
+
+            @Test
+            @DisplayName("should repeat block specified number of times")
+            void testRepeatBlockSpecifiedNumberOfTimes() {
+                assertEquals(5, evaluator.evaluate("""
+                    let sum = 0;
+                    repeat (5) {
+                        sum = sum + 1;
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $index variable in numeric repeat")
+            void testNumericRepeatIndexVariable() {
+                assertEquals(3, evaluator.evaluate("""
+                    let total = 0;
+                    repeat (3) {
+                        total = total + $index;
+                    }
+                    total;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $it variable equal to $index in numeric repeat")
+            void testNumericRepeatItVariable() {
+                assertEquals(6, evaluator.evaluate("""
+                    let sum = 0;
+                    repeat (4) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle zero iterations")
+            void testNumericRepeatZeroIterations() {
+                assertEquals(0, evaluator.evaluate("""
+                    let count = 0;
+                    repeat (0) {
+                        count = count + 1;
+                    }
+                    count;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should throw error for negative iterations")
+            void testNumericRepeatNegativeIterations() {
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                    repeat (-5) {
+                        let x = 1;
+                    }
+                    """));
+            }
+
+            @Test
+            @DisplayName("should return last evaluated result from block")
+            void testNumericRepeatLastEvaluatedResult() {
+                assertEquals(4, evaluator.evaluate("""
+                    repeat (3) {
+                        $index * 2;
+                    }
+                    """));
+            }
+        }
+
+        @Nested
+        @DisplayName("array repeat")
+        class ArrayRepeatTests {
+
+            @Test
+            @DisplayName("should iterate over array elements")
+            void testArrayRepeatIteration() {
+                assertEquals(60, evaluator.evaluate("""
+                    let arr = [10, 20, 30];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $index variable in array repeat")
+            void testArrayRepeatIndexVariable() {
+                assertEquals(3, evaluator.evaluate("""
+                    let arr = ["a", "b", "c"];
+                    let indices = 0;
+                    repeat (arr) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $it variable with current element")
+            void testArrayRepeatItVariable() {
+                assertEquals(750, evaluator.evaluate("""
+                    let arr = [5, 10, 15];
+                    let product = 1;
+                    repeat (arr) {
+                        product = product * $it;
+                    }
+                    product;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle empty array")
+            void testArrayRepeatEmptyArray() {
+                assertEquals(0, evaluator.evaluate("""
+                    let arr = [];
+                    let count = 0;
+                    repeat (arr) {
+                        count = count + 1;
+                    }
+                    count;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should return last evaluated result from array iteration")
+            void testArrayRepeatLastResult() {
+                Object result = evaluator.evaluate("""
+                    let arr = [1, 2, 3, 4];
+                    repeat (arr) {
+                        $it * 10;
+                    }
+                    """);
+                assertTrue(result.equals(10) || result.equals(20) || result.equals(30) || result.equals(40));
+            }
+        }
+
+        @Nested
+        @DisplayName("object repeat")
+        class ObjectRepeatTests {
+
+            @Test
+            @DisplayName("should iterate over object properties")
+            void testObjectRepeatIteration() {
+                assertEquals(6, evaluator.evaluate("""
+                    let obj = {"a": 1, "b": 2, "c": 3};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $key variable in object repeat")
+            void testObjectRepeatKeyVariable() {
+                Object result = evaluator.evaluate("""
+                    let obj = {"x": 10, "y": 20};
+                    let keys = "";
+                    repeat (obj) {
+                        keys = keys + $key;
+                    }
+                    keys;
+                    """);
+                assertTrue(result.toString().matches("xy|yx"));
+            }
+
+            @Test
+            @DisplayName("should provide $value variable equal to $it")
+            void testObjectRepeatValueVariable() {
+                assertEquals(15, evaluator.evaluate("""
+                    let obj = {"a": 5, "b": 10};
+                    let total = 0;
+                    repeat (obj) {
+                        total = total + $value;
+                    }
+                    total;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle empty object")
+            void testObjectRepeatEmptyObject() {
+                assertEquals(0, evaluator.evaluate("""
+                    let obj = {};
+                    let count = 0;
+                    repeat (obj) {
+                        count = count + 1;
+                    }
+                    count;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should return last evaluated result from object iteration")
+            void testObjectRepeatLastResult() {
+                Object result = evaluator.evaluate("""
+                    let obj = {"a": 1, "b": 2};
+                    repeat (obj) {
+                        $it * 100;
+                    }
+                    """);
+                assertTrue(result.equals(100) || result.equals(200));
+            }
+        }
+
+        @Nested
+        @DisplayName("string repeat")
+        class StringRepeatTests {
+
+            @Test
+            @DisplayName("should iterate over string characters")
+            void testStringRepeatIteration() {
+                assertEquals("abc", evaluator.evaluate("""
+                    let str = "abc";
+                    let combined = "";
+                    repeat (str) {
+                        combined = combined + $it;
+                    }
+                    combined;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should provide $index variable in string repeat")
+            void testStringRepeatIndexVariable() {
+                assertEquals(6, evaluator.evaluate("""
+                    let str = "test";
+                    let indices = 0;
+                    repeat (str) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle empty string")
+            void testStringRepeatEmpty() {
+                assertEquals(0, evaluator.evaluate("""
+                    let str = "";
+                    let count = 0;
+                    repeat (str) {
+                        count = count + 1;
+                    }
+                    count;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should return last evaluated result from string iteration")
+            void testStringRepeatLastResult() {
+                assertEquals("z", evaluator.evaluate("""
+                    let str = "xyz";
+                    repeat (str) {
+                        $it;
+                    }
+                    """));
+            }
+        }
+
+        @Nested
+        @DisplayName("null and undefined handling")
+        class NullUndefinedTests {
+
+            @Test
+            @DisplayName("should return null for null iterable")
+            void testRepeatNullIterable() {
+                assertNull(evaluator.evaluate("""
+                    repeat (null) {
+                        let x = 1;
+                    }
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle null from expression")
+            void testRepeatNullExpression() {
+                evaluator.declareContextValue("nullValue", new JexNull(), false);
+                assertNull(evaluator.evaluate("""
+                    repeat (nullValue) {
+                        let x = 1;
+                    }
+                    """));
+            }
+        }
+
+        @Nested
+        @DisplayName("nested repeat expressions")
+        class NestedRepeatTests {
+
+            @Test
+            @DisplayName("should handle nested numeric repeats")
+            void testNestedNumericRepeat() {
+                assertEquals(6, evaluator.evaluate("""
+                    let sum = 0;
+                    repeat (3) {
+                        repeat (2) {
+                            sum = sum + 1;
+                        }
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle nested array repeats")
+            void testNestedArrayRepeat() {
+                assertEquals(10, evaluator.evaluate("""
+                    let matrix = [[1, 2], [3, 4]];
+                    let total = 0;
+                    repeat (matrix) {
+                        repeat ($it) {
+                            total = total + $it;
+                        }
+                    }
+                    total;
+                    """));
+            }
+        }
+
+        @Nested
+        @DisplayName("scope and variable shadowing")
+        class ScopeAndShadowingTests {
+
+            @Test
+            @DisplayName("should create new scope for repeat block")
+            void testRepeatBlockScopeIsolation() {
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                    repeat (1) {
+                        let blockVar = 5;
+                    }
+                    blockVar;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should access outer scope variables")
+            void testRepeatAccessOuterScope() {
+                assertEquals(20, evaluator.evaluate("""
+                    let outer = 10;
+                    repeat (2) {
+                        outer = outer + 5;
+                    }
+                    outer;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should not leak $index and $it variables")
+            void testRepeatVariableLeakage() {
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                    repeat (3) {
+                        let x = $index;
+                    }
+                    $index;
+                    """));
+
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                    repeat ([1, 2]) {
+                        let y = $it;
+                    }
+                    $it;
+                    """));
+            }
+        }
+
+        @Nested
+        @DisplayName("async repeat expressions")
+        class AsyncRepeatTests {
+
+            @Test
+            @DisplayName("should handle async operations in numeric repeat")
+            void testAsyncNumericRepeat() {
+                FuncImpl asyncFunc = (ctx, args) -> new JexNumber(5);
+                evaluator.addFunction("asyncFunc", asyncFunc);
+                assertEquals(10, evaluator.evaluate("""
+                    let sum = 0;
+                    repeat(2) {
+                        let asyncVal = asyncFunc();
+                        sum = sum + asyncVal;
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle async operations in array repeat")
+            void testAsyncArrayRepeat() {
+                FuncImpl asyncDouble = (ctx, val) -> {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return new JexNumber(Utils.toNumber(val[0], "asyncDouble").doubleValue() * 2);
+                };
+                evaluator.addFunction("asyncDouble", asyncDouble);
+                assertEquals(12, evaluator.evaluate("""
+                    let arr = [1, 2, 3];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + asyncDouble($it);
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle async operations in object repeat")
+            void testAsyncObjectRepeat() {
+                FuncImpl asyncValue = (ctx, val) -> new JexNumber(Utils.toNumber(val[0], "asyncDouble").doubleValue() + 10);
+                evaluator.addFunction("asyncValue", asyncValue);
+                assertEquals(23, evaluator.evaluate("""
+                    let obj = {"a": 1, "b": 2};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + asyncValue($it);
+                    }
+                    sum;
+                    """));
+            }
+
+            @Test
+            @DisplayName("should handle async operations in string repeat")
+            void testAsyncStringRepeat() {
+                FuncImpl asyncCharCode = (ctx, charVal) -> new JexNumber((int) Utils.toString(charVal[0], "asyncCharCode").charAt(0));
+                evaluator.addFunction("asyncCharCode", asyncCharCode);
+                assertEquals(294, evaluator.evaluate("""
+                    let str = "abc";
+                    let total = 0;
+                    repeat (str) {
+                        total = total + asyncCharCode($it);
+                    }
+                    total;
+                    """));
+            }
+        }
+    }
+
 }
