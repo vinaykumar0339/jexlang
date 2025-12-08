@@ -3852,5 +3852,150 @@ public class JexEvaluatorTestCase {
             }
         }
 
+        @Nested
+        @DisplayName("string functions")
+        class StringFunctions {
+
+            @Test
+            @DisplayName("should evaluate length function with strings")
+            void testLengthWithStrings() {
+                assertEquals(5, evaluator.evaluate("length(\"hello\")"));
+                assertEquals(0, evaluator.evaluate("length(\"\" )"));
+                assertEquals(11, evaluator.evaluate("length(\"test string\")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate length function with arrays")
+            void testLengthWithArrays() {
+                assertEquals(3, evaluator.evaluate("length([1, 2, 3])"));
+                assertEquals(0, evaluator.evaluate("length([])"));
+            }
+
+            @Test
+            @DisplayName("should evaluate upper function")
+            void testUpperFunction() {
+                assertEquals("HELLO", evaluator.evaluate("upper(\"hello\")"));
+                assertEquals("HELLO", evaluator.evaluate("upper(\"HeLLo\")"));
+                assertEquals("123", evaluator.evaluate("upper(123)"));
+                assertEquals("TRUE", evaluator.evaluate("upper(true)"));
+                assertEquals("NULL", evaluator.evaluate("upper(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate lower function")
+            void testLowerFunction() {
+                assertEquals("hello", evaluator.evaluate("lower(\"HELLO\")"));
+                assertEquals("hello", evaluator.evaluate("lower(\"HeLLo\")"));
+                assertEquals("123", evaluator.evaluate("lower(123)"));
+                assertEquals("true", evaluator.evaluate("lower(true)"));
+                assertEquals("null", evaluator.evaluate("lower(null)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate trim function")
+            void testTrimFunction() {
+                assertEquals("hello", evaluator.evaluate("trim(\"  hello  \")"));
+                assertEquals("hello", evaluator.evaluate("trim(\"hello\")"));
+                assertEquals("123", evaluator.evaluate("trim(123)"));
+                assertEquals("true", evaluator.evaluate("trim(true)"));
+                assertEquals("null", evaluator.evaluate("trim(null)"));
+            }
+        }
+
+        @Nested
+        @DisplayName("array functions")
+        class ArrayFunctions {
+
+            @Test
+            @DisplayName("should evaluate array function")
+            void testArrayFunction() {
+                assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("array(1, 2, 3)"));
+                assertEquals(Collections.emptyList(), evaluator.evaluate("array()"));
+                assertEquals(Arrays.asList("a", "b", "c"), evaluator.evaluate("array(\"a\", \"b\", \"c\")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate first function")
+            void testFirstFunction() {
+                assertEquals(1, evaluator.evaluate("first([1, 2, 3])"));
+                assertNull(evaluator.evaluate("first([])"));
+                assertEquals("a", evaluator.evaluate("first([\"a\", \"b\"])"));
+            }
+
+            @Test
+            @DisplayName("should evaluate last function")
+            void testLastFunction() {
+                assertEquals(3, evaluator.evaluate("last([1, 2, 3])"));
+                assertNull(evaluator.evaluate("last([])"));
+                assertEquals("b", evaluator.evaluate("last([\"a\", \"b\"])"));
+            }
+
+            @Test
+            @DisplayName("should evaluate push function")
+            void testPushFunction() {
+                evaluator.declareContextValue("arr", new ArrayList<>(Arrays.asList(1, 2, 3)), false);
+
+                evaluator.evaluate("push(arr, 4)");
+                assertEquals(Arrays.asList(1, 2, 3, 4), evaluator.evaluate("arr"));
+
+                evaluator.evaluate("push(arr, 5, 6)");
+                assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6), evaluator.evaluate("arr"));
+            }
+
+            @Test
+            @DisplayName("should evaluate pop function")
+            void testPopFunction() {
+                evaluator.declareContextValue("arr", new ArrayList<>(Arrays.asList(1, 2, 3)), false);
+
+                assertEquals(3, evaluator.evaluate("pop(arr)"));
+                assertEquals(Arrays.asList(1, 2), evaluator.evaluate("arr"));
+
+                assertEquals(2, evaluator.evaluate("pop(arr)"));
+                assertEquals(Arrays.asList(1), evaluator.evaluate("arr"));
+            }
+
+            @Test
+            @DisplayName("should evaluate sum function")
+            void testSumFunction() {
+                assertEquals(10, evaluator.evaluate("sum([1, 2, 3, 4])"));
+                assertEquals(0, evaluator.evaluate("sum([])"));
+                assertEquals(10, evaluator.evaluate("sum([5.5, 2.5, 2])"));
+            }
+
+            @Test
+            @DisplayName("should evaluate avg function")
+            void testAvgFunction() {
+                assertEquals(2.5, evaluator.evaluate("avg([1, 2, 3, 4])"));
+                assertEquals(20, evaluator.evaluate("avg([10, 20, 30])"));
+                assertNull(evaluator.evaluate("avg([])"));
+            }
+        }
+
+
+        @Nested
+        @DisplayName("date and time functions")
+        class DateTimeFunctions {
+            @Test
+            @DisplayName("should evaluate now function")
+            void testNow() {
+                Object result = evaluator.evaluate("now()");
+                assertInstanceOf(Number.class, result);
+                assertTrue(((Number) result).longValue() > 0);
+            }
+
+            @Test
+            @DisplayName("should evaluate today function")
+            void testToday() {
+                Object obj = evaluator.evaluate("today()");
+                assertInstanceOf(Number.class, obj);
+                long ts = ((Number) obj).longValue();
+
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(ts);
+                assertEquals(0, c.get(Calendar.HOUR_OF_DAY));
+                assertEquals(0, c.get(Calendar.MINUTE));
+                assertEquals(0, c.get(Calendar.SECOND));
+            }
+        }
     }
 }
