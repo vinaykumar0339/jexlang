@@ -1052,24 +1052,22 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
         this.visit(ctx.singleExpression(1)),
       ],
       (left, right) => {
-        const leftNum = toNumber(left);
-        const rightNum = toNumber(right);
 
         if (ctx.LT()) {
           return (
-            (leftNum == null ? 0 : leftNum) < (rightNum == null ? 0 : rightNum)
+            (left == null ? 0 : left) < (right == null ? 0 : right)
           );
         } else if (ctx.GT()) {
           return (
-            (leftNum == null ? 0 : leftNum) > (rightNum == null ? 0 : rightNum)
+            (left == null ? 0 : left) > (right == null ? 0 : right)
           );
         } else if (ctx.LTE()) {
           return (
-            (leftNum == null ? 0 : leftNum) <= (rightNum == null ? 0 : rightNum)
+            (left == null ? 0 : left) <= (right == null ? 0 : right)
           );
         } else if (ctx.GTE()) {
           return (
-            (leftNum == null ? 0 : leftNum) >= (rightNum == null ? 0 : rightNum)
+            (left == null ? 0 : left) >= (right == null ? 0 : right)
           );
         }
 
@@ -1108,14 +1106,14 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
   ): MaybePromise<JexValue> => {
     if (ctx.AND()) {
       return this.handlePromise(this.visit(ctx.singleExpression(0)), (left) => {
-        const leftBool = left != null && left != undefined && left != 0; // remaing all truthy values
+        const leftBool = toBoolean(left);
         if (!leftBool) {
           return false; // short-circuit if left is falsy
         }
         return this.handlePromise(
           this.visit(ctx.singleExpression(1)),
           (right) => {
-            const rightBool = right != null && right != undefined && right != 0; // remaining all truthy values
+            const rightBool = toBoolean(right);
             return leftBool && rightBool;
           }
         );
@@ -1132,14 +1130,14 @@ export class EvalVisitor extends JexLangVisitor<MaybePromise<JexValue>> {
   ): MaybePromise<JexValue> => {
     if (ctx.OR()) {
       return this.handlePromise(this.visit(ctx.singleExpression(0)), (left) => {
-        const leftBool = left != null && left != undefined && left != 0; // remaining all truthy values
+        const leftBool = toBoolean(left);
         if (leftBool) {
           return true; // short-circuit if left is truthy
         }
         return this.handlePromise(
           this.visit(ctx.singleExpression(1)),
           (right) => {
-            const rightBool = right != null && right != undefined && right != 0; // remaining all truthy values
+            const rightBool = toBoolean(right);
             return leftBool || rightBool;
           }
         );

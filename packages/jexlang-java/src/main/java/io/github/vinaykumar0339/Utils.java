@@ -421,5 +421,70 @@ public class Utils {
         return JexValue.fromString(value.toString());
     }
 
+    public enum JSRelationalOp {
+        LESS_THAN,
+        GREATER_THAN,
+        LESS_THAN_EQUAL,
+        GREATER_THAN_EQUAL
+    }
+
+    private static double jsToNumberForRelOp(JexValue v) {
+        if (v == null || v.isNull()) return 0;
+
+        if (v.isBoolean()) {
+            return v.asBoolean("relOp") ? 1 : 0;
+        }
+
+        if (v.isNumber()) {
+            return v.asNumber("relOp").doubleValue();
+        }
+
+        if (v.isString()) {
+            try {
+                return Double.parseDouble(v.asString("relOp"));
+            } catch (Exception e) {
+                return Double.NaN; // JS: Number("abc") => NaN
+            }
+        }
+
+        // arrays and objects already converted by ToPrimitive → fall through
+        return Double.NaN;
+    }
+
+    public static boolean jsRelational(JexValue left, JexValue right, JSRelationalOp op) {
+        // 1. JS ToPrimitive
+        JexValue a = toPrimitive(left);
+        JexValue b = toPrimitive(right);
+
+        // 2. If both primitives are strings → lexicographical comparison
+        if (a.isString() && b.isString()) {
+            int cmp = a.asString("relOp").compareTo(b.asString("relOp"));
+
+            return switch (op) {
+                case LESS_THAN            -> cmp < 0;
+                case GREATER_THAN         -> cmp > 0;
+                case LESS_THAN_EQUAL      -> cmp <= 0;
+                case GREATER_THAN_EQUAL   -> cmp >= 0;
+            };
+        }
+
+        // 3. Otherwise → convert both to number
+        double numA = jsToNumberForRelOp(a);
+        double numB = jsToNumberForRelOp(b);
+
+        // 4. If either is NaN → comparison returns false
+        if (Double.isNaN(numA) || Double.isNaN(numB)) {
+            return false;
+        }
+
+        // 5. Numeric comparison
+        return switch (op) {
+            case LESS_THAN            -> numA <  numB;
+            case GREATER_THAN         -> numA >  numB;
+            case LESS_THAN_EQUAL      -> numA <= numB;
+            case GREATER_THAN_EQUAL   -> numA >= numB;
+        };
+    }
+
 
 }

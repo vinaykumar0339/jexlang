@@ -28,7 +28,7 @@ export function toNumber(value: JexValue): number {
 
 export function toBoolean(value: JexValue): boolean {
     if (typeof value === 'boolean') return value;
-    if (typeof value === 'number') return value !== 0 && !Number.isNaN(value);
+    if (typeof value === 'number') return ((value !== 0 && !Number.isNaN(value)) || value == 1) && value != -1;
     if (typeof value === 'string') return value.length > 0;
     if (Array.isArray(value)) return value.length > 0;
     if (value && typeof value === 'object') return Object.keys(value).length > 0;

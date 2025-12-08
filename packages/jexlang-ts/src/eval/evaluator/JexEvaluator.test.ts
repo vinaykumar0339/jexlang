@@ -618,10 +618,10 @@ describe('JexEvaluator', () => {
         });
 
         it('relational operators with strings', () => {
-            expect(() => evaluator.evaluate('"apple" < "banana"')).toThrow();
-            expect(() => evaluator.evaluate('"grape" > "orange"')).toThrow();
-            expect(() => evaluator.evaluate('"cat" <= "cat"')).toThrow();
-            expect(() => evaluator.evaluate('"dog" >= "elephant"')).toThrow();
+            expect(evaluator.evaluate('"apple" < "banana"')).toBe(true);
+            expect(evaluator.evaluate('"grape" > "orange"')).toBe(false);
+            expect(evaluator.evaluate('"cat" <= "cat"')).toBe(true);
+            expect(evaluator.evaluate('"dog" >= "elephant"')).toBe(false);
         });
 
         it('numbers and strings comparison', () => {
@@ -632,8 +632,8 @@ describe('JexEvaluator', () => {
         });
 
         it('stringified numbers comparison', () => {
-            expect(evaluator.evaluate('"10" > "2"')).toBe(true);
-            expect(evaluator.evaluate('"3" < "12"')).toBe(true);
+            expect(evaluator.evaluate('"10" > "2"')).toBe(false);
+            expect(evaluator.evaluate('"3" < "12"')).toBe(false);
             expect(evaluator.evaluate('"5" >= "5"')).toBe(true);
             expect(evaluator.evaluate('"7" <= "6"')).toBe(false);
         });

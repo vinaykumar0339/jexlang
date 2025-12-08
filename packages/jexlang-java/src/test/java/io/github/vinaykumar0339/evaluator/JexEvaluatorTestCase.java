@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.DirectoryNotEmptyException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
@@ -731,6 +732,143 @@ public class JexEvaluatorTestCase {
             assertEquals(Boolean.TRUE, evaluator.evaluate("obj == obj3"));
             evaluator.declareContextValue("hashObj3", obj, false);
             assertEquals(Boolean.FALSE, evaluator.evaluate("hashObj == hashObj3"));
+        }
+    }
+
+    @Nested
+    @DisplayName("logical expressions")
+    class  LogicalExpressionsTests {
+        @Test
+        @DisplayName("logical AND operator")
+        void testLogicalAnd() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true && true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("true && false"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false && true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false && false"));
+
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true and true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("true and false"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false and true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false and false"));
+        }
+
+        @Test
+        @DisplayName("logical OR operator")
+        void testLogicalOr() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true || true"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true || false"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("false || true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false || false"));
+
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true or true"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true or false"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("false or true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false or false"));
+        }
+
+        @Test
+        @DisplayName("logical operators with non-boolean values")
+        void testLogicalOperatorsWithNonBoolean() {
+            assertEquals(Boolean.FALSE, evaluator.evaluate("1 && 0"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("1 || 0"));
+
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"hello\" && \"\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"hello\" || \"\""));
+
+            assertEquals(Boolean.FALSE, evaluator.evaluate("0 and 1"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("0 or 1"));
+
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"\" and \"hello\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"\" or \"hello\""));
+        }
+
+        @Test
+        @DisplayName("combined logical expressions")
+        void testCombinedLogicalExpressions() {
+
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true && false || true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false || false && true"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("(true || false) && (false || true)"));
+
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true and false or true"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("false or false and true"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("(true or false) and (false or true)"));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("relational expressions")
+    class RelationalExpressionsTests {
+        @Test
+        @DisplayName("greater than operator")
+        void testGreaterThan() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("5 > 3"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("2 > 4"));
+        }
+
+        @Test
+        @DisplayName("less than operator")
+        void testLessThan() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("3 < 5"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("4 < 2"));
+        }
+
+        @Test
+        @DisplayName("greater than or equal operator")
+        void testGreaterThanOrEqual() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("5 >= 5"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("6 >= 4"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("3 >= 7"));
+        }
+
+        @Test
+        @DisplayName("less than or equal operator")
+        void testLessThanOrEqual() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("5 <= 5"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("4 <= 6"));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("7 <= 3"));
+        }
+
+        @Test
+        @DisplayName("relational operators with strings")
+        void testRelationalOperatorsWithStrings() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"apple\" < \"banana\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"grape\" > \"orange\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"cat\" <= \"cat\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"dog\" >= \"elephant\""));
+        }
+
+        @Test
+        @DisplayName("numbers and strings comparison")
+        void testNumbersAndStringsComparison() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("5 > \"3\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"4\" < 6"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("7 >= \"7\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"8\" <= 10"));
+        }
+
+        @Test
+        @DisplayName("stringified numbers comparison")
+        void testStringifiedNumbersComparison() {
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"10\" > \"2\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"3\" < \"12\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"5\" >= \"5\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"7\" <= \"6\""));
+        }
+
+        @Test
+        @DisplayName("numbers, strings and booleans comparison")
+        void testNumbersStringsAndBooleansComparison() {
+            assertEquals(Boolean.TRUE, evaluator.evaluate("1 < \"2\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"3\" > 2"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("0 <= \"0\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"1\" >= 2"));
+
+            assertEquals(Boolean.TRUE, evaluator.evaluate("true > \"0\""));
+            assertEquals(Boolean.FALSE, evaluator.evaluate("\"1\" < false"));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("false <= \"0\""));
+            assertEquals(Boolean.TRUE, evaluator.evaluate("\"1\" >= true"));
         }
     }
 

@@ -602,13 +602,13 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         JexValue right = this.visit(ctx.singleExpression(1));
 
         if (ctx.LT() != null) {
-            return new JexBoolean(Utils.isLessThan(left, right, false));
+            return new JexBoolean(Utils.jsRelational(left, right, Utils.JSRelationalOp.LESS_THAN));
         } else if (ctx.GT() != null) {
-            return new JexBoolean(Utils.isGreaterThan(left, right, false));
+            return new JexBoolean(Utils.jsRelational(left, right, Utils.JSRelationalOp.GREATER_THAN));
         } else if (ctx.LTE() != null) {
-            return new JexBoolean(Utils.isLessThan(left, right, true));
+            return new JexBoolean(Utils.jsRelational(left, right, Utils.JSRelationalOp.LESS_THAN_EQUAL));
         } else if (ctx.GTE() != null) {
-            return new JexBoolean(Utils.isGreaterThan(left, right, true));
+            return new JexBoolean(Utils.jsRelational(left, right, Utils.JSRelationalOp.GREATER_THAN_EQUAL));
         }
 
         throw new JexLangRuntimeError("Unknown relational operator " + ctx.getChild(1).getText());
@@ -632,12 +632,12 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitLogicalAndExpression(JexLangParser.LogicalAndExpressionContext ctx) {
         if (ctx.AND() != null) {
             JexValue left = this.visit(ctx.singleExpression(0));
-            boolean leftBoolean = left != null && !left.isNull() && (left.isNumber() && left.asNumber("logical AND expression").doubleValue() != 0 && (left.isBoolean() && left.asBoolean("logical or expression"))); // remaining all truthy values.
+            boolean leftBoolean = Utils.toBoolean(left, "and");
             if (!leftBoolean) { // short-circuit if left is falsy
                 return new JexBoolean(false);
             }
             JexValue right = this.visit(ctx.singleExpression(1));
-            boolean rightBool = right != null && !right.isNull() && (right.isNumber() && right.asNumber("logical AND expression").doubleValue() != 0 && (right.isBoolean() && right.asBoolean("logical or expression"))); // remaining all truthy values.
+            boolean rightBool = Utils.toBoolean(right, "and");
             return new JexBoolean(rightBool);
         }
 
@@ -648,12 +648,12 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitLogicalOrExpression(JexLangParser.LogicalOrExpressionContext ctx) {
         if (ctx.OR() != null) {
             JexValue left = this.visit(ctx.singleExpression(0));
-            boolean leftBoolean = left != null && !left.isNull() && (left.isNumber() && left.asNumber("logical OR expression").doubleValue() != 0) && (left.isBoolean() && left.asBoolean("logical or expression")); // remaining all truthy values.
+            boolean leftBoolean = Utils.toBoolean(left, "or");
             if (leftBoolean) { // short-circuit if left is truthy
                 return new JexBoolean(true);
             }
             JexValue right = this.visit(ctx.singleExpression(1));
-            boolean rightBool = right != null && !right.isNull() && (right.isNumber() && right.asNumber("logical OR expression").doubleValue() != 0 && (right.isBoolean() && right.asBoolean("logical or expression"))); // remaining all truthy values.
+            boolean rightBool = Utils.toBoolean(right, "or");
             return new JexBoolean(rightBool);
         }
 
