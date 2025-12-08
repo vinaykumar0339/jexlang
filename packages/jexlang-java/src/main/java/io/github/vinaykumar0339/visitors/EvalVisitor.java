@@ -951,7 +951,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         // empty array and objects are falsy
         if (Utils.toBoolean(condition, "if expression")) {
             return this.visit(ctx.block());
-        } else if (ctx.elseIfStatement() != null) {
+        }
+
+        if (ctx.elseIfStatement() != null) {
             return this.visit(ctx.elseIfStatement());
         }
 
@@ -964,7 +966,9 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
         // empty array and objects are falsy
         if (Utils.toBoolean(condition, "else if expression")) {
             return this.visit(ctx.block());
-        } else if (ctx.elseIfStatement() != null) {
+        }
+
+        if (ctx.elseIfStatement() != null) {
             return this.visit(ctx.elseIfStatement());
         }
 

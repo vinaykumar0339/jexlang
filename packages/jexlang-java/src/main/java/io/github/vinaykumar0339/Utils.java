@@ -468,7 +468,13 @@ public class Utils {
     }
 
     private static JexValue toPrimitive(JexValue value) {
-        if (value.isString() || value.isNumber() || value.isBoolean() || value.isNull()) {
+        if (value.isString()
+                || value.isNumber()
+                || value.isBoolean()
+                || value.isNull()
+                || value.isInteger()
+                || value.isDouble()
+        ) {
             return value;
         }
 
@@ -505,6 +511,14 @@ public class Utils {
 
         if (v.isNumber()) {
             return v.asNumber("relOp").doubleValue();
+        }
+
+        if (v.isInteger()) {
+            return v.asInteger("relOp").doubleValue();
+        }
+
+        if (v.isDouble()) {
+            return v.asDouble("relOp");
         }
 
         if (v.isString()) {

@@ -2301,4 +2301,376 @@ public class JexEvaluatorTestCase {
         }
     }
 
+    @Nested
+    @DisplayName("if-else expressions")
+    class IfElseExpressionsTests {
+
+        @Nested
+        @DisplayName("basic if expressions")
+        class BasicIfExpressions {
+
+            @Test
+            @DisplayName("should execute if block when condition is true")
+            void testExecuteIfBlockWhenConditionIsTrue() {
+                assertEquals(42, evaluator.evaluate("""
+                    if (true) {
+                        42;
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should return null when condition is false and no else")
+            void testReturnNullWhenConditionFalseNoElse() {
+                assertNull(evaluator.evaluate("""
+                    if (false) {
+                        42;
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should evaluate condition expressions")
+            void testEvaluateConditionExpressions() {
+                assertEquals("greater", evaluator.evaluate("""
+                    if (5 > 3) {
+                        "greater";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle falsy values")
+            void testHandleFalsyValues() {
+                assertNull(evaluator.evaluate("if (0) { \"yes\"; }"));
+                assertNull(evaluator.evaluate("if (\"\") { \"yes\"; }"));
+                assertNull(evaluator.evaluate("if (null) { \"yes\"; }"));
+                assertNull(evaluator.evaluate("if (false) { \"yes\"; }"));
+            }
+
+            @Test
+            @DisplayName("should handle truthy values")
+            void testHandleTruthyValues() {
+                assertEquals("yes", evaluator.evaluate("if (1) { \"yes\"; }"));
+                assertEquals("yes", evaluator.evaluate("if (\"hello\") { \"yes\"; }"));
+                assertEquals("yes", evaluator.evaluate("if (true) { \"yes\"; }"));
+                assertEquals("yes", evaluator.evaluate("if ([1]) { \"yes\"; }"));
+                assertEquals("yes", evaluator.evaluate("if ({\"a\": 1}) { \"yes\"; }"));
+            }
+
+            @Test
+            @DisplayName("should handle empty arrays and objects as falsy")
+            void testHandleEmptyArraysObjectsAsFalsy() {
+                assertNull(evaluator.evaluate("if ([]) { \"yes\"; }"));
+                assertNull(evaluator.evaluate("if ({}) { \"yes\"; }"));
+            }
+        }
+
+        @Nested
+        @DisplayName("if-else expressions")
+        class IfElseExpressions {
+
+            @Test
+            @DisplayName("should execute else block when condition is false")
+            void testExecuteElseBlockWhenConditionFalse() {
+                assertEquals("else", evaluator.evaluate("""
+                    if (false) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should execute if block when condition is true")
+            void testExecuteIfBlockWhenConditionTrue() {
+                assertEquals("if", evaluator.evaluate("""
+                    if (true) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle complex expressions in blocks")
+            void testHandleComplexExpressionsInBlocks() {
+                assertEquals(40, evaluator.evaluate("""
+                    if (10 > 5) {
+                        let x = 20;
+                        x * 2;
+                    } else {
+                        let y = 10;
+                        y * 3;
+                    }
+                """));
+            }
+        }
+
+        @Nested
+        @DisplayName("if-else-if expressions")
+        class IfElseIfExpressions {
+
+            @Test
+            @DisplayName("should execute first true condition")
+            void testExecuteFirstTrueCondition() {
+                assertEquals("second", evaluator.evaluate("""
+                    if (false) {
+                        "first";
+                    } else if (true) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should execute else when all conditions are false")
+            void testExecuteElseWhenAllFalse() {
+                assertEquals("third", evaluator.evaluate("""
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle multiple else-if clauses")
+            void testHandleMultipleElseIfClauses() {
+                evaluator.declareContextValue("score", 85, false);
+                assertEquals("B", evaluator.evaluate("""
+                    if (score >= 90) {
+                        "A";
+                    } else if (score >= 80) {
+                        "B";
+                    } else if (score >= 70) {
+                        "C";
+                    } else {
+                        "F";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should return null when all conditions are false and no else")
+            void testReturnNullWhenAllFalseNoElse() {
+                assertNull(evaluator.evaluate("""
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should stop at first true condition")
+            void testStopAtFirstTrueCondition() {
+                evaluator.declareContextValue("counter", 0, false);
+                assertEquals(10, evaluator.evaluate("""
+                    if (false) {
+                        counter = counter + 1;
+                        "first";
+                    } else if (true) {
+                        counter = counter + 10;
+                        "second";
+                    } else if (true) {
+                        counter = counter + 100;
+                        "third";
+                    }
+                    counter;
+                """));
+            }
+        }
+
+        @Nested
+        @DisplayName("nested if expressions")
+        class NestedIfExpressions {
+
+            @Test
+            @DisplayName("should handle nested if statements")
+            void testHandleNestedIfStatements() {
+                assertEquals("nested", evaluator.evaluate("""
+                    if (true) {
+                        if (true) {
+                            "nested";
+                        }
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle nested if-else statements")
+            void testHandleNestedIfElseStatements() {
+                assertEquals("inner-else", evaluator.evaluate("""
+                    if (true) {
+                        if (false) {
+                            "inner-if";
+                        } else {
+                            "inner-else";
+                        }
+                    } else {
+                        "outer-else";
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle deeply nested conditions")
+            void testHandleDeeplyNestedConditions() {
+                evaluator.declareContextValue("x", 5, false);
+                evaluator.declareContextValue("y", 10, false);
+                assertEquals("all conditions met", evaluator.evaluate("""
+                    if (x < y) {
+                        if (x > 0) {
+                            if (y > 5) {
+                                "all conditions met";
+                            }
+                        }
+                    }
+                """));
+            }
+        }
+
+        @Nested
+        @DisplayName("if expressions with variables")
+        class IfExpressionsWithVariables {
+
+            @Test
+            @DisplayName("should access outer scope variables")
+            void testAccessOuterScopeVariables() {
+                assertEquals(20, evaluator.evaluate("""
+                    let x = 10;
+                    if (x > 5) {
+                        x * 2;
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should modify outer scope variables")
+            void testModifyOuterScopeVariables() {
+                assertEquals(5, evaluator.evaluate("""
+                    let count = 0;
+                    if (true) {
+                        count = count + 5;
+                    }
+                    count;
+                """));
+            }
+
+            @Test
+            @DisplayName("should declare variables in if block scope")
+            void testDeclareVariablesInIfBlockScope() {
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("""
+                    if (true) {
+                        let blockVar = 10;
+                    }
+                    blockVar;
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle variable declarations in different branches")
+            void testHandleVariableDeclarationsInDifferentBranches() {
+                evaluator.declareContextValue("flag", true, false);
+                assertEquals(10, evaluator.evaluate("""
+                    let result = 0;
+                    if (flag) {
+                        let temp = 10;
+                        result = temp;
+                    } else {
+                        let temp = 20;
+                        result = temp;
+                    }
+                    result;
+                """));
+            }
+        }
+
+        @Nested
+        @DisplayName("async if expressions")
+        class AsyncIfExpressions {
+
+            @Test
+            @DisplayName("should handle async condition evaluation")
+            void testAsyncConditionEvaluation() throws Exception {
+                FuncImpl asyncCheck = (_ctx, _val) -> {;
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return JexValue.fromBoolean(true);
+                };
+                evaluator.addFunction("asyncCheck", asyncCheck);
+                assertEquals("async-true", evaluator.evaluate("""
+                    if (asyncCheck()) {
+                        "async-true";
+                    } else {
+                        "async-false";
+                    }
+                """));
+            }
+
+            // ... Additional async tests would follow the same pattern
+            // converting JS async lambdas to FuncImpl with appropriate type handling
+        }
+
+        @Nested
+        @DisplayName("sync if expressions")
+        class SyncIfExpressions {
+
+            @Test
+            @DisplayName("should handle multiple sync operations in if block")
+            void testMultipleSyncOperationsInIfBlock() {
+                assertEquals(25, evaluator.evaluate("""
+                    let total = 0;
+                    if (true) {
+                        total = total + 10;
+                        total = total * 2;
+                        total = total + 5;
+                    }
+                    total;
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle sync expressions with context variables")
+            void testSyncExpressionsWithContextVariables() {
+                evaluator.declareContextValue("multiplier", 3, false);
+                evaluator.declareContextValue("base", 10, false);
+                assertEquals(30, evaluator.evaluate("""
+                    if (multiplier > 2) {
+                        base * multiplier;
+                    } else {
+                        base;
+                    }
+                """));
+            }
+
+            @Test
+            @DisplayName("should handle sync function calls in conditions")
+            void testSyncFunctionCallsInConditions() {
+                FuncImpl syncCheck = (_ctx, val) -> JexValue.from(Utils.toNumber(val[0], "syncCheck").doubleValue() % 2 == 0);
+                evaluator.addFunction("syncCheck", syncCheck);
+                assertEquals("even", evaluator.evaluate("""
+                    if (syncCheck(10)) {
+                        "even";
+                    } else {
+                        "odd";
+                    }
+                """));
+            }
+        }
+    }
+
+
 }
