@@ -355,6 +355,42 @@ public class Utils {
             double db = b.asNumber("==").doubleValue();
             return Double.compare(da, db) == 0;
         }
+        if (a.isInteger() && b.isInteger()) {
+            return a.asInteger("==").equals(b.asInteger("=="));
+        }
+        if (a.isDouble() && b.isDouble()) {
+            return Double.compare(a.asDouble("=="), b.asDouble("==")) == 0;
+        }
+        if (a.isNumber() && b.isInteger()) {
+            double da = a.asNumber("==").doubleValue();
+            double db = b.asInteger("==").doubleValue();
+            return Double.compare(da, db) == 0;
+        }
+        if (a.isInteger() && b.isNumber()) {
+            double da = a.asInteger("==").doubleValue();
+            double db = b.asNumber("==").doubleValue();
+            return Double.compare(da, db) == 0;
+        }
+        if (a.isNumber() && b.isDouble()) {
+            double da = a.asNumber("==").doubleValue();
+            double db = b.asDouble("==");
+            return Double.compare(da, db) == 0;
+        }
+        if (a.isDouble() && b.isNumber()) {
+            double da = a.asDouble("==");
+            double db = b.asNumber("==").doubleValue();
+            return Double.compare(da, db) == 0;
+        }
+        if (a.isInteger() && b.isDouble()) {
+            double da = a.asInteger("==").doubleValue();
+            double db = b.asDouble("==");
+            return Double.compare(da, db) == 0;
+        }
+        if (a.isDouble() && b.isInteger()) {
+            double da = a.asDouble("==");
+            double db = b.asInteger("==").doubleValue();
+            return Double.compare(da, db) == 0;
+        }
 
         // 4. boolean → number conversion
         if (a.isBoolean()) {
@@ -377,6 +413,38 @@ public class Utils {
             try {
                 double num = Double.parseDouble(b.asString("=="));
                 return jsEqual(a, JexValue.fromNumber(num));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        if (a.isString() && b.isInteger()) {
+            try {
+                int num = Integer.parseInt(a.asString("=="));
+                return jsEqual(JexValue.fromInteger(num), b);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        if (a.isInteger() && b.isString()) {
+            try {
+                int num = Integer.parseInt(b.asString("=="));
+                return jsEqual(a, JexValue.fromInteger(num));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        if (a.isString() && b.isDouble()) {
+            try {
+                double num = Double.parseDouble(a.asString("=="));
+                return jsEqual(JexValue.fromDouble(num), b);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        if (a.isDouble() && b.isString()) {
+            try {
+                double num = Double.parseDouble(b.asString("=="));
+                return jsEqual(a, JexValue.fromDouble(num));
             } catch (NumberFormatException e) {
                 return false;
             }

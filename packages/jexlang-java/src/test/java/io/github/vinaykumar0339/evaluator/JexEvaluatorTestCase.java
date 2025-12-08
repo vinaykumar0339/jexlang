@@ -903,4 +903,519 @@ public class JexEvaluatorTestCase {
             assertEquals(3, result);
         }
     }
+
+    @Nested
+    @DisplayName("unary expressions")
+    class UnaryExpressionsTests {
+        @Test
+        @DisplayName("unary plus operator")
+        void testUnaryPlusOperator() {
+            Object result1 = evaluator.evaluate("+5");
+            assertEquals(5, result1);
+
+            Object result2 = evaluator.evaluate("+-3");
+            assertEquals(-3, result2);
+        }
+
+        @Test
+        @DisplayName("unary minus operator")
+        void testUnaryMinusOperator() {
+            Object result1 = evaluator.evaluate("-5");
+            assertEquals(-5, result1);
+
+            Object result2 = evaluator.evaluate("-(-3)");
+            assertEquals(3, result2);
+        }
+
+        @Test
+        @DisplayName("logical NOT operator")
+        void testLogicalNotOperator() {
+            Object result1 = evaluator.evaluate("!true");
+            assertEquals(false, result1);
+
+            Object result2 = evaluator.evaluate("!false");
+            assertEquals(true, result2);
+        }
+    }
+
+    @Nested
+    @DisplayName("square root expressions")
+    class SquareRootExpressionsTests {
+        @Test
+        @DisplayName("square root of a positive number")
+        void testSquareRootOfPositiveNumber() {
+            assertEquals(4, evaluator.evaluate("sqrt(16)"));
+            assertEquals(1.5, evaluator.evaluate("sqrt(2.25)"));
+
+            assertEquals(4, evaluator.evaluate("√16"));
+            assertEquals(1.5, evaluator.evaluate("√2.25"));
+            assertEquals(10, evaluator.evaluate("√100"));
+        }
+
+        @Test
+        @DisplayName("square root of zero")
+        void testSquareRootOfZero() {
+            assertEquals(0, evaluator.evaluate("sqrt(0)"));
+            assertEquals(0, evaluator.evaluate("√0"));
+        }
+
+        @Test
+        @DisplayName("square root of a negative number")
+        void testSquareRootOfNegativeNumber() {
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("sqrt(-4)"));
+            assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("√-9"));
+        }
+    }
+
+    @Nested
+    @DisplayName("literal expressions")
+    class LiteralExpressionsTests {
+        @Test
+        @DisplayName("should evaluate numeric literals")
+        void testNumericLiterals() {
+            assertEquals(123, evaluator.evaluate("123"));
+            assertEquals(45.67, evaluator.evaluate("45.67"));
+        }
+
+        @Test
+        @DisplayName("should evaluate string literals")
+        void testStringLiterals() {
+            assertEquals("hello", evaluator.evaluate("\"hello\""));
+            assertEquals("world", evaluator.evaluate("'world'"));
+
+            assertEquals("true", evaluator.evaluate("\"true\""));
+            assertEquals("false", evaluator.evaluate("\"false\""));
+        }
+
+        @Test
+        @DisplayName("should evaluate boolean literals")
+        void testBooleanLiterals() {
+            assertEquals(true, evaluator.evaluate("true"));
+            assertEquals(false, evaluator.evaluate("false"));
+        }
+
+        @Test
+        @DisplayName("should evaluate null literal")
+        void testNullLiteral() {
+            assertNull(evaluator.evaluate("null"));
+        }
+
+        @Test
+        @DisplayName("should evaluate array literals")
+        void  testArrayLiterals() {
+            assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("[1, 2, 3]"));
+            assertEquals(Arrays.asList("a", "b", "c"), evaluator.evaluate("[\"a\", \"b\", \"c\"]"));
+
+            List<Object> dynamicArray = Arrays.asList(10, "test", true, null);
+            evaluator.declareContextValue("dynamicArray", dynamicArray, false);
+            assertEquals(dynamicArray, evaluator.evaluate("[dynamicArray[0], dynamicArray[1], dynamicArray[2], dynamicArray[3]]"));
+
+            int index1 = 0;
+            int index2 = 1;
+            int index3 = 2;
+            int index4 = 3;
+            evaluator.declareContextValue("index1", index1, false);
+            evaluator.declareContextValue("index2", index2, false);
+            evaluator.declareContextValue("index3", index3, false);
+            evaluator.declareContextValue("index4", index4, false);
+            assertEquals(dynamicArray, evaluator.evaluate("[dynamicArray[index1], dynamicArray[index2], dynamicArray[index3], dynamicArray[index4]]"));
+        }
+
+        @Test
+        @DisplayName("should evaluate object literals")
+        void testObjectLiterals() {
+            Map<String, Object> expected1 = new HashMap<>();
+            expected1.put("key", "value");
+            expected1.put("num", 42);
+            assertEquals(expected1, evaluator.evaluate("{\"key\": \"value\", \"num\": 42}"));
+
+            Map<String, Object> expected2 = new HashMap<>();
+            expected2.put("a", 1);
+            expected2.put("b", 2);
+            expected2.put("c", 3);
+            assertEquals(expected2, evaluator.evaluate("{\"a\": 1, \"b\": 2, \"c\": 3}"));
+
+            Map<String, Object> dynamicObject = new HashMap<>();
+            dynamicObject.put("name", "Test");
+            dynamicObject.put("value", 100);
+            dynamicObject.put("isActive", true);
+            dynamicObject.put("computed", true);
+
+            int isValueKeyValue = 100;
+            String isActiveKey = "isActive";
+            boolean computed = true;
+
+            evaluator.declareContextValue("dynamicObject", dynamicObject, false);
+            evaluator.declareContextValue("isValueKeyValue", isValueKeyValue, false);
+            evaluator.declareContextValue("isActiveKey", isActiveKey, false);
+            evaluator.declareContextValue("computed", computed, false);
+
+            String objLiteral = """
+                {
+                    "name": dynamicObject.name,
+                    "value": isValueKeyValue,
+                    [isActiveKey]: dynamicObject.isActive,
+                    computed
+                }
+                """;
+
+            assertEquals(dynamicObject, evaluator.evaluate(objLiteral));
+        }
+    }
+
+    @Nested
+    @DisplayName("member expressions")
+    class MemberExpressionsTests {
+        @Test
+        @DisplayName("should access object properties")
+        void testAccessObjectProperties() {
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("a", 1);
+            obj.put("b", 2);
+            obj.put("c", 3);
+            evaluator.declareContextValue("obj", obj, false);
+            assertEquals(1, evaluator.evaluate("obj.a"));
+            assertEquals(2, evaluator.evaluate("obj.b"));
+            assertEquals(3, evaluator.evaluate("obj.c"));
+
+            String dynamicKey = "b";
+            evaluator.declareContextValue("dynamicKey", dynamicKey, false);
+            assertEquals(2, evaluator.evaluate("obj[dynamicKey]"));
+
+        }
+
+        @Test
+        @DisplayName("should access array elements")
+        void testAccessArrayElements() {
+            List<Integer> arr = Arrays.asList(10, 20, 30, 40);
+            evaluator.declareContextValue("arr", arr, false);
+            assertEquals(10, evaluator.evaluate("arr[0]"));
+            assertEquals(20, evaluator.evaluate("arr[1]"));
+            assertEquals(30, evaluator.evaluate("arr[2]"));
+            assertEquals(40, evaluator.evaluate("arr[3]"));
+            assertNull(evaluator.evaluate("arr[4]"));
+
+            // negative indexing
+            assertEquals(40, evaluator.evaluate("arr[-1]"));
+            assertEquals(30, evaluator.evaluate("arr[-2]"));
+            assertEquals(20, evaluator.evaluate("arr[-3]"));
+            assertEquals(10, evaluator.evaluate("arr[-4]"));
+            assertNull(evaluator.evaluate("arr[-5]"));
+
+            int index = 2;
+            evaluator.declareContextValue("index", index, false);
+            assertEquals(30, evaluator.evaluate("arr[index]"));
+        }
+    }
+
+    @Nested
+    @DisplayName("complex member access expressions")
+    class ComplexMemberAccessExpressionsTests {
+        @Test
+        @DisplayName("should access nested object properties")
+        void testAccessNestedObjectProperties() {
+            Map<String, Object> address = new HashMap<>();
+            address.put("city", "New York");
+            address.put("zip", 10001);
+
+            Map<String, Object> user = new HashMap<>();
+            user.put("name", "John");
+            user.put("address", address);
+
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("user", user);
+
+            evaluator.declareContextValue("obj", obj, false);
+            assertEquals("John", evaluator.evaluate("obj.user.name"));
+            assertEquals("New York", evaluator.evaluate("obj.user.address.city"));
+            assertEquals(10001, evaluator.evaluate("obj.user.address.zip"));
+        }
+
+        @Test
+        @DisplayName("should access nested array elements")
+        void testAccessNestedArrayElements() {
+            List<List<Integer>> arr = Arrays.asList(
+                    Arrays.asList(1, 2, 3),
+                    Arrays.asList(4, 5, 6),
+                    Arrays.asList(7, 8, 9)
+            );
+            evaluator.declareContextValue("arr", arr, false);
+            assertEquals(1, evaluator.evaluate("arr[0][0]"));
+            assertEquals(6, evaluator.evaluate("arr[1][2]"));
+            assertEquals(8, evaluator.evaluate("arr[2][1]"));
+            assertEquals(9, evaluator.evaluate("arr[-1][-1]"));
+        }
+
+        @Test
+        @DisplayName("should access array of objects")
+        void testAccessArrayOfObjects() {
+            List<Map<String, Object>> users = new ArrayList<>();
+            Map<String, Object> user1 = new HashMap<>();
+            user1.put("name", "Alice");
+            user1.put("age", 25);
+            users.add(user1);
+            Map<String, Object> user2 = new HashMap<>();
+            user2.put("name", "Bob");
+            user2.put("age", 30);
+            users.add(user2);
+            Map<String, Object> user3 = new HashMap<>();
+            user3.put("name", "Charlie");
+            user3.put("age", 35);
+            users.add(user3);
+
+            evaluator.declareContextValue("users", users, false);
+            assertEquals("Alice", evaluator.evaluate("users[0].name"));
+            assertEquals(30, evaluator.evaluate("users[1].age"));
+            assertEquals("Charlie", evaluator.evaluate("users[2].name"));
+            assertEquals(35, evaluator.evaluate("users[-1].age"));
+
+        }
+
+        @Test
+        @DisplayName("should access object with array properties")
+        void testAccessObjectWithArrayProperties() {
+            Map<String, Object> data = new HashMap<>();
+            data.put("scores", Arrays.asList(95, 87, 92));
+            data.put("names", Arrays.asList("Test1", "Test2", "Test3"));
+            evaluator.declareContextValue("data", data, false);
+            assertEquals(95, evaluator.evaluate("data.scores[0]"));
+            assertEquals(92, evaluator.evaluate("data.scores[2]"));
+            assertEquals("Test2", evaluator.evaluate("data.names[1]"));
+            assertEquals(92, evaluator.evaluate("data.scores[-1]"));
+        }
+
+        @Test
+        @DisplayName("should handle mixed bracket and dot notation")
+        void testMixedBracketAndDotNotation() {
+            Map<String, Object> item1 = new HashMap<>();
+            item1.put("id", 1);
+            item1.put("values", Arrays.asList(10, 20, 30));
+            Map<String, Object> item2 = new HashMap<>();
+            item2.put("id", 2);
+            item2.put("values", Arrays.asList(40, 50, 60));
+            Map<String, Object> complex = new HashMap<>();
+            complex.put("items", Arrays.asList(item1, item2));
+
+            evaluator.declareContextValue("complex", complex, false);
+            assertEquals(1, evaluator.evaluate("complex.items[0].id"));
+            assertEquals(20, evaluator.evaluate("complex.items[0].values[1]"));
+            assertEquals(60, evaluator.evaluate("complex.items[1].values[2]"));
+            assertEquals(1, evaluator.evaluate("complex[\"items\"][0][\"id\"]"));
+        }
+
+        @Test
+        @DisplayName("should evaluate expressions within member access")
+        void testEvaluateExpressionsWithinMemberAccess() {
+            Map<String, Object> data = new HashMap<>();
+            data.put("values", Arrays.asList(100, 200, 300, 400));
+            evaluator.declareContextValue("data", data, false);
+            evaluator.declareContextValue("idx", 1, false);
+            assertEquals(300, evaluator.evaluate("data.values[1 + 1]"));
+            assertEquals(200, evaluator.evaluate("data.values[idx]"));
+            assertEquals(400, evaluator.evaluate("data.values[idx + 2]"));
+        }
+
+        @Test
+        @DisplayName("should handle deeply nested structures")
+        void testHandleDeeplyNestedStructures() {
+            Map<String, Object> valueObj = new HashMap<>();
+            valueObj.put("value", "found");
+            List<Map<String, Object>> array = List.of(valueObj);
+            Map<String, Object> level3 = new HashMap<>();
+            level3.put("array", array);
+            Map<String, Object> level2 = new HashMap<>();
+            level2.put("level3", level3);
+            Map<String, Object> level1 = new HashMap<>();
+            level1.put("level2", level2);
+            Map<String, Object> deep = new HashMap<>();
+            deep.put("level1", level1);
+            evaluator.declareContextValue("deep", deep, false);
+            assertEquals("found", evaluator.evaluate("deep.level1.level2.level3.array[0].value"));
+        }
+
+        @Test
+        @DisplayName("should return null for non-existent nested properties")
+        void testReturnNullForNonExistentNestedProperties() {
+            Map<String, Object> aMap = new HashMap<>();
+            aMap.put("b", 1);
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("a", aMap);
+            evaluator.declareContextValue("obj", obj, false);
+            assertNull(evaluator.evaluate("obj.a.c"));
+            assertNull(evaluator.evaluate("obj.x.y.z"));
+        }
+    }
+
+    @Nested
+    @DisplayName("parenthesized expressions")
+    class ParenthesizedExpressionsTests {
+        @Test
+        @DisplayName("should evaluate expressions within parentheses")
+        void testEvaluateExpressionsWithinParentheses() {
+            assertEquals(5, evaluator.evaluate("(2 + 3)"));
+            assertEquals(21, evaluator.evaluate("((1 + 2) * (3 + 4))"));
+            assertEquals(1, evaluator.evaluate("((10 - 2) / (4 + 4))"));
+        }
+    }
+
+    @Nested
+    @DisplayName("power expressions")
+    class PowerExpressionsTests {
+        @Test
+        @DisplayName("should evaluate exponentiation")
+        void testEvaluateExponentiation() {
+            assertEquals(8, evaluator.evaluate("2 ^ 3"));
+            assertEquals(1, evaluator.evaluate("5 ^ 0"));
+            assertEquals(8, evaluator.evaluate("4 ^ 1.5"));
+        }
+
+        @Test
+        @DisplayName("should handle chained exponentiation")
+        void testHandleChainedExponentiation() {
+            assertEquals(512, evaluator.evaluate("2 ^ 3 ^ 2")); // 2^(3^2) = 2^9 = 512
+            assertEquals(81, evaluator.evaluate("3 ^ 2 ^ 2"));  // 3^(2^2) = 3^4 = 81
+        }
+
+        @Test
+        @DisplayName("should evaluate exponentiation with parentheses")
+        void testEvaluateExponentiationWithParentheses() {
+            assertEquals(64, evaluator.evaluate("(2 ^ 3) ^ 2")); // (2^3)^2 = 8^2 = 64
+            assertEquals(512, evaluator.evaluate("2 ^ (3 ^ 2)")); // 2^(3^2) = 2^9 = 512
+        }
+    }
+
+    @Nested
+    @DisplayName("ternary expressions")
+    class TernaryExpressionsTests {
+        @Test
+        @DisplayName("should evaluate simple ternary expressions")
+        void testSimpleTernaryExpressions() {
+            assertEquals(1, evaluator.evaluate("true ? 1 : 2"));
+            assertEquals(2, evaluator.evaluate("false ? 1 : 2"));
+        }
+
+        @Test
+        @DisplayName("should evaluate nested ternary expressions")
+        void testNestedTernaryExpressions() {
+            assertEquals(2, evaluator.evaluate("true ? (false ? 1 : 2) : 3"));
+            assertEquals(2, evaluator.evaluate("false ? 1 : (true ? 2 : 3)"));
+        }
+
+        @Test
+        @DisplayName("should handle complex ternary expressions")
+        void testComplexTernaryExpressions() {
+            assertEquals(15, evaluator.evaluate("(5 > 3) ? (10 + 5) : (20 - 5)"));
+            assertEquals("no", evaluator.evaluate("(2 + 2 == 5) ? \"yes\" : \"no\""));
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with different data types")
+        void testTernaryExpressionsWithDifferentDataTypes() {
+            // Number results
+            assertEquals(42, evaluator.evaluate("true ? 42 : 0"));
+            assertEquals(0, evaluator.evaluate("false ? 42 : 0"));
+
+            // String results
+            assertEquals("hello", evaluator.evaluate("true ? \"hello\" : \"world\""));
+            assertEquals("world", evaluator.evaluate("false ? \"hello\" : \"world\""));
+
+            // Boolean results
+            assertEquals(true, evaluator.evaluate("true ? true : false"));
+            assertEquals(false, evaluator.evaluate("false ? true : false"));
+
+            // Null results
+            assertNull(evaluator.evaluate("true ? null : 42"));
+            assertNull(evaluator.evaluate("false ? 42 : null"));
+
+            // Array results
+            assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("true ? [1, 2, 3] : [4, 5, 6]"));
+            assertEquals(Arrays.asList(4, 5, 6), evaluator.evaluate("false ? [1, 2, 3] : [4, 5, 6]"));
+
+            // Object results
+            Map<String, Object> objA = new HashMap<>();
+            objA.put("a", 1);
+            Map<String, Object> objB = new HashMap<>();
+            objB.put("b", 2);
+            assertEquals(objA, evaluator.evaluate("true ? {\"a\": 1} : {\"b\": 2}"));
+            assertEquals(objB, evaluator.evaluate("false ? {\"a\": 1} : {\"b\": 2}"));
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with mixed data types")
+        void testTernaryExpressionsWithMixedDataTypes() {
+            assertEquals(42, evaluator.evaluate("true ? 42 : \"string\""));
+            assertEquals("string", evaluator.evaluate("false ? 42 : \"string\""));
+            assertEquals(Arrays.asList(1, 2), evaluator.evaluate("true ? [1, 2] : {\"a\": 1}"));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("a", 1);
+            assertEquals(obj, evaluator.evaluate("false ? [1, 2] : {\"a\": 1}"));
+            assertNull(evaluator.evaluate("true ? null : false"));
+            assertEquals(false, evaluator.evaluate("false ? null : false"));
+
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with context variables")
+        void testTernaryExpressionsWithContextVariables() {
+            evaluator.declareContextValue("x", 10, false);
+            evaluator.declareContextValue("y", 20, false);
+            evaluator.declareContextValue("arr", Arrays.asList(1, 2, 3), false);
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("name", "test");
+            evaluator.declareContextValue("obj", obj, false);
+
+            assertEquals(20, evaluator.evaluate("x > y ? x : y"));
+            assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("x < y ? arr : obj"));
+            assertEquals(1, evaluator.evaluate("x == 10 ? arr[0] : obj.name"));
+            assertEquals("found", evaluator.evaluate("y != 20 ? null : \"found\""));
+        }
+
+        @Test
+        @DisplayName("should handle nested ternary expressions with different data types")
+        void testNestedTernaryExpressionsWithDifferentDataTypes() {
+            assertEquals("b", evaluator.evaluate("true ? (false ? \"a\" : \"b\") : (true ? \"c\" : \"d\")"));
+            assertEquals(4, evaluator.evaluate("false ? (true ? 1 : 2) : (false ? 3 : 4)"));
+            assertEquals(List.of(1), evaluator.evaluate("true ? (true ? [1] : [2]) : (true ? [3] : [4])"));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("x", 1);
+            assertEquals(obj, evaluator.evaluate("false ? null : (true ? {\"x\": 1} : {\"y\": 2})"));
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with complex conditions")
+        void testTernaryExpressionsWithComplexConditions() {
+            List<Map<String, Object>> users = new ArrayList<>();
+            Map<String, Object> user1 = new HashMap<>();
+            user1.put("name", "Alice");
+            user1.put("age", 25);
+            users.add(user1);
+            Map<String, Object> user2 = new HashMap<>();
+            user2.put("name", "Bob");
+            user2.put("age", 30);
+            users.add(user2);
+            evaluator.declareContextValue("users", users, false);
+            assertEquals("Alice", evaluator.evaluate("users[0].age > 20 ? users[0].name : \"unknown\""));
+            assertNull(evaluator.evaluate("users[1].age < 25 ? users[1] : null"));
+            assertEquals(users, evaluator.evaluate("length(users) > 1 ? users : []"));
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with arithmetic operations")
+        void testTernaryExpressionsWithArithmeticOperations() {
+            assertEquals(15, evaluator.evaluate("5 > 3 ? (10 + 5) : (20 - 5)"));
+            assertEquals(10, evaluator.evaluate("2 * 3 == 6 ? (100 / 10) : (50 * 2)"));
+            assertEquals("even", evaluator.evaluate("10 % 2 == 0 ? \"even\" : \"odd\""));
+        }
+
+        @Test
+        @DisplayName("should handle ternary expressions with logical operations")
+        void testTernaryExpressionsWithLogicalOperations() {
+            assertEquals("no", evaluator.evaluate("true && false ? \"yes\" : \"no\""));
+            assertEquals(1, evaluator.evaluate("true || false ? 1 : 0"));
+            assertEquals(Arrays.asList(1, 2), evaluator.evaluate("!false ? [1, 2] : [3, 4]"));
+            Map<String, Object> resultObj = new HashMap<>();
+            resultObj.put("result", true);
+            assertEquals(resultObj, evaluator.evaluate("(5 > 3) && (10 < 20) ? {\"result\": true} : {\"result\": false}"));
+        }
+    }
 }
