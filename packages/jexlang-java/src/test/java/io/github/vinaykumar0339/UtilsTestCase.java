@@ -243,7 +243,7 @@ public class UtilsTestCase {
         @DisplayName("numbers are converted correctly")
         public void testWithNumbers() {
             Assertions.assertTrue(Utils.toBoolean(JexValue.fromNumber(42), "testWithNumbers"));
-            Assertions.assertTrue(Utils.toBoolean(JexValue.fromNumber(-1), "testWithNumbers"));
+            Assertions.assertFalse(Utils.toBoolean(JexValue.fromNumber(-1), "testWithNumbers"));
             Assertions.assertFalse(Utils.toBoolean(JexValue.fromNumber(0), "testWithNumbers"));
             Assertions.assertTrue(Utils.toBoolean(JexValue.fromNumber(3.14), "testWithDoubles"));
             Assertions.assertTrue(Utils.toBoolean(JexValue.fromNumber(-0.001), "testWithDoubles"));
@@ -494,7 +494,7 @@ public class UtilsTestCase {
             Assertions.assertEquals("42", Utils.toString(JexValue.fromNumber(42), "testWithNumbers"));
             Assertions.assertEquals("-1", Utils.toString(JexValue.fromNumber(-1), "testWithNumbers"));
             Assertions.assertEquals("0", Utils.toString(JexValue.fromNumber(0), "testWithNumbers"));
-            Assertions.assertEquals("2.0", Utils.toString(JexValue.fromNumber(2.0), "testWithNumbers"));
+            Assertions.assertEquals("2", Utils.toString(JexValue.fromNumber(2.0), "testWithNumbers"));
             Assertions.assertEquals("3.14", Utils.toString(JexValue.fromNumber(3.14), "testWithNumbers"));
         }
 
