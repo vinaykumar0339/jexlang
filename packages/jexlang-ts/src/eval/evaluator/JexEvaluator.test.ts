@@ -3453,21 +3453,34 @@ describe('JexEvaluator', () => {
             it('should evaluate day function', () => {
                 const timestamp = new Date('2024-01-15').getTime();
                 expect(evaluator.evaluate(`day(${timestamp})`)).toBe(15);
+
+                const currentDay = new Date().getDate();
+                expect(evaluator.evaluate('day()')).toBe(currentDay);
             });
 
             it('should evaluate hour function', () => {
                 const date = new Date('2024-01-01T15:30:00');
                 expect(evaluator.evaluate(`hour(${date.getTime()})`)).toBe(15);
+
+                const currentHour = new Date().getHours();
+                expect(evaluator.evaluate('hour()')).toBe(currentHour);
             });
 
             it('should evaluate minute function', () => {
                 const date = new Date('2024-01-01T15:30:00');
                 expect(evaluator.evaluate(`minute(${date.getTime()})`)).toBe(30);
+
+                const currentMinute = new Date().getMinutes();
+                expect(evaluator.evaluate('minute()')).toBe(currentMinute);
             });
 
             it('should evaluate second function', () => {
                 const date = new Date('2024-01-01T15:30:45');
                 expect(evaluator.evaluate(`second(${date.getTime()})`)).toBe(45);
+
+                // It might fail if the second rolls over between calls, but rare enough to be acceptable in tests
+                const currentSecond = new Date().getSeconds();
+                expect(evaluator.evaluate('second()')).toBe(currentSecond);
             });
 
             it('should evaluate weekday function', () => {

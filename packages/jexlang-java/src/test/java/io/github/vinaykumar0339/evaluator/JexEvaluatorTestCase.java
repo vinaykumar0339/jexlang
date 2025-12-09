@@ -3996,6 +3996,278 @@ public class JexEvaluatorTestCase {
                 assertEquals(0, c.get(Calendar.MINUTE));
                 assertEquals(0, c.get(Calendar.SECOND));
             }
+
+            @Test
+            @DisplayName("should evaluate date function")
+            void testDate() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis();
+                assertEquals(timestamp, evaluator.evaluate("date(" + timestamp + ")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate year function")
+            void testYear() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis();
+                assertEquals(2024, evaluator.evaluate("year(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.YEAR), evaluator.evaluate("year()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate month function")
+            void testMonth() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JUNE, 15).getTimeInMillis();
+                assertEquals(6, evaluator.evaluate("month(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.MONTH) + 1, evaluator.evaluate("month()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate day function")
+            void testDay() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 15).getTimeInMillis();
+                assertEquals(15, evaluator.evaluate("day(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.DAY_OF_MONTH), evaluator.evaluate("day()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate hour function")
+            void testHour() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1, 15, 30).getTimeInMillis();
+                assertEquals(15, evaluator.evaluate("hour(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.HOUR_OF_DAY), evaluator.evaluate("hour()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate minute function")
+            void testMinute() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1, 15, 30).getTimeInMillis();
+                assertEquals(30, evaluator.evaluate("minute(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.MINUTE), evaluator.evaluate("minute()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate second function")
+            void testSecond() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1, 15, 30, 45).getTimeInMillis();
+                assertEquals(45, evaluator.evaluate("second(" + timestamp + ")"));
+
+                Calendar now = Calendar.getInstance();
+                assertEquals(now.get(Calendar.SECOND), evaluator.evaluate("second()"));
+            }
+
+            @Test
+            @DisplayName("should evaluate weekday function")
+            void testWeekday() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis(); // Monday
+                assertEquals(1, evaluator.evaluate("weekday(" + timestamp + ")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate addDays function")
+            void testAddDaysFunction() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis();
+                long result = (Long) evaluator.evaluate("addDays(" + timestamp + ", 5)");
+                Calendar resultDate = Calendar.getInstance();
+                resultDate.setTimeInMillis(result);
+                assertEquals(6, resultDate.get(Calendar.DAY_OF_MONTH));
+            }
+
+            @Test
+            @DisplayName("should evaluate addMonths function")
+            void testAddMonthsFunction() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 15).getTimeInMillis();
+                long result = (Long) evaluator.evaluate("addMonths(" + timestamp + ", 2)");
+                Calendar resultDate = Calendar.getInstance();
+                resultDate.setTimeInMillis(result);
+                assertEquals(Calendar.MARCH, resultDate.get(Calendar.MONTH)); // March (0-indexed)
+            }
+
+            @Test
+            @DisplayName("should evaluate addYears function")
+            void testAddYearsFunction() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis();
+                long result = (Long) evaluator.evaluate("addYears(" + timestamp + ", 1)");
+                Calendar resultDate = Calendar.getInstance();
+                resultDate.setTimeInMillis(result);
+                assertEquals(2025, resultDate.get(Calendar.YEAR));
+            }
+
+            @Test
+            @DisplayName("should evaluate addHours function")
+            void testAddHoursFunction() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1, 10, 0).getTimeInMillis();
+                long result = (Long) evaluator.evaluate("addHours(" + timestamp + ", 5)");
+                Calendar resultDate = Calendar.getInstance();
+                resultDate.setTimeInMillis(result);
+                assertEquals(15, resultDate.get(Calendar.HOUR_OF_DAY));
+            }
+
+            @Test
+            @DisplayName("should evaluate addMinutes function")
+            void testAddMinutesFunction() {
+                long timestamp = new GregorianCalendar(2024, Calendar.JANUARY, 1, 10, 30).getTimeInMillis();
+                long result = (Long) evaluator.evaluate("addMinutes(" + timestamp + ", 45)");
+                Calendar resultDate = Calendar.getInstance();
+                resultDate.setTimeInMillis(result);
+                assertEquals(15, resultDate.get(Calendar.MINUTE));
+            }
+
+            @Test
+            @DisplayName("should evaluate daysBetween function")
+            void testEvaluateDaysBetweenFunction() {
+                long date1 = new GregorianCalendar(2024, Calendar.JANUARY, 1).getTimeInMillis();
+                long date2 = new GregorianCalendar(2024, Calendar.JANUARY, 10).getTimeInMillis();
+                assertEquals(9, evaluator.evaluate("daysBetween(" + date1 + ", " + date2 + ")"));
+            }
+
+            @Test
+            @DisplayName("should evaluate isLeapYear function")
+            void testEvaluateIsLeapYearFunction() {
+                assertEquals(true, evaluator.evaluate("isLeapYear(2024)"));
+                assertEquals(false, evaluator.evaluate("isLeapYear(2023)"));
+                assertEquals(true, evaluator.evaluate("isLeapYear(2000)"));
+                assertEquals(false, evaluator.evaluate("isLeapYear(1900)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate timestamp function")
+            void testEvaluateTimestampFunction() {
+                Object result = evaluator.evaluate("timestamp()");
+                assertInstanceOf(Number.class, result);
+                assertTrue(((Number) result).longValue() > 0);
+            }
+        }
+
+        @Nested
+        @DisplayName("custom functions")
+        class CustomFunctions {
+            @Test
+            @DisplayName("should call custom function with no arguments")
+            void testCustomFunctionNoArgs() {
+                FuncImpl customFunc = (ctx, args) -> JexValue.from("custom result");
+                evaluator.addFunction("customFunc", customFunc);
+                assertEquals("custom result", evaluator.evaluate("customFunc()"));
+            }
+
+            @Test
+            @DisplayName("should call custom function with single argument")
+            void testCustomFunctionSingleArg() {
+                FuncImpl doubleFunc = (ctx, args) -> {
+                    Number val = args[0].asNumber("number");
+                    return JexValue.fromNumber(val.doubleValue() * 2);
+                };
+                evaluator.addFunction("double", doubleFunc);
+                assertEquals(10, evaluator.evaluate("double(5)"));
+            }
+
+            @Test
+            @DisplayName("should call custom function with multiple arguments")
+            void testCustomFunctionMultipleArgs() {
+                FuncImpl addFunc = (ctx, args) -> {
+                    Number a = args[0].asNumber("number");
+                    Number b = args[1].asNumber("number");
+                    return JexValue.fromNumber(a.doubleValue() + b.doubleValue());
+                };
+                evaluator.addFunction("add", addFunc);
+                assertEquals(10, evaluator.evaluate("add(3, 7)"));
+            }
+
+            @Test
+            @DisplayName("should call custom async function")
+            void testCustomAsyncFunction() {
+                FuncImpl asyncFunc = (ctx, args) -> {
+                    try {
+                        Thread.sleep(100); // Simulate async operation
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    Number val = args[0].asNumber("number");
+                    return JexValue.fromNumber(val.doubleValue() * 3);
+                };
+                evaluator.addFunction("asyncFunc", asyncFunc);
+                assertEquals(15, evaluator.evaluate("asyncFunc(5)"));
+            }
+
+            @Test
+            @DisplayName("should pass context to custom function")
+            void testCustomFunctionWithContext() {
+                FuncImpl contextFunc = (ctx, args) -> JexValue.from(ctx.getJexEvaluator().getContextValue("testValue"));
+                evaluator.addFunction("contextFunc", contextFunc);
+                evaluator.declareContextValue("testValue", 42, false);
+                assertEquals(42, evaluator.evaluate("contextFunc()"));
+            }
+
+            @Test
+            @DisplayName("should handle custom function with variadic arguments")
+            void testCustomFunctionVariadicArgs() {
+                FuncImpl sumAll = (ctx, args) -> {
+                    double sum = 0;
+                    for (JexValue val : args) {
+                        sum += val.asNumber("number").doubleValue();
+                    }
+                    return JexValue.fromNumber(sum);
+                };
+                evaluator.addFunction("sumAll", sumAll);
+                assertEquals(15, evaluator.evaluate("sumAll(1, 2, 3, 4, 5)"));
+            }
+
+            @Test
+            @DisplayName("should handle nested custom function calls")
+            void testNestedCustomFunctionCalls() {
+                FuncImpl add = (ctx, args) -> {
+                    Number a = args[0].asNumber("number");
+                    Number b = args[1].asNumber("number");
+                    return JexValue.fromNumber(a.doubleValue() + b.doubleValue());
+                };
+                FuncImpl multiply = (ctx, args) -> {
+                    Number a = args[0].asNumber("number");
+                    Number b = args[1].asNumber("number");
+                    return JexValue.fromNumber(a.doubleValue() * b.doubleValue());
+                };
+                evaluator.addFunction("add", add);
+                evaluator.addFunction("multiply", multiply);
+                assertEquals(20, evaluator.evaluate("multiply(add(2, 3), 4)"));
+            }
+
+            @Test
+            @DisplayName("should handle custom function returning different types")
+            void testCustomFunctionReturningDifferentTypes() {
+                FuncImpl returnString = (ctx, args) -> JexValue.from("text");
+                FuncImpl returnNumber = (ctx, args) -> JexValue.fromNumber(42);
+                FuncImpl returnBoolean = (ctx, args) -> JexValue.from(true);
+                FuncImpl returnArray = (ctx, args) -> JexValue.from(Arrays.asList(1, 2, 3));
+                FuncImpl returnObject = (ctx, args) -> {
+                    Map<String, JexValue> obj = new HashMap<>();
+                    obj.put("key", JexValue.from("value"));
+                    return JexValue.fromObject(obj);
+                };
+                FuncImpl returnNull = (ctx, args) -> JexValue.fromNull();
+
+                evaluator.addFunction("returnString", returnString);
+                evaluator.addFunction("returnNumber", returnNumber);
+                evaluator.addFunction("returnBoolean", returnBoolean);
+                evaluator.addFunction("returnArray", returnArray);
+                evaluator.addFunction("returnObject", returnObject);
+                evaluator.addFunction("returnNull", returnNull);
+
+                assertEquals("text", evaluator.evaluate("returnString()"));
+                assertEquals(42, evaluator.evaluate("returnNumber()"));
+                assertEquals(true, evaluator.evaluate("returnBoolean()"));
+                assertEquals(Arrays.asList(1, 2, 3), evaluator.evaluate("returnArray()"));
+                Map<String, Object> expectedObj = new HashMap<>();
+                expectedObj.put("key", "value");
+                assertEquals(expectedObj, evaluator.evaluate("returnObject()"));
+                assertNull(evaluator.evaluate("returnNull()"));
+            }
         }
     }
 }
