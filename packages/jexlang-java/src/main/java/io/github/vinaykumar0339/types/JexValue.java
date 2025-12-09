@@ -54,10 +54,20 @@ public interface JexValue {
         return new JexNumber(d);
     }
 
+    /**
+     * @deprecated Use {@link #fromNumber(Number)} instead.
+     * Creates a {@link JexInteger} from an {@link Integer} value.
+     */
+    @Deprecated
     static JexInteger fromInteger(Integer number) {
         return new JexInteger(number);
     }
 
+    /**
+     * @deprecated Use {@link #fromNumber(Number)} instead.
+     * Creates a {@link JexDouble} from a {@link Double} value.
+     */
+    @Deprecated
     static JexDouble fromDouble(Double number) {
         return new JexDouble(number);
     }
@@ -111,11 +121,14 @@ public interface JexValue {
     static JexValue from(Object value) {
         if (value == null) {
             return fromNull();
-        } else if (value instanceof Double) {
-            return fromDouble((Double) value);
-        } else if (value instanceof Integer) {
-            return fromInteger((Integer) value);
-        } else if (value instanceof Number) {
+        }
+        // NOTE: Mostly we don't need to support this. But keeping for backward compatibility in comments.
+//        else if (value instanceof Double) {
+//            return fromDouble((Double) value);
+//        } else if (value instanceof Integer) {
+//            return fromInteger((Integer) value);
+//        }
+        else if (value instanceof Number) {
             return fromNumber((Number) value);
         } else if (value instanceof Boolean) {
             return fromBoolean((Boolean) value);

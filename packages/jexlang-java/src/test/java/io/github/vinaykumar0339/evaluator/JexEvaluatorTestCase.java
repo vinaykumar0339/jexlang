@@ -450,7 +450,7 @@ public class JexEvaluatorTestCase {
 
             // Add a function: double(val) => val * 2
             evaluator.addFunction("double", (ctx, args) -> {
-                Number val = args[0].asInteger("double");
+                Number val = args[0].asNumber("double");
                 return JexValue.from(val.longValue() * 2);
             });
 
@@ -4331,8 +4331,8 @@ public class JexEvaluatorTestCase {
             @DisplayName("should evaluate function with variable arguments")
             void testFunctionWithVariableArguments() {
                 FuncImpl multiply = (ctx, args) -> {
-                    Number a = args[0].asInteger("integer");
-                    Number b = args[1].asInteger("integer");
+                    Number a = args[0].asNumber("multiply");
+                    Number b = args[1].asNumber("multiply");
                     return JexValue.fromNumber(a.doubleValue() * b.doubleValue());
                 };
                 evaluator.addFunction("multiply", multiply);
@@ -4357,8 +4357,8 @@ public class JexEvaluatorTestCase {
             @DisplayName("should evaluate function with array element arguments")
             void testFunctionWithArrayElementArguments() {
                 FuncImpl sum = (ctx, args) -> {
-                    Number a = args[0].asInteger("integer");
-                    Number b = args[1].asInteger("integer");
+                    Number a = args[0].asNumber("number");
+                    Number b = args[1].asNumber("number");
                     return JexValue.fromNumber(a.intValue() + b.intValue());
                 };
                 evaluator.addFunction("sum", sum);
