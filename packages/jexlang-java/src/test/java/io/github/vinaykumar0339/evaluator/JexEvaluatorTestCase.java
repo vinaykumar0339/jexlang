@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.DirectoryNotEmptyException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
@@ -4267,6 +4266,108 @@ public class JexEvaluatorTestCase {
                 expectedObj.put("key", "value");
                 assertEquals(expectedObj, evaluator.evaluate("returnObject()"));
                 assertNull(evaluator.evaluate("returnNull()"));
+            }
+        }
+
+        @Nested
+        @DisplayName("error handling")
+        class ErrorHandling {
+            @Test
+            @DisplayName("should throw error for undefined function")
+            void testUndefinedFunction() {
+                assertThrows(JexLangRuntimeError.class, () -> evaluator.evaluate("undefinedFunc()"));
+            }
+
+            @Test
+            @DisplayName("should throw error for wrong number of arguments")
+            void testWrongNumberOfArguments() {
+                FuncImpl singleArg = (ctx, args) -> args[0];
+                evaluator.addFunction("singleArg", singleArg);
+                assertThrows(ArrayIndexOutOfBoundsException.class, () -> evaluator.evaluate("singleArg()"));
+            }
+
+            @Test
+            @DisplayName("should handle function call errors gracefully")
+            void testFunctionCallErrorsGracefully() {
+                FuncImpl errorFunc = (ctx, args) -> {
+                    throw new RuntimeException("Function error");
+                };
+                evaluator.addFunction("errorFunc", errorFunc);
+                assertThrows(RuntimeException.class, () -> evaluator.evaluate("errorFunc()"));
+            }
+
+            @Test
+            @DisplayName("should handle async function errors")
+            void testAsyncFunctionErrors() {
+                FuncImpl asyncErrorFunc = (ctx, args) -> {
+                    try {
+                        Thread.sleep(100); // Simulate async operation
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    throw new RuntimeException("Async error");
+                };
+                evaluator.addFunction("asyncErrorFunc", asyncErrorFunc);
+                assertThrows(RuntimeException.class, () -> evaluator.evaluate("asyncErrorFunc()"));
+            }
+        }
+
+        @Nested
+        @DisplayName("function calls with expressions")
+        class  FunctionCalls {
+            @Test
+            @DisplayName("should evaluate function with expression arguments")
+            void testFunctionWithExpressionArguments() {
+                FuncImpl add = (ctx, args) -> {
+                    Number a = args[0].asNumber("number");
+                    Number b = args[1].asNumber("number");
+                    return JexValue.fromNumber(a.doubleValue() + b.doubleValue());
+                };
+                evaluator.addFunction("add", add);
+                assertEquals(13, evaluator.evaluate("add(2 + 3, 4 * 2)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate function with variable arguments")
+            void testFunctionWithVariableArguments() {
+                FuncImpl multiply = (ctx, args) -> {
+                    Number a = args[0].asInteger("integer");
+                    Number b = args[1].asInteger("integer");
+                    return JexValue.fromNumber(a.doubleValue() * b.doubleValue());
+                };
+                evaluator.addFunction("multiply", multiply);
+                evaluator.declareContextValue("x", 5, false);
+                evaluator.declareContextValue("y", 3, false);
+                assertEquals(15, evaluator.evaluate("multiply(x, y)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate function with member access arguments")
+            void testFunctionWithMemberAccessArguments() {
+                FuncImpl concat = (ctx, args) -> JexValue.from(Utils.toString(args[0], "contact") + Utils.toString(args[1], "contact"));
+                evaluator.addFunction("concat", concat);
+                Map<String, JexValue> obj = new HashMap<>();
+                obj.put("name", JexValue.from("John"));
+                obj.put("age", JexValue.from(30));
+                evaluator.declareContextValue("obj", JexValue.fromObject(obj), false);
+                assertEquals("John30", evaluator.evaluate("concat(obj.name, obj.age)"));
+            }
+
+            @Test
+            @DisplayName("should evaluate function with array element arguments")
+            void testFunctionWithArrayElementArguments() {
+                FuncImpl sum = (ctx, args) -> {
+                    Number a = args[0].asInteger("integer");
+                    Number b = args[1].asInteger("integer");
+                    return JexValue.fromNumber(a.intValue() + b.intValue());
+                };
+                evaluator.addFunction("sum", sum);
+                evaluator.declareContextValue("arr", JexValue.fromArray(Arrays.asList(
+                        JexValue.from(10),
+                        JexValue.from(20),
+                        JexValue.from(30)
+                )), false);
+                assertEquals(30, evaluator.evaluate("sum(arr[0], arr[1])"));
             }
         }
     }
