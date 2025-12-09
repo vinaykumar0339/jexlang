@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -4371,4 +4372,510 @@ public class JexEvaluatorTestCase {
             }
         }
     }
+
+    @Nested
+    @DisplayName("transform expressions")
+    class TransformExpressionsTests {
+
+        @Nested
+        @DisplayName("built-in transforms")
+        class BuiltInTransformsTests {
+
+            @Nested
+            @DisplayName("string transforms")
+            class StringTransformsTests {
+
+                @Test
+                @DisplayName("should transform with upper")
+                void testUpperTransform() {
+                    assertEquals("HELLO", evaluator.evaluate("\"hello\" | upper"));
+                    assertEquals("HELLO WORLD", evaluator.evaluate("\"HeLLo WoRLd\" | upper"));
+                    assertEquals("123", evaluator.evaluate("123 | upper"));
+                    assertEquals("TRUE", evaluator.evaluate("true | upper"));
+                    assertEquals("NULL", evaluator.evaluate("null | upper"));
+                }
+
+                @Test
+                @DisplayName("should transform with lower")
+                void testLowerTransform() {
+                    assertEquals("hello", evaluator.evaluate("\"HELLO\" | lower"));
+                    assertEquals("hello world", evaluator.evaluate("\"HeLLo WoRLd\" | lower"));
+                    assertEquals("123", evaluator.evaluate("123 | lower"));
+                    assertEquals("true", evaluator.evaluate("true | lower"));
+                    assertEquals("null", evaluator.evaluate("null | lower"));
+                }
+
+                @Test
+                @DisplayName("should transform with capitalize")
+                void testCapitalizeTransform() {
+                    assertEquals("Hello World", evaluator.evaluate("\"hello world\" | capitalize"));
+                    assertEquals("Hello World", evaluator.evaluate("\"HELLO WORLD\" | capitalize"));
+                    assertEquals("Hello", evaluator.evaluate("\"hello\" | capitalize"));
+                    assertEquals("A B C", evaluator.evaluate("\"a b c\" | capitalize"));
+                    assertEquals("123", evaluator.evaluate("123 | capitalize"));
+                    assertEquals("True", evaluator.evaluate("true | capitalize"));
+                    assertEquals("Null", evaluator.evaluate("null | capitalize"));
+                }
+
+                @Test
+                @DisplayName("should transform with trim")
+                void testTrimTransform() {
+                    assertEquals("hello", evaluator.evaluate("\"  hello  \" | trim"));
+                    assertEquals("hello", evaluator.evaluate("\"hello\" | trim"));
+                    assertEquals("", evaluator.evaluate("\"  \" | trim"));
+                    assertEquals("123", evaluator.evaluate("123 | trim"));
+                    assertEquals("true", evaluator.evaluate("true | trim"));
+                    assertEquals("null", evaluator.evaluate("null | trim"));
+                }
+
+                @Test
+                @DisplayName("should chain string transforms")
+                void testChainedStringTransforms() {
+                    assertEquals("hello world", evaluator.evaluate("\"  HELLO world  \" | trim | lower"));
+                    assertEquals("HELLO", evaluator.evaluate("\"hello\" | upper | trim"));
+                    assertEquals("Hello World", evaluator.evaluate("\"  hello world  \" | trim | capitalize"));
+                }
+            }
+
+            @Nested
+            @DisplayName("numeric transforms")
+            class NumericTransformsTests {
+
+                @Test
+                @DisplayName("should transform with abs")
+                void testAbsTransform() {
+                    assertEquals(5, evaluator.evaluate("-5 | abs"));
+                    assertEquals(3.14, evaluator.evaluate("3.14 | abs"));
+                    assertEquals(10.5, evaluator.evaluate("-10.5 | abs"));
+                    assertEquals(0, evaluator.evaluate("0 | abs"));
+                    assertEquals(7, evaluator.evaluate("\"-7\" | abs"));
+                    assertEquals(1, evaluator.evaluate("true | abs"));
+                    assertEquals(0, evaluator.evaluate("false | abs"));
+                    assertEquals(0, evaluator.evaluate("null | abs"));
+                }
+
+                @Test
+                @DisplayName("should transform with floor")
+                void testFloorTransform() {
+                    assertEquals(4, evaluator.evaluate("4.2 | floor"));
+                    assertEquals(4, evaluator.evaluate("4.8 | floor"));
+                    assertEquals(-5, evaluator.evaluate("-4.2 | floor"));
+                    assertEquals(0, evaluator.evaluate("0 | floor"));
+                    assertEquals(4, evaluator.evaluate("\"4.7\" | floor"));
+                    assertEquals(1, evaluator.evaluate("true | floor"));
+                    assertEquals(0, evaluator.evaluate("null | floor"));
+                }
+
+                @Test
+                @DisplayName("should transform with ceil")
+                void testCeilTransform() {
+                    assertEquals(5, evaluator.evaluate("4.2 | ceil"));
+                    assertEquals(5, evaluator.evaluate("4.8 | ceil"));
+                    assertEquals(-4, evaluator.evaluate("-4.2 | ceil"));
+                    assertEquals(0, evaluator.evaluate("0 | ceil"));
+                    assertEquals(5, evaluator.evaluate("\"4.1\" | ceil"));
+                    assertEquals(1, evaluator.evaluate("true | ceil"));
+                    assertEquals(0, evaluator.evaluate("null | ceil"));
+                }
+
+                @Test
+                @DisplayName("should transform with round")
+                void testRoundTransform() {
+                    assertEquals(4, evaluator.evaluate("4.2 | round"));
+                    assertEquals(5, evaluator.evaluate("4.8 | round"));
+                    assertEquals(5, evaluator.evaluate("4.5 | round"));
+                    assertEquals(0, evaluator.evaluate("0 | round"));
+                    assertEquals(5, evaluator.evaluate("\"4.6\" | round"));
+                    assertEquals(1, evaluator.evaluate("true | round"));
+                    assertEquals(0, evaluator.evaluate("null | round"));
+                }
+
+                @Test
+                @DisplayName("should chain numeric transforms")
+                void testChainedNumericTransforms() {
+                    assertEquals(4, evaluator.evaluate("-4.7 | abs | floor"));
+                    assertEquals(5, evaluator.evaluate("4.3 | ceil | abs"));
+                    assertEquals(5, evaluator.evaluate("-4.8 | abs | round"));
+                }
+            }
+
+            @Nested
+            @DisplayName("length transform")
+            class LengthTransformTests {
+
+                @Test
+                @DisplayName("should transform array with length")
+                void testArrayLength() {
+                    assertEquals(3, evaluator.evaluate("[1,2,3] | length"));
+                    assertEquals(0, evaluator.evaluate("[] | length"));
+                    assertEquals(5, evaluator.evaluate("[1,2,3,4,5] | length"));
+                }
+
+                @Test
+                @DisplayName("should transform string with length")
+                void testStringLength() {
+                    assertEquals(5, evaluator.evaluate("\"hello\" | length"));
+                    assertEquals(0, evaluator.evaluate("\"\" | length"));
+                    assertEquals(11, evaluator.evaluate("\"hello world\" | length"));
+                }
+
+                @Test
+                @DisplayName("should transform object with length")
+                void testObjectLength() {
+                    assertEquals(2, evaluator.evaluate("{\"a\":1,\"b\":2} | length"));
+                    assertEquals(0, evaluator.evaluate("{} | length"));
+                    assertEquals(3, evaluator.evaluate("{\"x\":1,\"y\":2,\"z\":3} | length"));
+                }
+
+                @Test
+                @DisplayName("should return 0 for other types")
+                void testLengthOtherTypes() {
+                    assertEquals(0, evaluator.evaluate("123 | length"));
+                    assertEquals(0, evaluator.evaluate("true | length"));
+                    assertEquals(0, evaluator.evaluate("null | length"));
+                }
+            }
+
+            @Nested
+            @DisplayName("type conversion transforms")
+            class TypeConversionTransformsTests {
+
+                @Test
+                @DisplayName("should transform with number")
+                void testNumberTransform() {
+                    assertEquals(42, evaluator.evaluate("\"42\" | number"));
+                    assertEquals(3.14, evaluator.evaluate("\"3.14\" | number"));
+                    assertEquals(1, evaluator.evaluate("true | number"));
+                    assertEquals(0, evaluator.evaluate("false | number"));
+                    assertEquals(0, evaluator.evaluate("null | number"));
+                    assertThrows(JexLangRuntimeError.class,
+                            () -> evaluator.evaluate("\"invalid\" | number"));
+                }
+
+                @Test
+                @DisplayName("should transform with string")
+                void testStringTransform() {
+                    assertEquals("42", evaluator.evaluate("42 | string"));
+                    assertEquals("3.14", evaluator.evaluate("3.14 | string"));
+                    assertEquals("true", evaluator.evaluate("true | string"));
+                    assertEquals("null", evaluator.evaluate("null | string"));
+                    assertEquals("[1, 2, 3]", evaluator.evaluate("[1,2,3] | string"));
+                }
+
+                @Test
+                @DisplayName("should transform with boolean")
+                void testBooleanTransform() {
+                    assertEquals(true, evaluator.evaluate("1 | boolean"));
+                    assertEquals(false, evaluator.evaluate("0 | boolean"));
+                    assertEquals(true, evaluator.evaluate("\"hello\" | boolean"));
+                    assertEquals(false, evaluator.evaluate("\"\" | boolean"));
+                    assertEquals(false, evaluator.evaluate("null | boolean"));
+                    assertEquals(true, evaluator.evaluate("[1] | boolean"));
+                    assertEquals(false, evaluator.evaluate("[] | boolean"));
+                    assertEquals(true, evaluator.evaluate("{\"a\":1} | boolean"));
+                    assertEquals(false, evaluator.evaluate("{} | boolean"));
+                }
+
+                @Test
+                @DisplayName("should transform with int")
+                void testIntTransform() {
+                    assertEquals(42, evaluator.evaluate("\"42\" | int"));
+                    assertEquals(3, evaluator.evaluate("\"3.14\" | int"));
+                    assertEquals(5, evaluator.evaluate("5.9 | int"));
+                    assertEquals(-4, evaluator.evaluate("-4.7 | int"));
+                }
+
+                @Test
+                @DisplayName("should transform with float")
+                void testFloatTransform() {
+                    assertEquals(3.140000104904175, evaluator.evaluate("\"3.14\" | float"));
+                    assertEquals(42.0, evaluator.evaluate("\"42\" | float"));
+                    assertEquals(5.0, evaluator.evaluate("5 | float"));
+                }
+
+                @Test
+                @DisplayName("should transform with double")
+                void testDoubleTransform() {
+                    assertEquals(3.14159, evaluator.evaluate("\"3.14159\" | double"));
+                    assertEquals(42.0, evaluator.evaluate("\"42\" | double"));
+                    assertEquals(5.0, evaluator.evaluate("5 | double"));
+                }
+
+                @Test
+                @DisplayName("should chain type conversions")
+                void testChainedTypeConversions() {
+                    assertEquals(3, evaluator.evaluate("\"3.7\" | number | int"));
+                    assertEquals("42", evaluator.evaluate("42 | string | upper"));
+                    assertEquals(6, evaluator.evaluate("\"5.5\" | float | round"));
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("custom transforms")
+        class CustomTransformTests {
+
+            @Test
+            @DisplayName("should add and use custom transform")
+            void testCustomTransform() {
+                evaluator.addTransform("double", (input, ctx) -> JexValue.from((input.asNumber("double")).doubleValue() * 2));
+                assertEquals(10, evaluator.evaluate("5 | double"));
+                assertEquals(7, evaluator.evaluate("3.5 | double"));
+            }
+
+            @Test
+            @DisplayName("should add and use custom string transform")
+            void testCustomStringTransform() {
+                evaluator.addTransform("reverse", (input, ctx) ->
+                        JexValue.from(new StringBuilder((String) input.toObject()).reverse().toString())
+                );
+                assertEquals("olleh", evaluator.evaluate("\"hello\" | reverse"));
+                assertEquals("cba", evaluator.evaluate("\"abc\" | reverse"));
+            }
+
+            @Test
+            @DisplayName("should add and use custom array transform")
+            void testCustomArrayTransform() {
+                evaluator.addTransform("sort", (input, ctx) -> {
+                    if (input instanceof JexArray) {
+                        List<Number> list = (List<Number>) input.toObject();
+                        return JexValue.from(list.stream()
+                                .map(Number::doubleValue)
+                                .sorted()
+                                .collect(Collectors.toList()));
+                    }
+                    return input;
+                });
+
+                assertEquals(List.of(1, 1, 3, 4, 5),
+                        evaluator.evaluate("[3,1,4,1,5] | sort"));
+
+                assertEquals(List.of(2, 5, 8, 10),
+                        evaluator.evaluate("[10,2,8,5] | sort"));
+            }
+
+            @Test
+            @DisplayName("should use custom transform with context")
+            void testTransformWithContext() {
+                evaluator.addTransform("prefix", (input, ctx) -> {
+                    var prefix = ctx.getJexEvaluator().getContextValue("prefix");
+                    return JexValue.from((String) prefix + input.toObject());
+                });
+                evaluator.declareContextValue("prefix", "Hello: ", false);
+
+                assertEquals("Hello: World", evaluator.evaluate("\"World\" | prefix"));
+            }
+
+            @Test
+            @DisplayName("should mix built-in and custom transforms")
+            void testMixedTransformChain() {
+                evaluator.addTransform("square", (input, ctx) -> {
+                    double n = Double.parseDouble(input.toString());
+                    return JexValue.from(n * n);
+                });
+
+                assertEquals(16, evaluator.evaluate("4.7 | floor | square"));
+                assertEquals(9, evaluator.evaluate("-3 | abs | square"));
+            }
+
+            @Test
+            @DisplayName("should remove custom transform")
+            void testRemoveTransform() {
+                evaluator.addTransform("t", (input, ctx) -> input);
+                assertTrue(evaluator.hasTransform("t"));
+
+                evaluator.removeTransform("t");
+                assertFalse(evaluator.hasTransform("t"));
+
+                assertThrows(JexLangRuntimeError.class,
+                        () -> evaluator.evaluate("5 | t"));
+            }
+
+            @Test
+            @DisplayName("should reset custom transforms")
+            void testResetTransforms() {
+                evaluator.addTransform("t1", (input, ctx) -> input);
+                evaluator.addTransform("t2", (input, ctx) -> input);
+
+                evaluator.resetTransforms();
+
+                assertFalse(evaluator.hasTransform("t1"));
+                assertFalse(evaluator.hasTransform("t2"));
+            }
+        }
+
+        @Nested
+        @DisplayName("transform expressions with variables")
+        class TransformWithVariablesTests {
+
+            @Test
+            @DisplayName("should transform variable value")
+            void testVariableTransform() {
+                evaluator.declareContextValue("name", "john", false);
+                assertEquals("JOHN", evaluator.evaluate("name | upper"));
+            }
+
+            @Test
+            @DisplayName("should transform array variable")
+            void testArrayVariableTransform() {
+                evaluator.declareContextValue("arr", List.of(1,2,3,4,5), false);
+                assertEquals(5, evaluator.evaluate("arr | length"));
+            }
+
+            @Test
+            @DisplayName("should transform object variable")
+            void testObjectVariableTransform() {
+                evaluator.declareContextValue("obj", Map.of("a",1,"b",2,"c",3), false);
+                assertEquals(3, evaluator.evaluate("obj | length"));
+            }
+
+            @Test
+            @DisplayName("should transform member access")
+            void testMemberAccessTransform() {
+                evaluator.declareContextValue("user", Map.of("name","alice"), false);
+                assertEquals("ALICE", evaluator.evaluate("user.name | upper"));
+            }
+
+            @Test
+            @DisplayName("should transform array element")
+            void testArrayIndexTransform() {
+                evaluator.declareContextValue("items", List.of("hello", "world"), false);
+                assertEquals("HELLO", evaluator.evaluate("items[0] | upper"));
+            }
+        }
+
+        @Nested
+        @DisplayName("transform expressions with expressions")
+        class TransformInExpressionsTests {
+
+            @Test
+            @DisplayName("should transform arithmetic result")
+            void testArithmeticTransform() {
+                assertEquals("5", evaluator.evaluate("(2 + 3) | string"));
+                assertEquals(3, evaluator.evaluate("(10 / 3) | floor"));
+            }
+
+            @Test
+            @DisplayName("should transform ternary result")
+            void testTernaryTransform() {
+                assertEquals("HELLO", evaluator.evaluate("(true ? \"hello\" : \"world\") | upper"));
+                assertEquals("20", evaluator.evaluate("(false ? 10 : 20) | string"));
+            }
+
+            @Test
+            @DisplayName("should transform function result")
+            void testFunctionTransform() {
+                assertEquals("5", evaluator.evaluate("abs(-5) | string"));
+                assertEquals(1.0, evaluator.evaluate("min(1,2,3) | double"));
+            }
+        }
+
+        @Nested
+        @DisplayName("fallback to functions")
+        class TransformFallbackTests {
+
+            @Test
+            @DisplayName("should use function if transform not found")
+            void testFallbackToFunction() {
+                evaluator.addFunction("triple", (ctx, v) -> JexValue.from((v[0].asNumber("triple")).intValue() * 3));
+                assertEquals(15, evaluator.evaluate("5 | triple"));
+            }
+
+            @Test
+            @DisplayName("should prefer transform over function")
+            void testTransformWins() {
+                evaluator.addTransform("multiply", (input, ctx) -> JexValue.from((input.asNumber("multiply")).intValue() * 2));
+                evaluator.addFunction("multiply", (ctx, v) -> JexValue.from((v[0].asNumber("multiply")).intValue() * 3));
+
+                assertEquals(10, evaluator.evaluate("5 | multiply"));
+            }
+
+            @Test
+            @DisplayName("should throw if neither exists")
+            void testMissingTransformAndFunction() {
+                assertThrows(JexLangRuntimeError.class,
+                        () -> evaluator.evaluate("5 | nonexistent"));
+            }
+        }
+
+        @Nested
+        @DisplayName("complex transform scenarios")
+        class ComplexTransformTests {
+
+            @Test
+            @DisplayName("should handle multiple chained transforms")
+            void testMultipleChained() {
+                assertEquals(11, evaluator.evaluate("\"  hello world  \" | trim | upper | length"));
+                assertEquals("4", evaluator.evaluate("4.7 | abs | floor | string"));
+            }
+
+            @Test
+            @DisplayName("should transform inside expressions")
+            void testTransformInsideExpression() {
+                evaluator.declareContextValue("text", "hello", false);
+                assertEquals("HELLO WORLD", evaluator.evaluate("(text | upper) + \" WORLD\""));
+            }
+
+            @Test
+            @DisplayName("should transform in conditional expressions")
+            void testTransformInConditional() {
+                assertEquals("long",
+                        evaluator.evaluate("(\"hello\" | length) > 3 ? \"long\" : \"short\""));
+            }
+
+            @Test
+            @DisplayName("should handle transforms in repeat expressions")
+            void testRepeatTransform() {
+                Object result = evaluator.evaluate("""
+                let arr = ["hello", "world"];
+                let result = "";
+                repeat(arr) {
+                    result = result + ($it | upper) + " ";
+                }
+                result | trim;
+            """);
+                assertEquals("HELLO WORLD", result);
+            }
+
+            @Test
+            @DisplayName("should handle nested transforms")
+            void testNestedTransforms() {
+                evaluator.addTransform("wrap",
+                        (input, ctx) -> JexValue.from("[" + input.toObject() + "]"));
+                assertEquals("[HELLO]", evaluator.evaluate("\"hello\" | upper | wrap"));
+            }
+
+            @Test
+            @DisplayName("should handle array comprehension-like patterns")
+            void testArrayComprehension() {
+                Object result = evaluator.evaluate("""
+                let words = ["hello","world","test"];
+                let upper = [];
+                repeat(words) {
+                    push(upper, $it | upper);
+                }
+                upper;
+            """);
+
+                assertEquals(List.of("HELLO","WORLD","TEST"), result);
+            }
+        }
+
+        @Nested
+        @DisplayName("transform error handling")
+        class TransformErrorHandlingTests {
+
+            @Test
+            @DisplayName("should handle transform errors")
+            void testTransformError() {
+                evaluator.addTransform("err", (input, ctx) -> {
+                    throw new RuntimeException("Transform error");
+                });
+
+                assertThrows(RuntimeException.class,
+                        () -> evaluator.evaluate("5 | err"));
+            }
+        }
+    }
+
 }

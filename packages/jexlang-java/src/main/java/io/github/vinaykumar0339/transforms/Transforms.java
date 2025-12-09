@@ -37,7 +37,7 @@ public class Transforms {
                 Map.entry("length", (v, ctx) -> {
                     if (v.isArray()) return num((v).asArray("length transform").size());
                     if (v.isString()) return num((v).asString("length transform").length());
-                    if (v.isString()) return num((v).asObject("length transform").size());
+                    if (v.isObject()) return num((v).asObject("length transform").size());
                     return num(0);
                 }),
 

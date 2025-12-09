@@ -59,10 +59,12 @@ export const BUILT_IN_FUNCTIONS: Record<string, FuncImpl> = {
             return toInt(x);
         },
 
+    // JS Can't have trailing .0 for numbers.
     'float': (_, x) => {
         return toFloat(x);
     },
 
+    // JS Can't have trailing .0 for numbers.
     'double': (_, x) => {
         return toFloat(x);
     },

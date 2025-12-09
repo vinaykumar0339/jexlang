@@ -57,10 +57,12 @@ export const BUILT_IN_TRANSFORMS: Record<string, TransformImpl> = {
 
   int: (val) => toInt(val),
 
+  // JS Can't have trailing .0 for numbers.
   float: (val) => {
     return toFloat(val);
   },
 
+  // JS Can't have trailing .0 for numbers.
   double: (val) => {
     return toFloat(val);
   }
