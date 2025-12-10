@@ -121,12 +121,14 @@ public class JexEvaluator {
         expr: String,
         programScopeVariables: [String: Any]? = nil
     ) throws -> AnyObject? {
-        let programContext = try parseExpression(expr: expr)
+        return try catchNSException {
+            let programContext = try self.parseExpression(expr: expr)
 
-        // Evaluate using the retained parser context
-        let value = evalVisitor.visit(programContext)
+            // Evaluate using the retained parser context
+            let value = self.evalVisitor.visit(programContext)
 
-        return value.toObject()
+            return value.toObject()
+        }
     }
     
     public func setCacheExpressions(_ cacheExpressions: Bool) {

@@ -48,75 +48,82 @@ public func toNumber(value: JexValue, ctx: String) throws -> NSNumber {
     }
 }
 
-public func toBoolean(value: JexValue, ctx: String) throws -> Bool {
-    if value is JexNil {
-        return false
-    }
-    
-    if value is JexBoolean {
-        return try value.asBoolean(context: ctx)
-    }
-    
-    if value is JexInteger {
-        return try value.asInteger(context: ctx) != 0
-    }
-    
-    if value is JexDouble {
-        let d = try value.asDouble(context: ctx)
-        return d != 0.0 && !d.isNaN
-    }
-    
-    if value is JexNumber {
-        let d = try value.asNumber(context: ctx).doubleValue;
-        return d != 0.0 && !d.isNaN
-    }
-    
-    if (value is JexString) {
-        return !(try value.asString(context: ctx).isEmpty)
-    }
-    
-    if (value is JexArray) {
-        return !(try value.asArray(context: ctx).isEmpty)
-    }
-    
-    if (value is JexObject) {
-        return !(try value.asObject(context: ctx).isEmpty)
-    }
-    
-    return false
-}
-
-
-public func toString(value: JexValue, ctx: String) throws -> String {
-    switch value {
-    case is JexNil:
-        return "nil"
-    case is JexString:
-        return try value.asString(context: ctx)
-    case is JexInteger:
-        return String(describing: try value.asInteger(context: ctx))
-    case is JexDouble:
-        return String(describing: try value.asDouble(context: ctx))
-    case is JexNumber:
-        return String(describing: try value.asNumber(context: ctx))
-    case is JexBoolean:
-        return try value.asBoolean(context: ctx) ? "true" : "false"
-    case is JexArray:
-        let arr = try value.asArray(context: ctx)
-        let items = try arr.map { try toString(value: $0, ctx: ctx) }
-        return "[\(items.joined(separator: ", "))]"
-    case is JexObject:
-        let obj = try value.asObject(context: ctx)
-        
-        var parts: [String] = []
-        for (key, val) in obj {
-            let valStr = try toString(value: val, ctx: ctx)
-            parts.append("\"\(key)\": \"\(valStr)\"")
+public func toBoolean(value: JexValue, ctx: String) -> Bool {
+    do {
+        if value is JexNil {
+            return false
         }
         
-        return "{\(parts.joined(separator: ", "))}"
-    default:
-        throw TypeMismatchError(operation: "string conversion", expected: "string", actual: getJexValueType(value: value));
+        if value is JexBoolean {
+            return try value.asBoolean(context: ctx)
+        }
+        
+        if value is JexInteger {
+            return try value.asInteger(context: ctx) != 0
+        }
+        
+        if value is JexDouble {
+            let d = try value.asDouble(context: ctx)
+            return d != 0.0 && !d.isNaN
+        }
+        
+        if value is JexNumber {
+            let d = try value.asNumber(context: ctx).doubleValue;
+            return d != 0.0 && !d.isNaN
+        }
+        
+        if (value is JexString) {
+            return !(try value.asString(context: ctx).isEmpty)
+        }
+        
+        if (value is JexArray) {
+            return !(try value.asArray(context: ctx).isEmpty)
+        }
+        
+        if (value is JexObject) {
+            return !(try value.asObject(context: ctx).isEmpty)
+        }
+        
+        return false
+    } catch {
+        return false
+    }
+}
+
+public func toString(value: JexValue, ctx: String) -> String {
+    do {
+        switch value {
+        case is JexNil:
+            return "nil"
+        case is JexString:
+            return try value.asString(context: ctx)
+        case is JexInteger:
+            return String(describing: try value.asInteger(context: ctx))
+        case is JexDouble:
+            return String(describing: try value.asDouble(context: ctx))
+        case is JexNumber:
+            return String(describing: try value.asNumber(context: ctx))
+        case is JexBoolean:
+            return try value.asBoolean(context: ctx) ? "true" : "false"
+        case is JexArray:
+            let arr = try value.asArray(context: ctx)
+            let items = arr.map { toString(value: $0, ctx: ctx) }
+            return "[\(items.joined(separator: ", "))]"
+        case is JexObject:
+            let obj = try value.asObject(context: ctx)
+            
+            var parts: [String] = []
+            for (key, val) in obj {
+                let valStr = toString(value: val, ctx: ctx)
+                parts.append("\"\(key)\": \"\(valStr)\"")
+            }
+            
+            return "{\(parts.joined(separator: ", "))}"
+        default:
+            throw TypeMismatchError(operation: "string conversion", expected: "string", actual: getJexValueType(value: value));
+        }
+    } catch {
+        return ""
     }
 }
 

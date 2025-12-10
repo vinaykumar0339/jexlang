@@ -52,7 +52,7 @@ public class JexValueFactory {
         return JexNumber(value: NSNumber(value: double))
     }
     
-    static func fromNumer(int: Int) -> JexNumber {
+    static func fromNumber(int: Int) -> JexNumber {
         return JexNumber(value: NSNumber(value: int))
     }
     

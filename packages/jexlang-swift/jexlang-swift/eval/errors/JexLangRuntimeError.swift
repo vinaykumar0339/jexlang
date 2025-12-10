@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class JexLangRuntimeError: Error {
+public class JexLangRuntimeError: NSObject, Error {
     private let name: String
     private let message: String
     
@@ -31,8 +31,8 @@ extension JexLangRuntimeError: LocalizedError {
     }
 }
 
-extension JexLangRuntimeError: CustomStringConvertible {
-    public var description: String {
+extension JexLangRuntimeError {
+    public override var description: String {
         return "\(name): \(message)"
     }
 }

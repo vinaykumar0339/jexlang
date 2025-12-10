@@ -69,6 +69,7 @@ public class Utils {
         return value.getType();
     }
 
+    // Swift Library have throw syntax. so please use optional try in swift code.
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
         if (v instanceof JexBoolean) return v.asBoolean(ctx);
@@ -138,6 +139,7 @@ public class Utils {
         }
     }
 
+    // Swift Library have throw syntax. so please use optional try in swift code.
     public static String toString(JexValue value, String ctx) {
         if (value instanceof JexNull) {
             return "null";

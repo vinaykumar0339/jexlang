@@ -1,5 +1,5 @@
 // Generated from JexLang.g4 by ANTLR 4.13.2
-import Antlr4
+//import Antlr4
 
 /**
  * This interface defines a complete generic visitor for a parse tree produced
