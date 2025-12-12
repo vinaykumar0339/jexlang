@@ -76,6 +76,10 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         self.programScopeContext = context;
     }
     
+    public func setProgramScopeContext(context: [String: Any]) {
+        self.programScopeContext = context.mapValues { $0 as AnyObject };
+    }
+    
     public func getProgramScopeContext() -> [String: AnyObject] {
         return self.programScopeContext;
     }

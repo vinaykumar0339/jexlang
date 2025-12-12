@@ -104,6 +104,43 @@ public class JexValueFactory {
         return JexNil()
     }
     
+    static func from(_ value: Any?) -> JexValue {
+        guard let value = value else {
+            return fromNil()
+        }
+
+        switch value {
+        case let num as NSNumber:
+            // NSNumber can also represent Bool, so check that first
+            if CFGetTypeID(num) == CFBooleanGetTypeID() {
+                return fromBoolean(value: num.boolValue)
+            } else {
+                return fromNumber(number: num)
+            }
+
+        case let intVal as Int:
+            return fromInteger(integer: intVal)
+
+        case let doubleVal as Double:
+            return fromDouble(double: doubleVal)
+
+        case let boolVal as Bool:
+            return fromBoolean(value: boolVal)
+
+        case let str as String:
+            return fromString(string: str)
+
+        case let list as [AnyObject]:
+            return fromArray(value: list)
+
+        case let map as [String: Any]:
+            return fromObject(value: map)
+
+        default:
+            fatalError("Unsupported type: \(type(of: value)). Supported types: nil, NSNumber, Int, Double, Bool, String, [Any], [String: Any]")
+        }
+    }
+    
     static func from(_ value: AnyObject?) -> JexValue {
             guard let value = value else {
                 return fromNil()

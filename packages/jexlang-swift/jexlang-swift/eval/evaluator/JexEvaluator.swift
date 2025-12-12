@@ -126,11 +126,29 @@ public class JexEvaluator {
     // MARK: - Evaluate
     public func evaluate(
         expr: String,
+        programScopeVariables: [String: AnyObject]? = nil
+    ) throws -> AnyObject? {
+        return try catchNSException {
+            let programContext = try self.parseExpression(expr: expr)
+            if let programScopeVariables = programScopeVariables {
+                self.evalVisitor.setProgramScopeContext(context: programScopeVariables)
+            }
+            // Evaluate using the retained parser context
+            let value = self.evalVisitor.visit(programContext)
+
+            return value.toObject()
+        }
+    }
+    
+    public func evaluate(
+        expr: String,
         programScopeVariables: [String: Any]? = nil
     ) throws -> AnyObject? {
         return try catchNSException {
             let programContext = try self.parseExpression(expr: expr)
-
+            if let programScopeVariables = programScopeVariables {
+                self.evalVisitor.setProgramScopeContext(context: programScopeVariables)
+            }
             // Evaluate using the retained parser context
             let value = self.evalVisitor.visit(programContext)
 
@@ -152,27 +170,59 @@ public class JexEvaluator {
         try self.globalScope.assignVariable(key, value: jexValue)
     }
     
+    public func setContextValue(_ key: String, _ value: Any) throws {
+        let jexValue = JexValueFactory.from(value)
+        self.context[key] = jexValue
+        try self.globalScope.assignVariable(key, value: jexValue)
+    }
+    
     public func setContextValue(_ key: String, _ value: JexValue) throws {
         self.context[key] = value
         try self.globalScope.assignVariable(key, value: value)
     }
     
-    public func declareGlobalVariable(_ key: String, value: AnyObject, isConst: Bool = false) throws -> JexValue {
+    @discardableResult
+    public func declareContextValue(_ key: String, value: AnyObject, isConst: Bool = false) throws -> JexValue {
         let jexValue = JexValueFactory.from(value)
         self.context[key] = jexValue
-        try self.globalScope.assignVariable(key, value: jexValue)
+        try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
         return jexValue
     }
     
-    public func declareGlobalVariable(_ key: String, value: JexValue, isConst: Bool = false) throws -> JexValue {
+    @discardableResult
+    public func declareContextValue(_ key: String, value: Any, isConst: Bool = false) throws -> JexValue {
+        let jexValue = JexValueFactory.from(value)
+        self.context[key] = jexValue
+        try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+        return jexValue
+    }
+    
+    @discardableResult
+    public func declareContextValue(_ key: String, value: JexValue, isConst: Bool = false) throws -> JexValue {
         self.context[key] = value
-        try self.globalScope.assignVariable(key, value: value)
+        try self.globalScope.declareVariable(key, value: value, isConst: isConst)
         return value
+    }
+    
+    @discardableResult
+    public func setContextOrDeclareContextValue(
+        _ key: String,
+        _ value: AnyObject,
+        isConst: Bool = false
+    ) throws -> JexValue {
+        let jexValue = JexValueFactory.from(value)
+        self.context[key] = jexValue
+        if (self.globalScope.hasVariable(key)) {
+            try self.globalScope.assignVariable(key, value: jexValue)
+        } else {
+            try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+        }
+        return jexValue
     }
     
     public func setContextOrDeclareContextValue(
         _ key: String,
-        _ value: AnyObject,
+        _ value: Any,
         isConst: Bool = false
     ) throws -> JexValue {
         let jexValue = JexValueFactory.from(value)
