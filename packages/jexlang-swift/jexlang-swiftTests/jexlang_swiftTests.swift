@@ -156,4 +156,90 @@ struct jexlang_swiftTests {
         }
     }
     
+    @Suite("context management")
+    struct ContextManagementTests {
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should set context value only if already declared")
+        func testSetContextValueOnlyIfDeclared() throws {
+            // declare first
+            try evaluator.declareContextValue("key", value: "initial")
+            assertEquals("initial", evaluator.getContextValue("key"))
+            
+            // set new value
+            try evaluator.setContextValue("key", "value")
+            assertEquals("value", evaluator.getContextValue("key"))
+        }
+        
+        @Test("should throw error when setting undeclared variable")
+        func testSetContextValueThrowsForUndeclared() {
+            assertThrows(
+                JexLangRuntimeError.self,
+                try evaluator.setContextValue("undeclared", "value")
+            )
+        }
+        
+        @Test("should declare context value")
+        func testDeclareContextValue() throws {
+            try evaluator.declareContextValue("newVar", value: 42)
+            assertEquals(42, evaluator.getContextValue("newVar"));
+        }
+        
+        @Test("should declare const context value and reject reassignment")
+        func testDeclareConstContextValue() throws {
+            try evaluator.declareContextValue("constVar", value: 100, isConst: true)
+            assertEquals(100, evaluator.getContextValue("constVar"))
+            
+            // reassign should fail
+            assertThrows(
+                JexLangRuntimeError.self,
+                try evaluator.setContextValue("constVar", 200)
+            )
+        }
+        
+        @Test("should set or declare context value")
+        func testSetOrDeclareContextValue() async throws {
+            // declare new
+            try evaluator.setContextOrDeclareContextValue("var1", 10)
+            assertEquals(10, evaluator.getContextValue("var1"))
+            
+            // update existing
+            try evaluator.setContextOrDeclareContextValue("var1", 20)
+            assertEquals(20, evaluator.getContextValue("var1"))
+        }
+        
+        @Test("should return null for undefined context value")
+        func testGetUndefinedContextValue() throws {
+            assertNil(evaluator.getContextValue("nonexistent"))
+        }
+        
+        @Test("should reset context and clear variables")
+        func nametestResetContext() throws {
+            try evaluator.declareContextValue("key", value: "initial")
+            try evaluator.setContextValue("key", "value")
+            
+            try evaluator.resetContext();
+            
+            // should return null after reset
+            assertNil(evaluator.getContextValue("key"))
+        }
+        
+        @Test("should get global scope variables (e.g., PI, E)")
+        func testGetGlobalScopeVariables() throws {
+            let vars = evaluator.getGlobalScopeVariables()
+            
+            assertNotNil(vars)
+            assertTrue(vars.keys.contains("PI"))
+            assertTrue(vars.keys.contains("E"))
+            
+            assertEquals(Double.pi, vars["PI"])
+            assertEquals(Darwin.M_E, vars["E"])
+        }
+        
+    }
+    
 }

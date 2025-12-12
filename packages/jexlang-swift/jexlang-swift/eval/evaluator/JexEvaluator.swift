@@ -220,6 +220,7 @@ public class JexEvaluator {
         return jexValue
     }
     
+    @discardableResult
     public func setContextOrDeclareContextValue(
         _ key: String,
         _ value: Any,
