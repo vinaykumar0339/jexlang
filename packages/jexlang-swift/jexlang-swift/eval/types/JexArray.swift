@@ -86,4 +86,12 @@ public class JexArray: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
+    public func isEqual(to other: any JexValue) -> Bool {
+        // For Array, it should reference equality
+        if (!other.isArray()) {
+            return false
+        }
+        return self === other
+    }
+    
 }

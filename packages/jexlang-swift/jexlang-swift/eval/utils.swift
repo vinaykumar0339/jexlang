@@ -468,7 +468,6 @@ public func jsRelational(
     }
 }
 
-
 public func createGlobalScope() -> Scope {
     let scope = Scope(scopeType: .global)
     

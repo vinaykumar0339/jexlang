@@ -87,5 +87,9 @@ public class JexDouble: JexValue {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
     }
     
+    public func isEqual(to other: any JexValue) -> Bool {
+        return jexlang_swift.isEqual(self, other)
+    }
+    
 }
 

@@ -419,7 +419,7 @@ public class Utils {
         if (a.isString() && b.isInteger()) {
             try {
                 int num = Integer.parseInt(a.asString("=="));
-                return jsEqual(JexValue.fromInteger(num), b);
+                return jsEqual(JexValue.fromNumber(num), b);
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -427,7 +427,7 @@ public class Utils {
         if (a.isInteger() && b.isString()) {
             try {
                 int num = Integer.parseInt(b.asString("=="));
-                return jsEqual(a, JexValue.fromInteger(num));
+                return jsEqual(a, JexValue.fromNumber(num));
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -435,7 +435,7 @@ public class Utils {
         if (a.isString() && b.isDouble()) {
             try {
                 double num = Double.parseDouble(a.asString("=="));
-                return jsEqual(JexValue.fromDouble(num), b);
+                return jsEqual(JexValue.fromNumber(num), b);
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -443,7 +443,7 @@ public class Utils {
         if (a.isDouble() && b.isString()) {
             try {
                 double num = Double.parseDouble(b.asString("=="));
-                return jsEqual(a, JexValue.fromDouble(num));
+                return jsEqual(a, JexValue.fromNumber(num));
             } catch (NumberFormatException e) {
                 return false;
             }

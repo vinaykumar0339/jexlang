@@ -92,4 +92,12 @@ public class JexObject: JexValue {
         return true
     }
     
+    public func isEqual(to other: any JexValue) -> Bool {
+        // For Object, it should reference equality
+        if (!other.isObject()) {
+            return false
+        }
+        return self === other;
+    }
+    
 }
