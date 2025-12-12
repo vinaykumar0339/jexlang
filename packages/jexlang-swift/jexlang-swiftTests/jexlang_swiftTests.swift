@@ -129,4 +129,31 @@ struct jexlang_swiftTests {
         }
     }
     
+    @Suite("evaluate sync function tests")
+    struct EvaluateSyncFunctionTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should evaluate synchronously")
+        func testEvaluate_AsyncFunctionCalls() throws {
+            assertEquals(5, try evaluator.evaluate(expr: "2 + 3"));
+        }
+        
+        @Test("should work with program scope context")
+        func testEvaluate_AsyncFunctionWithContext() throws {
+            let ctx = [
+                "a": 4,
+                "b": 5
+            ]
+
+            let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx);
+
+            assertEquals(20, result);
+        }
+    }
+    
 }
