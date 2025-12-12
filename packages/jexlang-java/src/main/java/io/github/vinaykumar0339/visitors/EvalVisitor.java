@@ -513,7 +513,7 @@ public class EvalVisitor extends JexLangBaseVisitor<JexValue> {
     public JexValue visitShortTernaryExpression(JexLangParser.ShortTernaryExpressionContext ctx) {
         JexValue condition = this.visit(ctx.singleExpression(0));
         // empty array and objects are falsy
-        if (Utils.toBoolean(condition, "ternary expression")) {
+        if (Utils.toBoolean(condition, "short ternary expression")) {
             return condition;
         } else {
             return this.visit(ctx.singleExpression(1));

@@ -176,12 +176,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return JexNil()
     }
     
-    public override func visitExpressionSequence(_ ctx: JexLangParser.ExpressionSequenceContext) -> JexValue? {
-        var result: JexValue? = nil
+    public override func visitExpressionSequence(_ ctx: JexLangParser.ExpressionSequenceContext) -> JexValue {
+        var result: JexValue = JexNil()
         for singleExpression in ctx.singleExpression() {
             result = self.visit(singleExpression)
         }
-        return result != nil ? result : JexNil()
+        return result
     }
     
     public override func visitBlock(_ ctx: JexLangParser.BlockContext) -> JexValue {
@@ -245,7 +245,10 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         var properties = [String: JexValue]()
         for propertyCtx in ctx.objectProperty() {
             let prop = self.visit(propertyCtx)
-            if prop.isObject(), let propObject = try? prop.asObject(context: "visit object literal") {
+            if
+                prop.isObject(),
+                let propObject = try? prop.asObject(context: "visit object literal")
+            {
                 properties.merge(propObject) { (_, new) in new }
             } // ignore if the response is not an object.
         }
@@ -278,13 +281,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         guard let propertyName = ctx.IDENTIFIER()?.getText() else {
             return JexValueFactory.fromObject(value: [String: JexValue]())
         }
+        
         let propertyValue = self.scope.getVariable(propertyName)
         
-        var object: [String: JexValue] = [
+        return JexValueFactory.fromObject(value: [
             propertyName: propertyValue
-        ]
-        
-        return JexValueFactory.fromObject(value: object)
+        ]) // don't throw any error if it didn't find the variable just set the null value
     }
     
     public override func visitObjectPropertyName(_ ctx: JexLangParser.ObjectPropertyNameContext) -> (any JexValue)? {
@@ -327,6 +329,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot repeat a block negative times: \(times)"))
         }
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         var result: JexValue = JexNil()
@@ -347,6 +350,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         var result: JexValue = JexNil()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, _) in arrayValue.enumerated() {
@@ -366,10 +370,11 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         var result: JexValue = JexNil()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for key in keys {
-            try! self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: keys.firstIndex(of: key)!), isConst: false)
+            try! self.scope.declareAndAssignVariable("$key", value: JexValueFactory.fromString(string: key), isConst: false)
             try! self.scope.declareVariable("$value", value: objectValue[key]!, isConst: false)
             try! self.scope.declareVariable("$it", value: objectValue[key]!, isConst: false)
             result = self.visit(block)
@@ -386,6 +391,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         var result: JexValue = JexNil()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, c) in stringValue.enumerated() {
@@ -427,15 +433,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyKey = self.visit(ctx.singleExpression(1))
         let propertyValue = self.visit(ctx.singleExpression(2))
         
-        if objectValue.isObject()
-        {
+        if (objectValue.isObject()) {
             var objectValue = try! objectValue.asObject(context: "bracket property assignment")
             let key = toString(value: propertyKey, ctx: "bracket property assignment")
             objectValue[key] = propertyValue
             return JexValueFactory.fromObject(value: objectValue)
-        } else if
-            objectValue.isArray()
-         {
+        } else if (objectValue.isArray()) {
             var arrayValue = try! objectValue.asArray(context: "bracket property assignment")
             let indexNumber = try! toNumber(value: propertyKey, ctx: "bracket property assignment")
             
@@ -452,7 +455,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 return JexValueFactory.fromArray(array: arrayValue)
             }
             
-            // out of bounds -> return nil
+            // if out of bounds just return JexNull, don't throw any errors.
             return JexNil()
         }
         
@@ -489,7 +492,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 return JexValueFactory.fromArray(array: arrayValue)
             }
             
-            // out of bounds -> return nil
+            // if out of bounds just return JexNull, don't throw any errors.
             return JexNil()
         }
         
@@ -514,7 +517,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let condition = self.visit(ctx.singleExpression(0));
         if
             // empty array and objects are falsy
-            toBoolean(value: condition, ctx: "ternary expression")
+            toBoolean(value: condition, ctx: "short ternary expression")
         {
             return condition
         } else {
@@ -524,13 +527,16 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visitTransformExpression(_ ctx: JexLangParser.TransformExpressionContext) -> JexValue {
         let input = self.visit(ctx.singleExpression())
-        if
-            let transformName = ctx.IDENTIFIER()?.getText(),
-            self.transformRegistry.has(transformName)
-        {
-            return self.transformRegistry.transform(transformName, input, self.evaluatorContext)
+        
+        guard let transformName = ctx.IDENTIFIER()?.getText() else {
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Expected transform name. But not found."))
+            return JexNil()
         }
         
+        if (self.transformRegistry.has(transformName)) {
+            return self.transformRegistry.transform(transformName, input, self.evaluatorContext)
+        }
+
         // if transform not found lets check in functions
         if
             let functionName = ctx.IDENTIFIER()?.getText(),
@@ -538,7 +544,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         {
             return self.funcRegistry.call(functionName, self.evaluatorContext, [input])
         }
-        // TODO: throw error says transform name not found
+        
+        NSException.raise(jexLangError: UndefinedTransformError(transformName: transformName))
         return JexNil()
     }
     
@@ -546,14 +553,9 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let left = self.visit(ctx.singleExpression(0))
         let right = self.visit(ctx.singleExpression(1))
         
-        if let base = try? toNumber(value: left, ctx: "power expression"),
-           let exponent = try? toNumber(value: right, ctx: "power expression")
-        {
-            return JexNumber(value: pow(base.doubleValue, exponent.doubleValue))
-        }
-        
-        // TODO: throw error
-        return JexNil()
+        let base = try! toNumber(value: left, ctx: "power expression")
+        let exponent = try! toNumber(value: right, ctx: "power expression")
+        return JexNumber(value: pow(base.doubleValue, exponent.doubleValue))
     }
     
     // MARK: Multiple
@@ -561,19 +563,18 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let left = self.visit(ctx.singleExpression(0))
         let right = self.visit(ctx.singleExpression(1))
         
-        if let leftNum = try? toNumber(value: left, ctx: "multiplicative expression"),
-           let rightNum = try? toNumber(value: right, ctx: "multiplicative expression")
-        {
-            if let _ = ctx.MULTIPLY() {
-                return JexNumber(value: leftNum.doubleValue * rightNum.doubleValue)
-            } else if let _ = ctx.DIVIDE() {
-                return JexNumber(value: leftNum.doubleValue / rightNum.doubleValue)
-            } else if let _ = ctx.MODULO() {
-                return JexNumber(value: leftNum.doubleValue.truncatingRemainder(dividingBy: rightNum.doubleValue))
-            }
+        let leftNum = try! toNumber(value: left, ctx: "multiplicative expression")
+        let rightNum = try! toNumber(value: right, ctx: "multiplicative expression")
+        
+        if let _ = ctx.MULTIPLY() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue * rightNum.doubleValue)
+        } else if let _ = ctx.DIVIDE() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue / rightNum.doubleValue)
+        } else if let _ = ctx.MODULO() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue.truncatingRemainder(dividingBy: rightNum.doubleValue))
         }
         
-        // TODO: throw error
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Unknown multiplicative operator \(String(describing: ctx.getChild(1)))"))
         return JexNil()
     }
     
@@ -590,16 +591,17 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 return JexValueFactory.fromString(string: leftString + rightString)
             }
             
-            if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue + rightNum.doubleValue))
-            }
+            let lefNum = try! toNumber(value: left, ctx: "additive expression")
+            let rightNum = try! toNumber(value: right, ctx: "additive expression")
+            return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue + rightNum.doubleValue))
             
         } else if (ctx.MINUS() != nil) {
-            if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue - rightNum.doubleValue))
-            }
+            let lefNum = try! toNumber(value: left, ctx: "additive expression")
+            let rightNum = try! toNumber(value: right, ctx: "additive expression")
+            return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue - rightNum.doubleValue))
         }
         
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Unknown additive operator  \(String(describing: ctx.getChild(1)))"))
         return JexNil()
     }
     
@@ -609,13 +611,13 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let right = self.visit(ctx.singleExpression(1))
         
         if let _ = ctx.LT() {
-            return JexBoolean(value: isLessThan(lhs: left, rhs: right))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .LESS_THAN))
         } else if let _ = ctx.GT() {
-            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .GREATER_THAN))
         } else if let _ = ctx.LTE() {
-            return JexBoolean(value: isLessThan(lhs: left, rhs: right, alsoEqual: true))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .LESS_THAN_EQUAL))
         } else if let _ = ctx.GTE() {
-            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right, alsoEqual: true))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .GREATER_THAN_EQUAL))
         }
         
         return JexNil()

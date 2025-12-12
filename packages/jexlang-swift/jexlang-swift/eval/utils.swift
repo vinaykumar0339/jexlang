@@ -349,6 +349,125 @@ public func isGreaterThan(
     return false
 }
 
+public func toPrimitive(value: JexValue) -> JexValue {
+    if (
+        value.isString()
+        || value.isNumber()
+        || value.isBoolean()
+        || value.isNil()
+        || value.isInteger()
+        || value.isDouble()
+    ) {
+        return value
+    }
+    
+    if value.isArray() {
+        var result: [JexValue] = []
+        for element in try! value.asArray(context: "ToPrimitive") {
+            result.append(toPrimitive(value: element))
+        }
+        return JexValueFactory.fromArray(array: result)
+    }
+    
+    if value.isObject() {
+        return JexValueFactory.fromString(string: "[object Object]")
+    }
+    
+    return JexValueFactory.fromString(string: value.description)
+}
+
+public enum JSRelationalOp: String {
+    case LESS_THAN
+    case GREATER_THAN
+    case LESS_THAN_EQUAL
+    case GREATER_THAN_EQUAL
+}
+
+public func jsToNumberForRelOp(
+    value: JexValue
+) -> Double {
+    do {
+        if (value.isNil()) {
+            return 0
+        }
+        
+        if (value.isBoolean()) {
+            return try value.asBoolean(context: "relOp") ? 1 : 0
+        }
+        
+        if (value.isNumber()) {
+            return try value.asNumber(context: "relOp").doubleValue
+        }
+        
+        if (value.isInteger()) {
+            return Double(try value.asInteger(context: "relOp"))
+        }
+        
+        if (value.isDouble()) {
+            return try value.asDouble(context: "relOp")
+        }
+        
+        if (value.isString()) {
+            return Double(String(try value.asString(context: "relOp"))) ?? Double.nan
+        }
+        
+        return Double.nan
+    } catch {
+        return Double.nan
+    }
+    
+}
+
+public func jsRelational(
+    left: JexValue,
+    right: JexValue,
+    op: JSRelationalOp
+) -> Bool {
+    // 1. JS ToPrimitive
+    var a = toPrimitive(value: left)
+    var b = toPrimitive(value: right)
+    
+    // 2. If both primitives are strings → lexicographical comparison
+    if (
+        a.isString() && b.isString()
+    ) {
+        let cmp = try! a.asString(context: "relOp").compare(try! b.asString(context: "relOp"))
+        
+        switch(op) {
+        case .LESS_THAN:
+            return cmp == .orderedAscending
+        case .GREATER_THAN:
+            return cmp == .orderedDescending
+        case .LESS_THAN_EQUAL:
+            return cmp == .orderedAscending || cmp == .orderedSame
+        case .GREATER_THAN_EQUAL:
+            return cmp == .orderedDescending || cmp == .orderedSame
+        }
+    }
+    
+    // 3. Otherwise → convert both to number
+    let numA = jsToNumberForRelOp(value: left)
+    let numB = jsToNumberForRelOp(value: right)
+    
+    // 4. If either is NaN → comparison returns false
+    if (
+        numA.isNaN || numB.isNaN
+    ) {
+        return false
+    }
+    
+    switch(op) {
+    case .LESS_THAN:
+        return numA < numB
+    case .GREATER_THAN:
+        return numA > numB
+    case .LESS_THAN_EQUAL:
+        return numA <= numB
+    case .GREATER_THAN_EQUAL:
+        return numA >= numB
+    }
+}
+
 
 public func createGlobalScope() -> Scope {
     let scope = Scope(scopeType: .global)

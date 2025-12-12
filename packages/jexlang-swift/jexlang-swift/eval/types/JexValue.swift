@@ -87,7 +87,8 @@ public class JexValueFactory {
 
     static func fromObject(value: Any) -> JexObject {
         guard let map = value as? [String: AnyObject] else {
-            fatalError("Unsupported object type: \(type(of: value))")
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Unsupported object type: \(type(of: value)). expected [String: AnyObject]"))
+            return fromObject(object: [:])
         }
 
         var jexMap: [String: JexValue] = [:]
