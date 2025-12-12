@@ -8,7 +8,6 @@
 import Foundation
 
 // MARK: - Evaluator
-
 public class JexEvaluator {
 
     private var context: [String: JexValue] = [:]
@@ -16,6 +15,7 @@ public class JexEvaluator {
     private var transformMap: [String: TransformImpl] = [:]
     
     private var globalScope: Scope = createGlobalScope()
+    
     private lazy var evalVisitor: EvalVisitor = {
         let evaluatorContext = EvaluatorContext(jexEvaluator: self)
         return EvalVisitor(
@@ -27,10 +27,10 @@ public class JexEvaluator {
     }()
     
     private func convertContextToJexValue(context: [String: AnyObject]) -> [String: JexValue] {
-        let jexContext: [String: JexValue] = [:]
+        var jexContext: [String: JexValue] = [:]
         if (!context.isEmpty) {
             for (key, value) in context {
-                self.context[key] = JexValueFactory.from(value)
+                jexContext[key] = JexValueFactory.from(value)
             }
         }
         return jexContext;
@@ -46,11 +46,7 @@ public class JexEvaluator {
     
     private func addAllContextValuesIntoGlobalScope(context: [String: JexValue]) throws {
         for (key, value) in context {
-            do {
-                try globalScope.declareVariable(key, value: value, isConst: false)
-            } catch {
-                throw JexLangRuntimeError(message: "Error while adding context value of \(key) into global scope.")
-            }
+            try globalScope.declareVariable(key, value: value, isConst: false)
         }
     }
     
@@ -63,23 +59,34 @@ public class JexEvaluator {
     private var parser: JexLangParser!
 
     public init(
-        _ context: [String: AnyObject]? = nil,
-        _ funcsMap: [String: FuncImpl]? = nil,
-        _ transformMap: [String: TransformImpl]? = nil
+        context initialContext: [String: AnyObject]? = nil,
+        funcsMap initialFuncs: [String: FuncImpl]? = nil,
+        transformMap initialTransforms: [String: TransformImpl]? = nil
     ) throws {
-        if let context = context {
-            self.context = convertContextToJexValue(context: context)
+
+        if let initialContext = initialContext {
+            self.context = convertContextToJexValue(context: initialContext)
         }
-        if let funcsMap = funcsMap {
-            self.funcsMap = funcsMap
+
+        if let initialFuncs = initialFuncs {
+            self.funcsMap = initialFuncs
         }
-        if let transformMap = transformMap {
-            self.transformMap = transformMap
+
+        if let initialTransforms = initialTransforms {
+            self.transformMap = initialTransforms
         }
+
         try self.addAllContextValuesIntoGlobalScope(context: self.context)
+
         let evaluatorContext = EvaluatorContext(jexEvaluator: self)
-        self.evalVisitor = EvalVisitor(ctx: evaluatorContext)
+        self.evalVisitor = EvalVisitor(
+            scope: globalScope,
+            ctx: evaluatorContext,
+            funcsMap: self.funcsMap,
+            transformsMap: self.transformMap
+        )
     }
+
 
     // MARK: - Parse (with caching)
     private func parseExpression(expr: String) throws -> JexLangParser.ProgramContext {
@@ -235,7 +242,7 @@ public class JexEvaluator {
     
     public func addFunction(
         name: String,
-        function: FuncImpl
+        function: @escaping FuncImpl
     ) {
         funcsMap[name] = function
         evalVisitor.addFunction(name: name, fn: function)
@@ -251,7 +258,7 @@ public class JexEvaluator {
     
     public func addTransform(
         name: String,
-        transform: TransformImpl
+        transform: @escaping TransformImpl
     ) {
         transformMap[name] = transform
         evalVisitor.addTransform(name: name, transform: transform)

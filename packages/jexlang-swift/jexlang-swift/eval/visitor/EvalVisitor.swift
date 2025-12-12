@@ -40,7 +40,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         super.init()
     }
     
-    public func addFunction(name: String, fn: FuncImpl) {
+    public func addFunction(name: String, fn: @escaping FuncImpl) {
         self.funcRegistry.set(name, fn)
     }
     
@@ -56,7 +56,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return self.funcRegistry.has(name)
     }
     
-    public func addTransform(name: String, transform: TransformImpl) {
+    public func addTransform(name: String, transform: @escaping TransformImpl) {
         self.transformRegistry.set(name, transform)
     }
     

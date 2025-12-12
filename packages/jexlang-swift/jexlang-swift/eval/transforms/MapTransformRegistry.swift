@@ -8,17 +8,17 @@
 import Foundation
 
 public final class MapTransformRegistry: TransformRegistry {
-    private var map: [String: any TransformImpl]
+    private var map: [String: TransformImpl]
 
-    public init(_ transformMap: [String: any TransformImpl] = [:]) {
+    public init(_ transformMap: [String: TransformImpl] = [:]) {
         self.map = transformMap
     }
 
-    public func set(_ name: String, _ fn: any TransformImpl) {
+    public func set(_ name: String, _ fn: @escaping TransformImpl) {
         map[name] = fn
     }
 
-    public func getAll() -> [String: any TransformImpl] {
+    public func getAll() -> [String: TransformImpl] {
         map
     }
 
@@ -34,6 +34,6 @@ public final class MapTransformRegistry: TransformRegistry {
         guard let fn = map[name] else {
             fatalError("Unknown transform: \(name)")
         }
-        return fn.apply(input, ctx)
+        return fn(input, ctx)
     }
 }
