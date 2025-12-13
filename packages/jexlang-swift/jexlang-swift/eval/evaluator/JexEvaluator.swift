@@ -299,6 +299,11 @@ public class JexEvaluator {
         evalVisitor.addFunction(name: name, fn: function)
     }
     
+    public func removeFunction(name: String) {
+        funcsMap.removeValue(forKey: name)
+        evalVisitor.removeFunction(name: name)
+    }
+    
     public func getAllFunctions() -> [String: FuncImpl]{
         return self.evalVisitor.getAllFunctions()
     }
@@ -321,6 +326,11 @@ public class JexEvaluator {
     
     public func hasTransform(name: String) -> Bool {
         return self.evalVisitor.hasTransform(name)
+    }
+    
+    public func removeTransform(name: String) {
+        transformMap.removeValue(forKey: name)
+        evalVisitor.removeTransform(name: name)
     }
     
     public func addFunctions(functions: [String: FuncImpl]) {

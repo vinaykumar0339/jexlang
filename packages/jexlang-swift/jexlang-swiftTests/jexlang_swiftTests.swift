@@ -14,7 +14,7 @@ func makeEvaluator() throws -> JexEvaluator {
 
 @Suite("JexEvaluator Tests")
 struct jexlang_swiftTests {
-
+    
     var evaluator: JexEvaluator!
     
     init() throws {
@@ -110,21 +110,21 @@ struct jexlang_swiftTests {
         
         @Test("should evaluate with program scope context")
         func testEvaluate_ProgramScopeContext() throws {
-
+            
             let result = try evaluator.evaluate(expr: "x + y", programScopeVariables: [
                 "x": 5,
                 "y": 10
             ]) as! Int;
-
+            
             #expect(result == 15)
         }
         
         @Test("should handle context variables")
         func testEvaluate_ContextVariables() throws {
             try evaluator.declareContextValue("value", value: 0, isConst: false);
-
+            
             try evaluator.setContextValue("value", 100);
-
+            
             #expect(try evaluator.evaluate(expr: "value") as! Int == 100)
         }
     }
@@ -149,9 +149,9 @@ struct jexlang_swiftTests {
                 "a": 4,
                 "b": 5
             ]
-
+            
             let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx) as! Int;
-
+            
             #expect(result == 20)
         }
     }
@@ -236,9 +236,154 @@ struct jexlang_swiftTests {
             
             #expect(vars["PI"] as! Double == Double.pi)
             #expect(vars["E"] as! Double == Darwin.M_E)
-
+            
         }
         
     }
     
+    @Suite("function management")
+    struct FunctionManagementTesst {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should add a function")
+        func testAddFunction() throws {
+            let testFunc: FuncImpl = { (ctx, args) in
+                JexValueFactory.from("test")
+            }
+            
+            evaluator.addFunction(name: "testFunc", function: testFunc)
+            #expect(evaluator.hasFunction(name: "testFunc"))
+        }
+        
+        @Test("should add multiple functions")
+        func testAddMultipleFunctions() throws {
+            let funcs: [String: FuncImpl] = [
+                "func1": { (ctx, args) in
+                    JexValueFactory.from(1)
+                },
+                "func2": { (ctx, args) in
+                    JexValueFactory.from(2)
+                }
+            ]
+            
+            evaluator.addFunctions(functions: funcs)
+            #expect(evaluator.hasFunction(name: "func1"))
+            #expect(evaluator.hasFunction(name: "func2"))
+        }
+        
+        @Test("should remove a function")
+        func testRemoveFunction() throws {
+            let testFunc: FuncImpl = { (ctx, args) in
+                JexValueFactory.from("test")
+            }
+            
+            evaluator.addFunction(name: "testFunc", function: testFunc)
+            #expect(evaluator.hasFunction(name: "testFunc"))
+            
+            evaluator.removeFunction(name: "testFunc")
+            #expect(evaluator.hasFunction(name: "testFunc") == false)
+        }
+        
+        @Test("should get all functions")
+        func testGetAllFunctions() throws {
+            let testFunc: FuncImpl = { (ctx, args) in
+                JexValueFactory.from("test")
+            }
+            
+            evaluator.addFunction(name: "testFunc", function: testFunc)
+            
+            let allFuncs = evaluator.getAllFunctions()
+            
+            #expect(allFuncs != nil)
+            #expect(allFuncs.keys.contains("testFunc"))
+            #expect(allFuncs["testFunc"] != nil)
+        }
+        
+        @Test("should reset function")
+        func testResetFunctions() throws {
+            let testFunc: FuncImpl = { (ctx, args) in
+                JexValueFactory.from("test")
+            }
+            
+            evaluator.addFunction(name: "testFunc", function: testFunc)
+            #expect(evaluator.hasFunction(name: "testFunc"))
+            
+            evaluator.resetFunctions()
+            #expect(evaluator.hasFunction(name: "testFunc") == false)
+        }
+    }
+    
+    @Suite("transform managemen")
+    struct TransformManagementTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should add a transform")
+        func testAddTransform() throws {
+            let testTransform: TransformImpl = { input, _ in input }
+            
+            evaluator.addTransform(name: "testTransform", transform: testTransform)
+            #expect(evaluator.hasTransform(name: "testTransform"))
+        }
+        
+        @Test("should add multiple transforms")
+        func testAddMultipleTransforms() throws {
+            let transforms: [String: TransformImpl] = [
+                "testTransform1": { input, _ in input },
+                "testTransform2": { input, _ in input }
+            ]
+            
+            evaluator.addTransforms(transforms: transforms)
+            
+            #expect(evaluator.hasTransform(name: "testTransform1"))
+            #expect(evaluator.hasTransform(name: "testTransform2"))
+                
+        }
+        
+        @Test("should remove a transform")
+        func testRemoveTransform() throws {
+            let testTransform: TransformImpl = { input, _ in input }
+            
+            evaluator.addTransform(name: "testTransform", transform: testTransform)
+            #expect(evaluator.hasTransform(name: "testTransform"))
+            
+            evaluator.removeTransform(name: "testTransform")
+            #expect(!evaluator.hasTransform(name: "testTransform"))
+        }
+        
+        @Test("should get all transforms")
+        func testGetAllTransforms() throws {
+            let testTransform: TransformImpl = { input, _ in input }
+            
+            evaluator.addTransform(name: "testTransform", transform: testTransform)
+            
+            let allTransforms = evaluator.getAllTransforms()
+            
+            #expect(allTransforms != nil)
+            #expect(allTransforms.keys.contains("testTransform"))
+            #expect(allTransforms["testTransform"] != nil)
+            
+        }
+        
+        @Test("should reset transforms")
+        func testResetTransforms() throws {
+            let testTransform: TransformImpl = { input, _ in input }
+            
+            evaluator.addTransform(name: "testTransform", transform: testTransform)
+            #expect(evaluator.hasTransform(name: "testTransform"))
+            
+            evaluator.resetTransforms()
+            
+            #expect(!evaluator.hasTransform(name: "testTransform"))
+        }
+    }
 }
