@@ -641,13 +641,6 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return JexNil()
     }
     
-    private func asSafeBool(_ value: JexValue) -> Bool {
-        if value.isNil() { return false }
-        if value.isBoolean() { return (try? value.asBoolean(context: "logical")) ?? false }
-        if value.isNumber() { return ((try? value.asNumber(context: "logical"))?.doubleValue ?? 0) != 0 }
-        return false
-    }
-    
     // MARK: Logical 'and' Expression
     public override func visitLogicalAndExpression(_ ctx: JexLangParser.LogicalAndExpressionContext) -> JexValue {
         if let _ = ctx.AND() {

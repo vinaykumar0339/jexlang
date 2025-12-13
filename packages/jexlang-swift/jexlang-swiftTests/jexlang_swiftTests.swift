@@ -433,4 +433,72 @@ struct jexlang_swiftTests {
             #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
         }
     }
+    
+    @Suite("error handling")
+    struct nameErrorHandlingTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should throw syntax errors for invalid expressions")
+        func testSyntaxErrors() {
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: "2 +")
+            }
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: "(")
+            }
+        }
+        
+        @Test("should handle multiple syntax errors")
+        func testMultipleSyntaxErrors() async throws {
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "(((")
+            })
+        }
+    }
+    
+    @Suite("integration tests")
+    struct IntegrationTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        @Test("should handle complex expressions")
+        func testComplexExpressions() throws {
+            #expect(try evaluator.evaluate(expr: "(10 + 5) * 2 - 3") as! Int == 27)
+        }
+        
+        @Test("should work with variables and functions together")
+        func testVariablesAndFunctions() throws {
+            // Declare and set variable
+            try evaluator.declareContextValue("x", value: 0, isConst: false)
+            try evaluator.setContextValue("x", 5)
+            
+            // Add a function: double(val) => val * 2
+            evaluator.addFunction(name: "double") { ctx, args in
+                let val = try! toNumber(value: args[0], ctx: "bracket property assignment")
+                return JexValueFactory.from(val.int64Value * 2)
+            }
+            
+            #expect(try evaluator.evaluate(expr: "double(x) + 10") as! Int == 20)
+        }
+        
+        @Test("should support chained operations")
+        func testChainedOperations() throws {
+            // Declare and set an array variable
+            
+            try evaluator.declareContextValue("arr", value: 0, isConst: false)
+            try evaluator.setContextValue("arr", ["a", "b", "c"])
+            
+            // Assuming evaluator has a built-in `length` function for arrays
+            #expect(try evaluator.evaluate(expr: "length(arr)") as! Int == 3)
+        }
+    }
 }
