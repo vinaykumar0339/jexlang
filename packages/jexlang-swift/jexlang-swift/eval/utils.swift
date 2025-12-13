@@ -7,6 +7,104 @@
 
 import Foundation
 
+public typealias Unary = (_ x: Double) -> Double
+public typealias Binary = (_ a: Double, _ b: Double) -> Double
+public typealias Ternary = (_ a: Double, _ b: Double, _ c: Double) -> Double
+
+@inline(__always)
+public func integer(_ v: Int) -> JexValue {
+    JexInteger(value: v)
+}
+
+@inline(__always)
+public func doubleValue(_ v: Double) -> JexValue {
+    JexDouble(value: v)
+}
+
+@inline(__always)
+public func num(_ v: Double) -> JexValue {
+    JexValueFactory.from(v)
+}
+
+@inline(__always)
+public func str(_ s: String) -> JexValue {
+    JexValueFactory.from(s)
+}
+
+@inline(__always)
+public func bool(_ b: Bool) -> JexValue {
+    JexValueFactory.from(b)
+}
+
+@inline(__always)
+public func nilValue() -> JexValue {
+    JexNil()
+}
+
+@inline(__always)
+public func arr(_ vs: [JexValue]) -> JexValue {
+    JexValueFactory.from(vs)
+}
+
+@inline(__always)
+public func obj(_ m: [String: JexValue]) -> JexValue {
+    JexValueFactory.from(m)
+}
+
+
+@inline(__always)
+public func assertFinite(_ name: String, _ x: Double) throws {
+    if !x.isFinite {
+        throw JexLangRuntimeError(message: "\(name) produced non-finite result")
+    }
+}
+
+
+func n1(_ f: @escaping Unary, _ ctxName: String) -> FuncImpl {
+    return { _, args in
+        let xValue = args.count > 0 ? args[0] : JexValueFactory.from(0)
+        let x = (try! toNumber(value: xValue, ctx: ctxName)).doubleValue
+        let v = f(x)
+        try! assertFinite(ctxName, v)
+        return num(v)
+    }
+}
+
+func n2(_ f: @escaping Binary, _ aCtx: String, _ bCtx: String) -> FuncImpl {
+    return { _, args in
+        let aValue = args.count > 0 ? args[0] : JexValueFactory.from(0)
+        let bValue = args.count > 1 ? args[1] : JexValueFactory.from(0)
+
+        let a = (try! toNumber(value: aValue, ctx: aCtx)).doubleValue
+        let b = (try! toNumber(value: bValue, ctx: bCtx)).doubleValue
+
+        let v = f(a, b)
+        try! assertFinite("\(aCtx), \(bCtx)", v)
+        return num(v)
+    }
+}
+
+func n3(
+    _ f: @escaping Ternary,
+    _ aCtx: String,
+    _ bCtx: String,
+    _ cCtx: String
+) -> FuncImpl {
+    return { _, args in
+        let aValue = args.count > 0 ? args[0] : JexValueFactory.from(0)
+        let bValue = args.count > 1 ? args[1] : JexValueFactory.from(0)
+        let cValue = args.count > 2 ? args[2] : JexValueFactory.from(0)
+
+        let a = (try! toNumber(value: aValue, ctx: aCtx)).doubleValue
+        let b = (try! toNumber(value: bValue, ctx: bCtx)).doubleValue
+        let c = (try! toNumber(value: cValue, ctx: cCtx)).doubleValue
+
+        let v = f(a, b, c)
+        try! assertFinite("\(aCtx), \(bCtx), \(cCtx)", v)
+        return num(v)
+    }
+}
+
 public func getJexValueType(value: JexValue?) -> String {
     guard let value = value else {
         return "nil"

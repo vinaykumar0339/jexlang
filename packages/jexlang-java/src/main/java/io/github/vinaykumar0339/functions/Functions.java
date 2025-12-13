@@ -28,6 +28,7 @@ public class Functions {
 
     public static Map<String, FuncImpl> makeBuiltins() {
         return new HashMap<>(Map.ofEntries(
+                // Math functions that work with numbers
                 Map.entry("abs", Utils.n1(FastMath::abs, "abs function")),
                 Map.entry("ceil", Utils.n1(FastMath::ceil, "ceil function")),
                 Map.entry("floor", Utils.n1(FastMath::floor, "floor function")),
