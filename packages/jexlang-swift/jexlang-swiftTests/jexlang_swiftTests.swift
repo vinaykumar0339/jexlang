@@ -94,18 +94,18 @@ struct jexlang_swiftTests {
         
         @Test("should evaluate simple literal expressions")
         func testEvaluate_Literals() throws {
-            assertEquals(42, try evaluator.evaluate(expr: "42"))
-            assertEquals(true, try evaluator.evaluate(expr: "true"))
-            assertEquals("hello", try evaluator.evaluate(expr: "\"hello\""))
-            assertNil(try evaluator.evaluate(expr: "null"))
+            #expect(try evaluator.evaluate(expr: "42") as! Int == 42)
+            #expect(try evaluator.evaluate(expr: "true") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "\"hello\"") as! String == "hello")
+            #expect(try evaluator.evaluate(expr: "null") == nil)
         }
         
         @Test("hould evaluate arithmetic expressions")
         func testEvaluate_Arithmetic() throws {
-            assertEquals(5, try evaluator.evaluate(expr: "2 + 3"));
-            assertEquals(6, try evaluator.evaluate(expr: "10 - 4"));
-            assertEquals(15, try evaluator.evaluate(expr: "5 * 3"));
-            assertEquals(5, try evaluator.evaluate(expr: "10 / 2"));
+            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
+            #expect(try evaluator.evaluate(expr: "10 - 4") as! Int == 6)
+            #expect(try evaluator.evaluate(expr: "5 * 3") as! Int == 15)
+            #expect(try evaluator.evaluate(expr: "10 / 2") as! Int == 5)
         }
         
         @Test("should evaluate with program scope context")
@@ -114,9 +114,9 @@ struct jexlang_swiftTests {
             let result = try evaluator.evaluate(expr: "x + y", programScopeVariables: [
                 "x": 5,
                 "y": 10
-            ]);
+            ]) as! Int;
 
-            assertEquals(15, result);
+            #expect(result == 15)
         }
         
         @Test("should handle context variables")
@@ -125,7 +125,7 @@ struct jexlang_swiftTests {
 
             try evaluator.setContextValue("value", 100);
 
-            assertEquals(100, try evaluator.evaluate(expr: "value"));
+            #expect(try evaluator.evaluate(expr: "value") as! Int == 100)
         }
     }
     
@@ -140,7 +140,7 @@ struct jexlang_swiftTests {
         
         @Test("should evaluate synchronously")
         func testEvaluate_AsyncFunctionCalls() throws {
-            assertEquals(5, try evaluator.evaluate(expr: "2 + 3"));
+            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
         }
         
         @Test("should work with program scope context")
@@ -150,9 +150,9 @@ struct jexlang_swiftTests {
                 "b": 5
             ]
 
-            let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx);
+            let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx) as! Int;
 
-            assertEquals(20, result);
+            #expect(result == 20)
         }
     }
     
@@ -168,53 +168,51 @@ struct jexlang_swiftTests {
         func testSetContextValueOnlyIfDeclared() throws {
             // declare first
             try evaluator.declareContextValue("key", value: "initial")
-            assertEquals("initial", evaluator.getContextValue("key"))
+            #expect(evaluator.getContextValue("key") as! String == "initial")
             
             // set new value
             try evaluator.setContextValue("key", "value")
-            assertEquals("value", evaluator.getContextValue("key"))
+            #expect(evaluator.getContextValue("key") as! String == "value")
         }
         
         @Test("should throw error when setting undeclared variable")
         func testSetContextValueThrowsForUndeclared() {
-            assertThrows(
-                JexLangRuntimeError.self,
+            #expect(throws: JexLangRuntimeError.self, performing: {
                 try evaluator.setContextValue("undeclared", "value")
-            )
+            })
         }
         
         @Test("should declare context value")
         func testDeclareContextValue() throws {
             try evaluator.declareContextValue("newVar", value: 42)
-            assertEquals(42, evaluator.getContextValue("newVar"));
+            #expect(evaluator.getContextValue("newVar") as! Int == 42)
         }
         
         @Test("should declare const context value and reject reassignment")
         func testDeclareConstContextValue() throws {
             try evaluator.declareContextValue("constVar", value: 100, isConst: true)
-            assertEquals(100, evaluator.getContextValue("constVar"))
+            #expect(evaluator.getContextValue("constVar") as! Int == 100)
             
             // reassign should fail
-            assertThrows(
-                JexLangRuntimeError.self,
+            #expect(throws: JexLangRuntimeError.self, performing: {
                 try evaluator.setContextValue("constVar", 200)
-            )
+            })
         }
         
         @Test("should set or declare context value")
         func testSetOrDeclareContextValue() async throws {
             // declare new
             try evaluator.setContextOrDeclareContextValue("var1", 10)
-            assertEquals(10, evaluator.getContextValue("var1"))
+            #expect(evaluator.getContextValue("var1") as! Int == 10)
             
             // update existing
             try evaluator.setContextOrDeclareContextValue("var1", 20)
-            assertEquals(20, evaluator.getContextValue("var1"))
+            #expect(evaluator.getContextValue("var1") as! Int == 20)
         }
         
         @Test("should return null for undefined context value")
         func testGetUndefinedContextValue() throws {
-            assertNil(evaluator.getContextValue("nonexistent"))
+            #expect(evaluator.getContextValue("nonexistent") == nil)
         }
         
         @Test("should reset context and clear variables")
@@ -225,19 +223,20 @@ struct jexlang_swiftTests {
             try evaluator.resetContext();
             
             // should return null after reset
-            assertNil(evaluator.getContextValue("key"))
+            #expect(evaluator.getContextValue("nonexistent") == nil)
         }
         
         @Test("should get global scope variables (e.g., PI, E)")
         func testGetGlobalScopeVariables() throws {
             let vars = evaluator.getGlobalScopeVariables()
             
-            assertNotNil(vars)
-            assertTrue(vars.keys.contains("PI"))
-            assertTrue(vars.keys.contains("E"))
+            #expect(vars != nil)
+            #expect(vars.keys.contains("PI"))
+            #expect(vars.keys.contains("E"))
             
-            assertEquals(Double.pi, vars["PI"])
-            assertEquals(Darwin.M_E, vars["E"])
+            #expect(vars["PI"] as! Double == Double.pi)
+            #expect(vars["E"] as! Double == Darwin.M_E)
+
         }
         
     }
