@@ -386,4 +386,51 @@ struct jexlang_swiftTests {
             #expect(!evaluator.hasTransform(name: "testTransform"))
         }
     }
+    
+    @Suite("caching")
+    struct CachingTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+        
+        
+        @Test("should enable expression caching")
+        func testEnableExpressionCaching() {
+            evaluator.setCacheExpressions(true)
+            #expect(evaluator.getCacheExpressions())
+        }
+        
+        @Test("should disable expression caching")
+        func testDisableExpressionCaching() {
+            evaluator.setCacheExpressions(true)
+            evaluator.setCacheExpressions(false)
+            #expect(!evaluator.getCacheExpressions())
+        }
+        
+        @Test("should cache parsed expressions when enabled")
+        func testCacheParsedExpressions() throws {
+            evaluator.setCacheExpressions(true)
+            let expr = "2 + 3"
+            
+            // First evaluation parses and caches
+            #expect(try evaluator.evaluate(expr: expr) as! Int == 5)
+            
+            // Second evaluation should hit cache
+            #expect(try evaluator.evaluate(expr: expr) as! Int == 5)
+        }
+        
+        @Test("should clear cached parsed expressions")
+        func testClearCachedParsedExpressions() throws {
+            evaluator.setCacheExpressions(true)
+            _ = try evaluator.evaluate(expr: "2 + 3")
+            
+            evaluator.clearCachedParsedExpression()
+            
+            // After clearing, evaluation still works
+            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
+        }
+    }
 }
