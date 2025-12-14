@@ -450,6 +450,19 @@ public class Utils {
         }
 
         // 6. object → primitive conversion (like JS ToPrimitive)
+        if (a.isArray() && !b.isArray()) {
+            return jsEqual(toPrimitive(a), b);
+        }
+        if (b.isArray() && !a.isArray()) {
+            return jsEqual(a, toPrimitive(b));
+        }
+
+        // 7. object == object → reference equality
+        if (a.isObject() && b.isObject()) {
+            return a == b;
+        }
+
+        // 8. object → primitive conversion (like JS ToPrimitive)
         if (a.isObject() && !b.isObject()) {
             return jsEqual(toPrimitive(a), b);
         }
@@ -457,7 +470,7 @@ public class Utils {
             return jsEqual(a, toPrimitive(b));
         }
 
-        // 7. object == object → reference equality
+        // 9. object == object → reference equality
         if (a.isObject() && b.isObject()) {
             return a == b;
         }

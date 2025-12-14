@@ -78,7 +78,7 @@ public func assertFinite(_ name: String, _ x: Double) throws {
 func n1(_ f: @escaping Unary, _ ctxName: String) -> FuncImpl {
     return { _, args in
         let xValue = args.count > 0 ? args[0] : JexValueFactory.from(0)
-        let x = (try! toNumber(value: xValue, ctx: ctxName)).doubleValue
+        let x = toNumber(value: xValue, ctx: ctxName).doubleValue
         let v = f(x)
         try! assertFinite(ctxName, v)
         return num(v)
@@ -90,8 +90,8 @@ func n2(_ f: @escaping Binary, _ aCtx: String, _ bCtx: String) -> FuncImpl {
         let aValue = args.count > 0 ? args[0] : JexValueFactory.from(0)
         let bValue = args.count > 1 ? args[1] : JexValueFactory.from(0)
 
-        let a = (try! toNumber(value: aValue, ctx: aCtx)).doubleValue
-        let b = (try! toNumber(value: bValue, ctx: bCtx)).doubleValue
+        let a = toNumber(value: aValue, ctx: aCtx).doubleValue
+        let b = toNumber(value: bValue, ctx: bCtx).doubleValue
 
         let v = f(a, b)
         try! assertFinite("\(aCtx), \(bCtx)", v)
@@ -110,9 +110,9 @@ func n3(
         let bValue = args.count > 1 ? args[1] : JexValueFactory.from(0)
         let cValue = args.count > 2 ? args[2] : JexValueFactory.from(0)
 
-        let a = (try! toNumber(value: aValue, ctx: aCtx)).doubleValue
-        let b = (try! toNumber(value: bValue, ctx: bCtx)).doubleValue
-        let c = (try! toNumber(value: cValue, ctx: cCtx)).doubleValue
+        let a = toNumber(value: aValue, ctx: aCtx).doubleValue
+        let b = toNumber(value: bValue, ctx: bCtx).doubleValue
+        let c = toNumber(value: cValue, ctx: cCtx).doubleValue
 
         let v = f(a, b, c)
         try! assertFinite("\(aCtx), \(bCtx), \(cCtx)", v)
@@ -254,62 +254,83 @@ public func toString(value: JexValue, ctx: String) -> String {
 }
 
 public func isEqual(_ lhs: JexValue, _ rhs: JexValue) -> Bool {
-    // null checks
-    if lhs.isNil() && rhs.isNil() { return true }
-    if lhs.isNil() || rhs.isNil() { return false }
-
-    // boolean comparison
-    if lhs.isBoolean() && rhs.isBoolean() {
-        do {
-            return try lhs.asBoolean(context: "equality") ==
-                   rhs.asBoolean(context: "equality")
-        } catch {
-            return false
-        }
-    }
-
-    // number comparison
-    if lhs.isNumber() && rhs.isNumber() {
-        do {
-            return try lhs.asNumber(context: "equality").doubleValue ==
-                   rhs.asNumber(context: "equality").doubleValue
-        } catch {
-            return false
-        }
-    }
-
-    // string comparison
-    if lhs.isString() && rhs.isString() {
-        do {
+    
+    do {
+        // 1. If both are null → true
+        if lhs.isNil() && rhs.isNil() { return true }
+        
+        // 2. null == undefined behavior (you can choose if you support undefined)
+        //        // For now: null is only equal to null in JexLang.
+        if lhs.isNil() || rhs.isNil() { return false }
+        
+        
+        // 3. If types match → direct compare
+        if lhs.isString() && rhs.isString() {
             return try lhs.asString(context: "equality") ==
                    rhs.asString(context: "equality")
-        } catch {
+        }
+        
+        if lhs.isBoolean() && rhs.isBoolean() {
+            return try lhs.asBoolean(context: "equality") ==
+                   rhs.asBoolean(context: "equality")
+        }
+        
+        if lhs.isNumber() && rhs.isNumber() {
+            return try lhs.asNumber(context: "equality").doubleValue ==
+                   rhs.asNumber(context: "equality").doubleValue
+        }
+        
+        // 4. boolean → number conversion
+        if (lhs.isBoolean()) {
+            return jexlang_swift.isEqual(JexValueFactory.fromNumber(int: (try lhs.asBoolean(context: "==") ? 1 : 0)), rhs)
+        }
+        if (rhs.isBoolean()) {
+            return jexlang_swift.isEqual(lhs, JexValueFactory.fromNumber(int: (try rhs.asBoolean(context: "==") ? 1 : 0)))
+        }
+        
+        // 5. string ↔ number conversion
+        if (lhs.isString() && rhs.isNumber()) {
+            if let num = Double(try lhs.asString(context: "==")) {
+                return jexlang_swift.isEqual(JexValueFactory.fromNumber(double: num), rhs)
+            }
             return false
         }
-    }
-
-    // array reference equality
-    if lhs.isArray() && rhs.isArray() {
-        return lhs === rhs        // same instance
-    }
-
-    // object reference equality
-    if lhs.isObject() && rhs.isObject() {
-        return lhs === rhs        // same instance
-    }
-
-    // Fallback: one is number -> convert both to number
-    if lhs.isNumber() || rhs.isNumber() {
-        do {
-            let n1 = try toNumber(value: lhs, ctx: "equality")
-            let n2 = try toNumber(value: rhs, ctx: "equality")
-            return n1.doubleValue == n2.doubleValue
-        } catch {
+        if (lhs.isNumber() && rhs.isString()) {
+            if let num = Double(try rhs.asString(context: "==")) {
+                return jexlang_swift.isEqual(lhs, JexValueFactory.fromNumber(double: num))
+            }
             return false
         }
-    }
+        
+        // 6. array → primitive conversion (like JS ToPrimitive)
+        if (lhs.isArray() && !rhs.isArray()) {
+            return jexlang_swift.isEqual(toPrimitive(value: lhs), rhs)
+        }
+        if (!lhs.isArray() && rhs.isArray()) {
+            return jexlang_swift.isEqual(lhs, toPrimitive(value: rhs))
+        }
+        // 7. array reference equality
+        if lhs.isArray() && rhs.isArray() {
+            return lhs === rhs
+        }
+        
+        // 8. object → primitive conversion (like JS ToPrimitive)
+        if (lhs.isObject() && !rhs.isObject()) {
+            return jexlang_swift.isEqual(toPrimitive(value: lhs), rhs)
+        }
+        if (!lhs.isObject() && rhs.isObject()) {
+            return jexlang_swift.isEqual(lhs, toPrimitive(value: rhs))
+        }
+        
+        // 9. object reference equality
+        if lhs.isObject() && rhs.isObject() {
+            return lhs === rhs        // same instance
+        }
 
-    return false
+        return false
+    } catch {
+        return  false
+    }
 }
 
 public func isLessThan(
@@ -325,15 +346,16 @@ public func isLessThan(
         // If either is a number → try numeric compare
         if lhs.isNumber() || rhs.isNumber() {
             do {
-                let num1 = try toNumber(value: lhs, ctx: "comparison")
-                let num2 = try toNumber(value: rhs, ctx: "comparison")
-                
-                if alsoEqual {
-                    isLess = num1.doubleValue <= num2.doubleValue
-                } else {
-                    isLess = num1.doubleValue < num2.doubleValue
+                try catchNSException {
+                    let num1 = toNumber(value: lhs, ctx: "comparison")
+                    let num2 = toNumber(value: rhs, ctx: "comparison")
+                    
+                    if alsoEqual {
+                        isLess = num1.doubleValue <= num2.doubleValue
+                    } else {
+                        isLess = num1.doubleValue < num2.doubleValue
+                    }
                 }
-                
             } catch {
                 isLess = false
             }
@@ -406,13 +428,15 @@ public func isGreaterThan(
         // If either side is number → try numeric compare
         if lhs.isNumber() || rhs.isNumber() {
             do {
-                let num1 = try toNumber(value: lhs, ctx: "comparison")
-                let num2 = try toNumber(value: rhs, ctx: "comparison")
-                
-                if alsoEqual {
-                    isGreater = num1.doubleValue >= num2.doubleValue
-                } else {
-                    isGreater = num1.doubleValue > num2.doubleValue
+                try catchNSException {
+                    let num1 = toNumber(value: lhs, ctx: "comparison")
+                    let num2 = toNumber(value: rhs, ctx: "comparison")
+                    
+                    if alsoEqual {
+                        isGreater = num1.doubleValue >= num2.doubleValue
+                    } else {
+                        isGreater = num1.doubleValue > num2.doubleValue
+                    }
                 }
                 
             } catch {
@@ -550,8 +574,8 @@ public func jsRelational(
     op: JSRelationalOp
 ) -> Bool {
     // 1. JS ToPrimitive
-    var a = toPrimitive(value: left)
-    var b = toPrimitive(value: right)
+    let a = toPrimitive(value: left)
+    let b = toPrimitive(value: right)
     
     // 2. If both primitives are strings → lexicographical comparison
     if (

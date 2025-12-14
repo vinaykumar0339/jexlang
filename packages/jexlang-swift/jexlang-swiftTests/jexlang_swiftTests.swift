@@ -557,4 +557,131 @@ struct jexlang_swiftTests {
             }
         }
     }
+
+    @Suite("equality expressions")
+    struct EqualityExpressionsTests {
+
+        let evaluator = try! JexEvaluator()
+
+        @Test("null equality and inequality")
+        func testNullEquality() throws {
+            #expect((try evaluator.evaluate(expr: "null == null")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "null != null")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "null == 0")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "null != 0")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "null == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "null != false")) as! Bool == true)
+        }
+
+        @Test("boolean equality and inequality")
+        func testBooleanEquality() throws {
+            #expect((try evaluator.evaluate(expr: "true == true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false == false")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true != false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false != true")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == true")) as! Bool == false)
+        }
+
+        @Test("boolean with numbers")
+        func testBooleanWithNumbers() throws {
+            #expect((try evaluator.evaluate(expr: "true == 1")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "1 == true")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true == -1")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "-1 == true")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "false == 0")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 == false")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true != 0")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 != true")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "false != 1")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "1 != false")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true == 0")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "0 == true")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "false == 1")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "1 == false")) as! Bool == false)
+        }
+
+        @Test("boolean with strings")
+        func testBooleanWithStrings() throws {
+            
+            #expect((try evaluator.evaluate(expr: "true == \"true\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"true\" == true")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "false == \"false\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"false\" == false")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "true != \"false\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"false\" != true")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "false != \"true\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"true\" != false")) as! Bool == true)
+            
+            #expect((try evaluator.evaluate(expr: "true == \"false\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"false\" == true")) as! Bool == false)
+            
+            #expect((try evaluator.evaluate(expr: "false == \"true\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"true\" == false")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "true == \"1\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"1\" == true")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "false == \"0\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"0\" == false")) as! Bool == true)
+
+            #expect((try evaluator.evaluate(expr: "true == \"0\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"0\" == true")) as! Bool == false)
+
+            #expect((try evaluator.evaluate(expr: "false == \"1\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"1\" == false")) as! Bool == false)
+        }
+
+        @Test("number equality")
+        func testNumberEquality() throws {
+            #expect((try evaluator.evaluate(expr: "5 == 5")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "5 == 3")) as! Bool == false)
+        }
+
+        @Test("number inequality")
+        func testNumberInequality() throws {
+            #expect((try evaluator.evaluate(expr: "5 != 3")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "5 != 5")) as! Bool == false)
+        }
+
+        @Test("string equality")
+        func testStringEquality() throws {
+            #expect((try evaluator.evaluate(expr: "\"test\" == \"test\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"test\" == \"TEST\"")) as! Bool == false)
+        }
+
+        @Test("string inequality")
+        func testStringInequality() throws {
+            #expect((try evaluator.evaluate(expr: "\"hello\" != \"world\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"hello\" != \"hello\"")) as! Bool == false)
+        }
+
+        @Test("mixed equality")
+        func testMixedEquality() throws {
+            #expect((try evaluator.evaluate(expr: "5 == \"5\"")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"5\" == 5")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 == false")) as! Bool == true)
+        }
+
+        @Test("mixed inequality")
+        func testMixedInequality() throws {
+            #expect((try evaluator.evaluate(expr: "5 != \"5\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"5\" != 5")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "0 != false")) as! Bool == false)
+        }
+    }
+
 }
