@@ -116,8 +116,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         // initialize the program scope with the provided context variable
         for (key, value) in programScopeContext {
-            // Force crash.
-            try! scope.declareVariable(key, value: JexValueFactory.from(value), isConst: false) // create as non-const variable
+            scope.declareVariable(key, value: JexValueFactory.from(value), isConst: false) // create as non-const variable
         }
         
         var result: JexValue = JexNil()
@@ -159,14 +158,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let isConst = ctx.CONST() != nil
         let isGlobal = ctx.GLOBAL() != nil
         
-        if let globalScope = self.scope.resolveScope(ofType: .global) {
-            if (isGlobal) {
-                try! globalScope.declareVariable(varName, value: varValue, isConst: isConst)
-            }
+        if
+            let globalScope = self.scope.resolveScope(ofType: .global),
+            isGlobal
+        {
+            globalScope.declareVariable(varName, value: varValue, isConst: isConst)
             return varValue
         }
         
-        try! self.scope.declareVariable(varName, value: varValue, isConst: isConst)
+        self.scope.declareVariable(varName, value: varValue, isConst: isConst)
         return varValue
         
     }
@@ -283,12 +283,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visitShorthandPropertyExpressionObjectProperty(_ ctx: JexLangParser.ShorthandPropertyExpressionObjectPropertyContext) -> JexValue {
         guard let propertyName = ctx.IDENTIFIER()?.getText() else {
-            return JexValueFactory.fromObject(value: [String: JexValue]())
+            return JexValueFactory.fromObject(object: [String: JexValue]())
         }
         
         let propertyValue = self.scope.getVariable(propertyName)
         
-        return JexValueFactory.fromObject(value: [
+        return JexValueFactory.fromObject(object: [
             propertyName: propertyValue
         ]) // don't throw any error if it didn't find the variable just set the null value
     }
@@ -339,8 +339,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         var result: JexValue = JexNil()
         
         for time in 0..<times {
-            try! self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: time), isConst: false)
-            try! self.scope.declareVariable("$it", value: JexValueFactory.fromNumber(int: time), isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: time), isConst: false)
+            self.scope.declareVariable("$it", value: JexValueFactory.fromNumber(int: time), isConst: false)
             result = self.visit(block)
         }
         
@@ -358,8 +358,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, _) in arrayValue.enumerated() {
-            try! self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
-            try! self.scope.declareVariable("$it", value: arrayValue[i], isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
+            self.scope.declareVariable("$it", value: arrayValue[i], isConst: false)
             result = self.visit(block)
         }
         
@@ -378,9 +378,9 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for key in keys {
-            try! self.scope.declareAndAssignVariable("$key", value: JexValueFactory.fromString(string: key), isConst: false)
-            try! self.scope.declareVariable("$value", value: objectValue[key]!, isConst: false)
-            try! self.scope.declareVariable("$it", value: objectValue[key]!, isConst: false)
+            self.scope.declareAndAssignVariable("$key", value: JexValueFactory.fromString(string: key), isConst: false)
+            self.scope.declareVariable("$value", value: objectValue[key]!, isConst: false)
+            self.scope.declareVariable("$it", value: objectValue[key]!, isConst: false)
             result = self.visit(block)
         }
         
@@ -398,8 +398,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, c) in stringValue.enumerated() {
-            try! self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
-            try! self.scope.declareVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
+            self.scope.declareVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
             result = self.visit(block)
         }
         
@@ -426,7 +426,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     public override func visitAssignmentExpression(_ ctx: JexLangParser.AssignmentExpressionContext) -> JexValue {
         let varValue = self.visit(ctx.singleExpression())
         if let varName = ctx.IDENTIFIER()?.getText() {
-            try! self.scope.assignVariable(varName, value: varValue)
+            self.scope.assignVariable(varName, value: varValue)
         }
         return varValue;
     }
@@ -440,7 +440,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             var objectValue = try! objectValue.asObject(context: "bracket property assignment")
             let key = toString(value: propertyKey, ctx: "bracket property assignment")
             objectValue[key] = propertyValue
-            return JexValueFactory.fromObject(value: objectValue)
+            return JexValueFactory.fromObject(object: objectValue)
         } else if (objectValue.isArray()) {
             var arrayValue = try! objectValue.asArray(context: "bracket property assignment")
             let indexNumber = toNumber(value: propertyKey, ctx: "bracket property assignment")
@@ -476,7 +476,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             var objectValue = try! objectValue.asObject(context: "dot property assignment")
             let key = toString(value: propertyKey, ctx: "dot property assignment")
             objectValue[key] = propertyValue
-            return JexValueFactory.fromObject(value: objectValue)
+            return JexValueFactory.fromObject(object: objectValue)
         } else if
             objectValue.isArray()
          {
@@ -683,7 +683,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             return JexValueFactory.fromNumber(double: -number.doubleValue)
         } else if let _ = ctx.NOT() {
             let bool = toBoolean(value: jexValue, ctx: "unary expression")
-            return JexValueFactory.fromBoolean(value: bool)
+            return JexValueFactory.fromBoolean(value: !bool)
         }
         
         return JexNil()
@@ -723,13 +723,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let obj = self.visit(ctx.singleExpression())
         let propertyKey = self.visit(ctx.expressionSequence())
         
-        if !propertyKey.isString() {
-            // TODO: Need to throw error
-            return JexNil()
-        }
-        
-        if obj.isObject(),
-           propertyKey.isString()
+        if obj.isObject()
         {
             let object = try! obj.asObject(context: "member index expression")
             let propertyName = try! propertyKey.asString(context: "member index expression")
@@ -820,7 +814,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 let newValue = JexNumber(value:
                     ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
                 )
-                try! self.scope.assignVariable(varName, value: newValue)
+                self.scope.assignVariable(varName, value: newValue)
                 return newValue // return the original value before increment/decrement
             }
         }
@@ -909,7 +903,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 let newValue = JexNumber(value:
                     ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
                 )
-                try! self.scope.assignVariable(varName, value: newValue)
+                self.scope.assignVariable(varName, value: newValue)
                 return jexValue; // return the original value before increment/decrement
             }
         }

@@ -67,7 +67,7 @@ public class JexNumber: JexValue {
         return "\(value)"
     }
     
-    public func toObject() -> AnyObject? {
+    public func toObject() -> Any {
         return value
     }
     

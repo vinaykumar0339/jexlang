@@ -32,12 +32,12 @@ public class JexObject: JexValue {
         return "{\(value.map { "\($0.key): \($0.value)" }.joined(separator: ", "))}"
     }
     
-    public func toObject() -> AnyObject? {
-        var map: [String: AnyObject] = [:]
+    public func toObject() -> Any {
+        var map: [String: Any] = [:]
         for (key, val) in value {
             map[key] = val.toObject();
         }
-        return map as NSDictionary
+        return map
     }
     
     public func asInteger(context: String) throws -> Int {

@@ -8,6 +8,7 @@
 import Foundation
 
 public class JexNil: JexValue {
+    
     public func isInteger() -> Bool {
         return false
     }
@@ -40,8 +41,9 @@ public class JexNil: JexValue {
         return false
     }
     
-    public func toObject() -> AnyObject? {
-        return nil
+    public func toObject() -> Any {
+        // NOTE: To make force return nil using this hack.
+        return nil as AnyObject?
     }
     
     public func asDouble(context: String) throws -> Double {

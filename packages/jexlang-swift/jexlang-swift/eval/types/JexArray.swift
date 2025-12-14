@@ -54,8 +54,12 @@ public class JexArray: JexValue {
         return "[\(value.map(\.description).joined(separator: ", "))]"
     }
     
-    public func toObject() -> AnyObject? {
-        return value as AnyObject
+    public func toObject() -> Any {
+        var list = [Any]()
+        for item in value {
+            list.append(item.toObject())
+        }
+        return list
     }
     
     public func asDouble(context: String) throws -> Double {

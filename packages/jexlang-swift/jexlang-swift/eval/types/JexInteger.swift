@@ -55,8 +55,8 @@ public class JexInteger: JexValue {
         return "\(value)"
     }
     
-    public func toObject() -> AnyObject? {
-        return value as AnyObject;
+    public func toObject() -> Any {
+        return value;
     }
     
     public func asDouble(context: String) throws -> Double {

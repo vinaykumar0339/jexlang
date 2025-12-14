@@ -38,15 +38,15 @@ struct jexlang_swiftTests {
         
         @Test("Test Constructor with Custom Context")
         func testConstructor_CustomContext() throws {
-            var context = [String: AnyObject]()
-            context["x"] = 10 as AnyObject
-            context["y"] = 20 as AnyObject
+            var context = [String: Any]()
+            context["x"] = 10
+            context["y"] = 20
             
             let evaluator = try JexEvaluator(
                 context: context
             )
-            #expect(evaluator.getContextValue("x") as! Int == 10)
-            #expect(evaluator.getContextValue("y") as! Int == 20)
+            #expect(evaluator.getContextValue("x") as? Int == 10)
+            #expect(evaluator.getContextValue("y") as? Int == 20)
         }
         
         @Test("Test Constructor with Custom Functions")
@@ -94,18 +94,18 @@ struct jexlang_swiftTests {
         
         @Test("should evaluate simple literal expressions")
         func testEvaluate_Literals() throws {
-            #expect(try evaluator.evaluate(expr: "42") as! Int == 42)
-            #expect(try evaluator.evaluate(expr: "true") as! Bool == true)
-            #expect(try evaluator.evaluate(expr: "\"hello\"") as! String == "hello")
-            #expect(try evaluator.evaluate(expr: "null") == nil)
+            #expect(try evaluator.evaluate(expr: "42") as? Int == 42)
+            #expect(try evaluator.evaluate(expr: "true") as? Bool == true)
+            #expect(try evaluator.evaluate(expr: "\"hello\"") as? String == "hello")
+            #expect(try evaluator.evaluate(expr: "null") as? NSNull == nil)
         }
         
         @Test("hould evaluate arithmetic expressions")
         func testEvaluate_Arithmetic() throws {
-            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
-            #expect(try evaluator.evaluate(expr: "10 - 4") as! Int == 6)
-            #expect(try evaluator.evaluate(expr: "5 * 3") as! Int == 15)
-            #expect(try evaluator.evaluate(expr: "10 / 2") as! Int == 5)
+            #expect(try evaluator.evaluate(expr: "2 + 3") as? Int == 5)
+            #expect(try evaluator.evaluate(expr: "10 - 4") as? Int == 6)
+            #expect(try evaluator.evaluate(expr: "5 * 3") as? Int == 15)
+            #expect(try evaluator.evaluate(expr: "10 / 2") as? Int == 5)
         }
         
         @Test("should evaluate with program scope context")
@@ -114,7 +114,7 @@ struct jexlang_swiftTests {
             let result = try evaluator.evaluate(expr: "x + y", programScopeVariables: [
                 "x": 5,
                 "y": 10
-            ]) as! Int;
+            ]) as? Int;
             
             #expect(result == 15)
         }
@@ -125,7 +125,7 @@ struct jexlang_swiftTests {
             
             try evaluator.setContextValue("value", 100);
             
-            #expect(try evaluator.evaluate(expr: "value") as! Int == 100)
+            #expect(try evaluator.evaluate(expr: "value") as? Int == 100)
         }
     }
     
@@ -140,7 +140,7 @@ struct jexlang_swiftTests {
         
         @Test("should evaluate synchronously")
         func testEvaluate_AsyncFunctionCalls() throws {
-            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
+            #expect(try evaluator.evaluate(expr: "2 + 3") as? Int == 5)
         }
         
         @Test("should work with program scope context")
@@ -150,7 +150,7 @@ struct jexlang_swiftTests {
                 "b": 5
             ]
             
-            let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx) as! Int;
+            let result = try evaluator.evaluate(expr: "a * b", programScopeVariables: ctx) as? Int;
             
             #expect(result == 20)
         }
@@ -168,16 +168,16 @@ struct jexlang_swiftTests {
         func testSetContextValueOnlyIfDeclared() throws {
             // declare first
             try evaluator.declareContextValue("key", value: "initial")
-            #expect(evaluator.getContextValue("key") as! String == "initial")
+            #expect(evaluator.getContextValue("key") as? String == "initial")
             
             // set new value
             try evaluator.setContextValue("key", "value")
-            #expect(evaluator.getContextValue("key") as! String == "value")
+            #expect(evaluator.getContextValue("key") as? String == "value")
         }
         
         @Test("should throw error when setting undeclared variable")
         func testSetContextValueThrowsForUndeclared() {
-            #expect(throws: JexLangRuntimeError.self, performing: {
+            #expect(throws: ExceptionError.self, performing: {
                 try evaluator.setContextValue("undeclared", "value")
             })
         }
@@ -185,16 +185,16 @@ struct jexlang_swiftTests {
         @Test("should declare context value")
         func testDeclareContextValue() throws {
             try evaluator.declareContextValue("newVar", value: 42)
-            #expect(evaluator.getContextValue("newVar") as! Int == 42)
+            #expect(evaluator.getContextValue("newVar") as? Int == 42)
         }
         
         @Test("should declare const context value and reject reassignment")
         func testDeclareConstContextValue() throws {
             try evaluator.declareContextValue("constVar", value: 100, isConst: true)
-            #expect(evaluator.getContextValue("constVar") as! Int == 100)
+            #expect(evaluator.getContextValue("constVar") as? Int == 100)
             
             // reassign should fail
-            #expect(throws: JexLangRuntimeError.self, performing: {
+            #expect(throws: ExceptionError.self, performing: {
                 try evaluator.setContextValue("constVar", 200)
             })
         }
@@ -203,11 +203,11 @@ struct jexlang_swiftTests {
         func testSetOrDeclareContextValue() async throws {
             // declare new
             try evaluator.setContextOrDeclareContextValue("var1", 10)
-            #expect(evaluator.getContextValue("var1") as! Int == 10)
+            #expect(evaluator.getContextValue("var1") as? Int == 10)
             
             // update existing
             try evaluator.setContextOrDeclareContextValue("var1", 20)
-            #expect(evaluator.getContextValue("var1") as! Int == 20)
+            #expect(evaluator.getContextValue("var1") as? Int == 20)
         }
         
         @Test("should return null for undefined context value")
@@ -234,8 +234,8 @@ struct jexlang_swiftTests {
             #expect(vars.keys.contains("PI"))
             #expect(vars.keys.contains("E"))
             
-            #expect(vars["PI"] as! Double == Double.pi)
-            #expect(vars["E"] as! Double == Darwin.M_E)
+            #expect(vars["PI"] as? Double == Double.pi)
+            #expect(vars["E"] as? Double == Darwin.M_E)
             
         }
         
@@ -416,10 +416,10 @@ struct jexlang_swiftTests {
             let expr = "2 + 3"
             
             // First evaluation parses and caches
-            #expect(try evaluator.evaluate(expr: expr) as! Int == 5)
+            #expect(try evaluator.evaluate(expr: expr) as? Int == 5)
             
             // Second evaluation should hit cache
-            #expect(try evaluator.evaluate(expr: expr) as! Int == 5)
+            #expect(try evaluator.evaluate(expr: expr) as? Int == 5)
         }
         
         @Test("should clear cached parsed expressions")
@@ -430,7 +430,7 @@ struct jexlang_swiftTests {
             evaluator.clearCachedParsedExpression()
             
             // After clearing, evaluation still works
-            #expect(try evaluator.evaluate(expr: "2 + 3") as! Int == 5)
+            #expect(try evaluator.evaluate(expr: "2 + 3") as? Int == 5)
         }
     }
     
@@ -472,7 +472,7 @@ struct jexlang_swiftTests {
         
         @Test("should handle complex expressions")
         func testComplexExpressions() throws {
-            #expect(try evaluator.evaluate(expr: "(10 + 5) * 2 - 3") as! Int == 27)
+            #expect(try evaluator.evaluate(expr: "(10 + 5) * 2 - 3") as? Int == 27)
         }
         
         @Test("should work with variables and functions together")
@@ -487,7 +487,7 @@ struct jexlang_swiftTests {
                 return JexValueFactory.from(val.int64Value * 2)
             }
             
-            #expect(try evaluator.evaluate(expr: "double(x) + 10") as! Int == 20)
+            #expect(try evaluator.evaluate(expr: "double(x) + 10") as? Int == 20)
         }
         
         @Test("should support chained operations")
@@ -498,14 +498,18 @@ struct jexlang_swiftTests {
             try evaluator.setContextValue("arr", ["a", "b", "c"])
             
             // Assuming evaluator has a built-in `length` function for arrays
-            #expect(try evaluator.evaluate(expr: "length(arr)") as! Int == 3)
+            #expect(try evaluator.evaluate(expr: "length(arr)") as? Int == 3)
         }
     }
     
     @Suite("additive expressions")
     struct AdditiveExpressionsTests {
 
-        let evaluator = try! JexEvaluator()
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
 
         @Test("simple addition")
         func testSimpleAddition() throws {
@@ -561,165 +565,169 @@ struct jexlang_swiftTests {
     @Suite("equality expressions")
     struct EqualityExpressionsTests {
 
-        let evaluator = try! JexEvaluator()
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
 
         @Test("null equality and inequality")
         func testNullEquality() throws {
-            #expect((try evaluator.evaluate(expr: "null == null")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "null != null")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "null == null")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "null != null")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "null == 0")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "null != 0")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "null == 0")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "null != 0")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "null == false")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "null != false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "null == false")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "null != false")) as? Bool == true)
         }
 
         @Test("boolean equality and inequality")
         func testBooleanEquality() throws {
-            #expect((try evaluator.evaluate(expr: "true == true")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "false == false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true == true")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "false == false")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true != false")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "false != true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true != false")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "false != true")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true == false")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "false == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == false")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == true")) as? Bool == false)
         }
 
         @Test("boolean with numbers")
         func testBooleanWithNumbers() throws {
-            #expect((try evaluator.evaluate(expr: "true == 1")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "1 == true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true == 1")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "1 == true")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true == -1")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "-1 == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == -1")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "-1 == true")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "false == 0")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "0 == false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false == 0")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 == false")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true != 0")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "0 != true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true != 0")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 != true")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "false != 1")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "1 != false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false != 1")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "1 != false")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true == 0")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "0 == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == 0")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "0 == true")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "false == 1")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "1 == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == 1")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "1 == false")) as? Bool == false)
         }
 
         @Test("boolean with strings")
         func testBooleanWithStrings() throws {
             
-            #expect((try evaluator.evaluate(expr: "true == \"true\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"true\" == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == \"true\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"true\" == true")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "false == \"false\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"false\" == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == \"false\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"false\" == false")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "true != \"false\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"false\" != true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true != \"false\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"false\" != true")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "false != \"true\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"true\" != false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false != \"true\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"true\" != false")) as? Bool == true)
             
-            #expect((try evaluator.evaluate(expr: "true == \"false\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"false\" == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == \"false\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"false\" == true")) as? Bool == false)
             
-            #expect((try evaluator.evaluate(expr: "false == \"true\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"true\" == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == \"true\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"true\" == false")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "true == \"1\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"1\" == true")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "true == \"1\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"1\" == true")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "false == \"0\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"0\" == false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "false == \"0\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"0\" == false")) as? Bool == true)
 
-            #expect((try evaluator.evaluate(expr: "true == \"0\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"0\" == true")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "true == \"0\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"0\" == true")) as? Bool == false)
 
-            #expect((try evaluator.evaluate(expr: "false == \"1\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"1\" == false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "false == \"1\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"1\" == false")) as? Bool == false)
         }
 
         @Test("number equality")
         func testNumberEquality() throws {
-            #expect((try evaluator.evaluate(expr: "5 == 5")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "5 == 3")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "5 == 5")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "5 == 3")) as? Bool == false)
         }
 
         @Test("number inequality")
         func testNumberInequality() throws {
-            #expect((try evaluator.evaluate(expr: "5 != 3")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "5 != 5")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "5 != 3")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "5 != 5")) as? Bool == false)
         }
 
         @Test("string equality")
         func testStringEquality() throws {
-            #expect((try evaluator.evaluate(expr: "\"test\" == \"test\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"test\" == \"TEST\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"test\" == \"test\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"test\" == \"TEST\"")) as? Bool == false)
         }
 
         @Test("string inequality")
         func testStringInequality() throws {
-            #expect((try evaluator.evaluate(expr: "\"hello\" != \"world\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"hello\" != \"hello\"")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"hello\" != \"world\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"hello\" != \"hello\"")) as? Bool == false)
         }
 
         @Test("mixed equality")
         func testMixedEquality() throws {
-            #expect((try evaluator.evaluate(expr: "5 == \"5\"")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "\"5\" == 5")) as! Bool == true)
-            #expect((try evaluator.evaluate(expr: "0 == false")) as! Bool == true)
+            #expect((try evaluator.evaluate(expr: "5 == \"5\"")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "\"5\" == 5")) as? Bool == true)
+            #expect((try evaluator.evaluate(expr: "0 == false")) as? Bool == true)
         }
 
         @Test("mixed inequality")
         func testMixedInequality() throws {
-            #expect((try evaluator.evaluate(expr: "5 != \"5\"")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "\"5\" != 5")) as! Bool == false)
-            #expect((try evaluator.evaluate(expr: "0 != false")) as! Bool == false)
+            #expect((try evaluator.evaluate(expr: "5 != \"5\"")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "\"5\" != 5")) as? Bool == false)
+            #expect((try evaluator.evaluate(expr: "0 != false")) as? Bool == false)
         }
         
         @Test("array equality with Lists")
         func testArrayEquality() throws {
-            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 3]") as! Bool) == false)
-            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 4]") as! Bool) == false)
-            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 4]") as! Bool) == true)
-            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 3]") as! Bool) == true)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 3]") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 4]") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 4]") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 3]") as? Bool) == true)
             
             // reference equality
             let list = [1, 2, 3]
             let jexArrayList = JexValueFactory.fromArray(value: list)
             try evaluator.declareContextValue("list", value: jexArrayList, isConst: false)
-            #expect(try evaluator.evaluate(expr: "list == list") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "list == list") as? Bool == true)
             try evaluator.declareContextValue("plainList", value: list, isConst: false)
-            #expect(try evaluator.evaluate(expr: "plainList == plainList") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "plainList == plainList") as? Bool == true)
             
             let list2 = [1, 2, 3]
             let jexArrayList2 = JexValueFactory.fromArray(value: list)
             try evaluator.declareContextValue("list2", value: jexArrayList2, isConst: false)
-            #expect(try evaluator.evaluate(expr: "list != list2") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "list != list2") as? Bool == true)
             try evaluator.declareContextValue("plainList2", value: list2, isConst: false)
-            #expect(try evaluator.evaluate(expr: "plainList != plainList2") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "plainList != plainList2") as? Bool == true)
             
             try evaluator.declareContextValue("list3", value: jexArrayList, isConst: false)
-            #expect(try evaluator.evaluate(expr: "list == list3") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "list == list3") as? Bool == true)
             
             try evaluator.declareContextValue("plainList3", value: list)
-            #expect(try evaluator.evaluate(expr: "plainList == plainList3") as! Bool == false)
+            #expect(try evaluator.evaluate(expr: "plainList == plainList3") as? Bool == false)
         }
         
         @Test("object equality with Maps")
         func testObjectEquality() throws {
 
             // value equality (objects are NOT deeply equal)
-            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":2}") as! Bool) == false)
-            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":3}") as! Bool) == false)
-            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":3}") as! Bool) == true)
-            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":2}") as! Bool) == true)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":2}") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":3}") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":3}") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":2}") as? Bool) == true)
 
             // reference equality — JexObject
             let obj: [String: Any] = [
@@ -729,11 +737,11 @@ struct jexlang_swiftTests {
             let jexObject = JexValueFactory.fromObject(value: obj)
 
             try evaluator.declareContextValue("obj", value: jexObject, isConst: false)
-            #expect(try evaluator.evaluate(expr: "obj == obj") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "obj == obj") as? Bool == true)
 
             // reference equality — plain Swift dictionary
             try evaluator.declareContextValue("hashObj", value: obj, isConst: false)
-            #expect(try evaluator.evaluate(expr: "hashObj == hashObj") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "hashObj == hashObj") as? Bool == true)
 
             // different instances with same values
             let obj2: [String: Any] = [
@@ -743,19 +751,1065 @@ struct jexlang_swiftTests {
             let jexObject2 = JexValueFactory.fromObject(value: obj2)
 
             try evaluator.declareContextValue("obj2", value: jexObject2, isConst: false)
-            #expect(try evaluator.evaluate(expr: "obj != obj2") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "obj != obj2") as? Bool == true)
 
             try evaluator.declareContextValue("hashObj2", value: obj2, isConst: false)
-            #expect(try evaluator.evaluate(expr: "hashObj != hashObj2") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "hashObj != hashObj2") as? Bool == true)
 
             // same reference again
             try evaluator.declareContextValue("obj3", value: jexObject, isConst: false)
-            #expect(try evaluator.evaluate(expr: "obj == obj3") as! Bool == true)
+            #expect(try evaluator.evaluate(expr: "obj == obj3") as? Bool == true)
 
             try evaluator.declareContextValue("hashObj3", value: obj, isConst: false)
-            #expect(try evaluator.evaluate(expr: "hashObj == hashObj3") as! Bool == false)
+            #expect(try evaluator.evaluate(expr: "hashObj == hashObj3") as? Bool == false)
         }
 
+    }
+    
+    @Suite("logical expressions")
+    struct LogicalExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("logical AND operator")
+        func testLogicalAnd() throws {
+            #expect((try evaluator.evaluate(expr: "true && true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "true && false") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "false && true") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "false && false") as? Bool) == false)
+
+            #expect((try evaluator.evaluate(expr: "true and true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "true and false") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "false and true") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "false and false") as? Bool) == false)
+        }
+
+        @Test("logical OR operator")
+        func testLogicalOr() throws {
+            #expect((try evaluator.evaluate(expr: "true || true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "true || false") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false || true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false || false") as? Bool) == false)
+
+            #expect((try evaluator.evaluate(expr: "true or true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "true or false") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false or true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false or false") as? Bool) == false)
+        }
+
+        @Test("logical operators with non-boolean values")
+        func testLogicalOperatorsWithNonBoolean() throws {
+            #expect((try evaluator.evaluate(expr: "1 && 0") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "1 || 0") as? Bool) == true)
+
+            #expect((try evaluator.evaluate(expr: "\"hello\" && \"\"") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "\"hello\" || \"\"") as? Bool) == true)
+
+            #expect((try evaluator.evaluate(expr: "0 and 1") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "0 or 1") as? Bool) == true)
+
+            #expect((try evaluator.evaluate(expr: "\"\" and \"hello\"") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "\"\" or \"hello\"") as? Bool) == true)
+        }
+
+        @Test("combined logical expressions")
+        func testCombinedLogicalExpressions() throws {
+            #expect((try evaluator.evaluate(expr: "true && false || true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false || false && true") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "(true || false) && (false || true)") as? Bool) == true)
+
+            #expect((try evaluator.evaluate(expr: "true and false or true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false or false and true") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "(true or false) and (false or true)") as? Bool) == true)
+        }
+    }
+
+    @Suite("relational expressions")
+    struct RelationalExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("greater than operator")
+        func testGreaterThan() throws {
+            #expect((try evaluator.evaluate(expr: "5 > 3") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "2 > 4") as? Bool) == false)
+        }
+
+        @Test("less than operator")
+        func testLessThan() throws {
+            #expect((try evaluator.evaluate(expr: "3 < 5") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "4 < 2") as? Bool) == false)
+        }
+
+        @Test("greater than or equal operator")
+        func testGreaterThanOrEqual() throws {
+            #expect((try evaluator.evaluate(expr: "5 >= 5") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "6 >= 4") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "3 >= 7") as? Bool) == false)
+        }
+
+        @Test("less than or equal operator")
+        func testLessThanOrEqual() throws {
+            #expect((try evaluator.evaluate(expr: "5 <= 5") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "4 <= 6") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "7 <= 3") as? Bool) == false)
+        }
+
+        @Test("relational operators with strings")
+        func testRelationalOperatorsWithStrings() throws {
+            #expect((try evaluator.evaluate(expr: "\"apple\" < \"banana\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"grape\" > \"orange\"") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "\"cat\" <= \"cat\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"dog\" >= \"elephant\"") as? Bool) == false)
+        }
+
+        @Test("numbers and strings comparison")
+        func testNumbersAndStringsComparison() throws {
+            #expect((try evaluator.evaluate(expr: "5 > \"3\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"4\" < 6") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "7 >= \"7\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"8\" <= 10") as? Bool) == true)
+        }
+
+        @Test("stringified numbers comparison")
+        func testStringifiedNumbersComparison() throws {
+            #expect((try evaluator.evaluate(expr: "\"10\" > \"2\"") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "\"3\" < \"12\"") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "\"5\" >= \"5\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"7\" <= \"6\"") as? Bool) == false)
+        }
+
+        @Test("numbers, strings and booleans comparison")
+        func testNumbersStringsAndBooleansComparison() throws {
+            #expect((try evaluator.evaluate(expr: "1 < \"2\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"3\" > 2") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "0 <= \"0\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"1\" >= 2") as? Bool) == false)
+
+            #expect((try evaluator.evaluate(expr: "true > \"0\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"1\" < false") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "false <= \"0\"") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "\"1\" >= true") as? Bool) == true)
+        }
+    }
+    
+    @Suite("multiplicative expressions")
+    struct MultiplicativeExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("simple multiplication")
+        func testSimpleMultiplication() throws {
+            #expect((try evaluator.evaluate(expr: "2 * 3") as? Int) == 6)
+        }
+
+        @Test("simple division")
+        func testSimpleDivision() throws {
+            #expect((try evaluator.evaluate(expr: "8 / 2") as? Int) == 4)
+        }
+
+        @Test("multiplication and division")
+        func testMultiplicationAndDivision() throws {
+            #expect((try evaluator.evaluate(expr: "10 * 2 / 5 * 3") as? Int) == 12)
+        }
+
+        @Test("multiplicative expressions with parentheses")
+        func testMultiplicativeExpressionsWithParentheses() throws {
+            #expect((try evaluator.evaluate(expr: "(2 + 3) * (4 - 1) / 5") as? Int) == 3)
+        }
+    }
+
+    @Suite("unary expressions")
+    struct UnaryExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("unary plus operator")
+        func testUnaryPlusOperator() throws {
+            #expect((try evaluator.evaluate(expr: "+5") as? Int) == 5)
+            #expect((try evaluator.evaluate(expr: "+-3") as? Int) == -3)
+        }
+
+        @Test("unary minus operator")
+        func testUnaryMinusOperator() throws {
+            #expect((try evaluator.evaluate(expr: "-5") as? Int) == -5)
+            #expect((try evaluator.evaluate(expr: "-(-3)") as? Int) == 3)
+        }
+
+        @Test("logical NOT operator")
+        func testLogicalNotOperator() throws {
+            #expect((try evaluator.evaluate(expr: "!true") as? Bool) == false)
+            #expect((try evaluator.evaluate(expr: "!false") as? Bool) == true)
+        }
+    }
+    
+    @Suite("square root expressions")
+    struct SquareRootExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("square root of a positive number")
+        func testSquareRootOfPositiveNumber() throws {
+            #expect((try evaluator.evaluate(expr: "sqrt(16)") as? Int) == 4)
+            #expect((try evaluator.evaluate(expr: "sqrt(2.25)") as? Double) == 1.5)
+
+            #expect((try evaluator.evaluate(expr: "√16") as? Int) == 4)
+            #expect((try evaluator.evaluate(expr: "√2.25") as? Double) == 1.5)
+            #expect((try evaluator.evaluate(expr: "√100") as? Int) == 10)
+        }
+
+        @Test("square root of zero")
+        func testSquareRootOfZero() throws {
+            #expect((try evaluator.evaluate(expr: "sqrt(0)") as? Int) == 0)
+            #expect((try evaluator.evaluate(expr: "√0") as? Int) == 0)
+        }
+
+        @Test("square root of a negative number")
+        func testSquareRootOfNegativeNumber() throws {
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: "sqrt(-4)")
+            }
+
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: "√-9")
+            }
+        }
+    }
+    
+    @Suite("literal expressions")
+    struct LiteralExpressionsTests {
+        
+        var evaluator: JexEvaluator!
+        
+        init() throws {
+            self.evaluator = try makeEvaluator()
+        }
+
+        @Test("should evaluate numeric literals")
+        func testNumericLiterals() throws {
+            #expect((try evaluator.evaluate(expr: "123") as? Int) == 123)
+            #expect((try evaluator.evaluate(expr: "45.67") as? Double) == 45.67)
+        }
+
+        @Test("should evaluate string literals")
+        func testStringLiterals() throws {
+            #expect((try evaluator.evaluate(expr: "\"hello\"") as? String) == "hello")
+            #expect((try evaluator.evaluate(expr: "'world'") as? String) == "world")
+
+            #expect((try evaluator.evaluate(expr: "\"true\"") as? String) == "true")
+            #expect((try evaluator.evaluate(expr: "\"false\"") as? String) == "false")
+        }
+
+        @Test("should evaluate boolean literals")
+        func testBooleanLiterals() throws {
+            #expect((try evaluator.evaluate(expr: "true") as? Bool) == true)
+            #expect((try evaluator.evaluate(expr: "false") as? Bool) == false)
+        }
+
+        @Test("should evaluate null literal")
+        func testNullLiteral() throws {
+            let result = try evaluator.evaluate(expr: "null") as? NSNull
+            #expect(result == nil)
+        }
+
+        @Test("should evaluate array literals")
+        func testArrayLiterals() throws {
+            
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3]") as? [Int]) == [1, 2, 3])
+            #expect((try evaluator.evaluate(expr: "[\"a\", \"b\", \"c\"]") as? [String]) == ["a", "b", "c"])
+
+            let dynamicArray: [Any?] = [10, "test", true, nil]
+            try evaluator.declareContextValue("dynamicArray", value: dynamicArray, isConst: false)
+
+            let evaluatedArray =
+                try evaluator.evaluate(
+                    expr: "[dynamicArray[0], dynamicArray[1], dynamicArray[2], dynamicArray[3]]"
+                ) as? [Any?]
+            #expect(deepEqual(evaluatedArray, dynamicArray))
+
+            let index1 = 0
+            let index2 = 1
+            let index3 = 2
+            let index4 = 3
+
+            try evaluator.declareContextValue("index1", value: index1, isConst: false)
+            try evaluator.declareContextValue("index2", value: index2, isConst: false)
+            try evaluator.declareContextValue("index3", value: index3, isConst: false)
+            try evaluator.declareContextValue("index4", value: index4, isConst: false)
+
+            let evaluatedArrayWithIndexes =
+                try evaluator.evaluate(
+                    expr: """
+                    [
+                        dynamicArray[index1],
+                        dynamicArray[index2],
+                        dynamicArray[index3],
+                        dynamicArray[index4]
+                    ]
+                    """
+                ) as? [Any?]
+
+            #expect(deepEqual(evaluatedArrayWithIndexes, dynamicArray))
+        }
+
+        @Test("should evaluate object literals")
+        func testObjectLiterals() throws {
+
+            let expected1: [String: Any] = [
+                "key": "value",
+                "num": 42
+            ]
+
+            let result1 =
+                try evaluator.evaluate(
+                    expr: #"{"key": "value", "num": 42}"#
+                ) as? [String: Any]
+
+            #expect(deepEqual(result1, expected1))
+
+            let expected2: [String: Any] = [
+                "a": 1,
+                "b": 2,
+                "c": 3
+            ]
+
+            let result2 =
+                try evaluator.evaluate(
+                    expr: #"{"a": 1, "b": 2, "c": 3}"#
+                ) as? [String: Any]
+
+            #expect(deepEqual(result2, expected2))
+
+            let dynamicObject: [String: Any] = [
+                "name": "Test",
+                "value": 100,
+                "isActive": true,
+                "computed": true
+            ]
+
+            let isValueKeyValue = 100
+            let isActiveKey = "isActive"
+            let computed = true
+
+            try evaluator.declareContextValue("dynamicObject", value: dynamicObject, isConst: false)
+            try evaluator.declareContextValue("isValueKeyValue", value: isValueKeyValue, isConst: false)
+            try evaluator.declareContextValue("isActiveKey", value: isActiveKey, isConst: false)
+            try evaluator.declareContextValue("computed", value: computed, isConst: false)
+
+            let objLiteral = """
+            {
+                "name": dynamicObject.name,
+                "value": isValueKeyValue,
+                [isActiveKey]: dynamicObject.isActive,
+                computed
+            }
+            """
+
+            let evaluatedObject =
+                try evaluator.evaluate(expr: objLiteral) as? [String: Any]
+
+            #expect(deepEqual(evaluatedObject, dynamicObject))
+        }
+    }
+
+    @Suite("Member Expressions")
+    struct MemberExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        // MARK: - Object member access
+        @Test("should access object properties")
+        func testAccessObjectProperties() throws {
+
+            let obj: [String: Any?] = [
+                "a": 1,
+                "b": 2,
+                "c": 3
+            ]
+
+            try evaluator.declareContextValue("obj", value: obj, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "obj.a") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "obj.b") as? Int == 2)
+            #expect(try evaluator.evaluate(expr: "obj.c") as? Int == 3)
+
+            let dynamicKey = "b"
+            try evaluator.declareContextValue("dynamicKey", value: dynamicKey, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "obj[dynamicKey]") as? Int == 2)
+        }
+
+        // MARK: - Array element access
+        @Test("should access array elements")
+        func testAccessArrayElements() throws {
+
+            let arr: [Any?] = [10, 20, 30, 40]
+            try evaluator.declareContextValue("arr", value: arr, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "arr[0]") as? Int == 10)
+            #expect(try evaluator.evaluate(expr: "arr[1]") as? Int == 20)
+            #expect(try evaluator.evaluate(expr: "arr[2]") as? Int == 30)
+            #expect(try evaluator.evaluate(expr: "arr[3]") as? Int == 40)
+            #expect(try evaluator.evaluate(expr: "arr[4]") as? NSNull == nil)
+
+            // negative indexing
+            #expect(try evaluator.evaluate(expr: "arr[-1]") as? Int == 40)
+            #expect(try evaluator.evaluate(expr: "arr[-2]") as? Int == 30)
+            #expect(try evaluator.evaluate(expr: "arr[-3]") as? Int == 20)
+            #expect(try evaluator.evaluate(expr: "arr[-4]") as? Int == 10)
+            #expect(try evaluator.evaluate(expr: "arr[-5]") as? NSNull == nil)
+
+            let index = 2
+            try evaluator.declareContextValue("index", value: index, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "arr[index]") as? Int == 30)
+        }
+    }
+    
+    @Suite("Complex Member Access Expressions")
+    struct ComplexMemberAccessExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        // MARK: - Nested object properties
+
+        @Test("should access nested object properties")
+        func testAccessNestedObjectProperties() throws {
+
+            let address: [String: Any?] = [
+                "city": "New York",
+                "zip": 10001
+            ]
+
+            let user: [String: Any?] = [
+                "name": "John",
+                "address": address
+            ]
+
+            let obj: [String: Any?] = [
+                "user": user
+            ]
+
+            try evaluator.declareContextValue("obj", value: obj, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "obj.user.name") as? String == "John")
+            #expect(try evaluator.evaluate(expr: "obj.user.address.city") as? String == "New York")
+            #expect(try evaluator.evaluate(expr: "obj.user.address.zip") as? Int == 10001)
+        }
+
+        // MARK: - Nested array elements
+
+        @Test("should access nested array elements")
+        func testAccessNestedArrayElements() throws {
+
+            let arr: [[Any?]] = [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]
+
+            try evaluator.declareContextValue("arr", value: arr, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "arr[0][0]") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "arr[1][2]") as? Int == 6)
+            #expect(try evaluator.evaluate(expr: "arr[2][1]") as? Int == 8)
+            #expect(try evaluator.evaluate(expr: "arr[-1][-1]") as? Int == 9)
+        }
+
+        // MARK: - Array of objects
+
+        @Test("should access array of objects")
+        func testAccessArrayOfObjects() throws {
+
+            let users: [[String: Any?]] = [
+                ["name": "Alice", "age": 25],
+                ["name": "Bob", "age": 30],
+                ["name": "Charlie", "age": 35]
+            ]
+
+            try evaluator.declareContextValue("users", value: users, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "users[0].name") as? String == "Alice")
+            #expect(try evaluator.evaluate(expr: "users[1].age") as? Int == 30)
+            #expect(try evaluator.evaluate(expr: "users[2].name") as? String == "Charlie")
+            #expect(try evaluator.evaluate(expr: "users[-1].age") as? Int == 35)
+        }
+
+        // MARK: - Object with array properties
+
+        @Test("should access object with array properties")
+        func testAccessObjectWithArrayProperties() throws {
+
+            let data: [String: Any?] = [
+                "scores": [95, 87, 92],
+                "names": ["Test1", "Test2", "Test3"]
+            ]
+
+            try evaluator.declareContextValue("data", value: data, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "data.scores[0]") as? Int == 95)
+            #expect(try evaluator.evaluate(expr: "data.scores[2]") as? Int == 92)
+            #expect(try evaluator.evaluate(expr: "data.names[1]") as? String == "Test2")
+            #expect(try evaluator.evaluate(expr: "data.scores[-1]") as? Int == 92)
+        }
+
+        // MARK: - Mixed bracket and dot notation
+
+        @Test("should handle mixed bracket and dot notation")
+        func testMixedBracketAndDotNotation() throws {
+
+            let item1: [String: Any?] = [
+                "id": 1,
+                "values": [10, 20, 30]
+            ]
+
+            let item2: [String: Any?] = [
+                "id": 2,
+                "values": [40, 50, 60]
+            ]
+
+            let complex: [String: Any?] = [
+                "items": [item1, item2]
+            ]
+
+            try evaluator.declareContextValue("complex", value: complex, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "complex.items[0].id") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "complex.items[0].values[1]") as? Int == 20)
+            #expect(try evaluator.evaluate(expr: "complex.items[1].values[2]") as? Int == 60)
+            #expect(try evaluator.evaluate(expr: "complex[\"items\"][0][\"id\"]") as? Int == 1)
+        }
+
+        // MARK: - Expressions inside member access
+
+        @Test("should evaluate expressions within member access")
+        func testEvaluateExpressionsWithinMemberAccess() throws {
+
+            let data: [String: Any?] = [
+                "values": [100, 200, 300, 400]
+            ]
+
+            try evaluator.declareContextValue("data", value: data, isConst: false)
+            try evaluator.declareContextValue("idx", value: 1, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "data.values[1 + 1]") as? Int == 300)
+            #expect(try evaluator.evaluate(expr: "data.values[idx]") as? Int == 200)
+            #expect(try evaluator.evaluate(expr: "data.values[idx + 2]") as? Int == 400)
+        }
+
+        // MARK: - Deeply nested structures
+
+        @Test("should handle deeply nested structures")
+        func testHandleDeeplyNestedStructures() throws {
+
+            let deep: [String: Any?] = [
+                "level1": [
+                    "level2": [
+                        "level3": [
+                            "array": [
+                                ["value": "found"]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+
+            try evaluator.declareContextValue("deep", value: deep, isConst: false)
+
+            #expect(
+                try evaluator.evaluate(expr: "deep.level1.level2.level3.array[0].value") as? String
+                == "found"
+            )
+        }
+
+        // MARK: - Non-existent nested properties
+
+        @Test("should return nil for non-existent nested properties")
+        func testReturnNilForNonExistentNestedProperties() throws {
+
+            let obj: [String: Any?] = [
+                "a": ["b": 1]
+            ]
+
+            try evaluator.declareContextValue("obj", value: obj, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "obj.a.c") as? NSNull == nil)
+            #expect(try evaluator.evaluate(expr: "obj.x.y.z") as? NSNull == nil)
+        }
+    }
+    
+    @Suite("Parenthesized Expressions")
+    struct ParenthesizedExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should evaluate expressions within parentheses")
+        func testEvaluateExpressionsWithinParentheses() throws {
+
+            #expect(try evaluator.evaluate(expr: "(2 + 3)") as? Int == 5)
+            #expect(try evaluator.evaluate(expr: "((1 + 2) * (3 + 4))") as? Int == 21)
+            #expect(try evaluator.evaluate(expr: "((10 - 2) / (4 + 4))") as? Int == 1)
+        }
+    }
+    
+    @Suite("Power Expressions")
+    struct PowerExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        // MARK: - Basic exponentiation
+
+        @Test("should evaluate exponentiation")
+        func testEvaluateExponentiation() throws {
+
+            #expect(try evaluator.evaluate(expr: "2 ^ 3") as? Int == 8)
+            #expect(try evaluator.evaluate(expr: "5 ^ 0") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "4 ^ 1.5") as? Int == 8)
+        }
+
+        // MARK: - Chained exponentiation (right-associative)
+
+        @Test("should handle chained exponentiation")
+        func testHandleChainedExponentiation() throws {
+
+            // 2^(3^2) = 2^9 = 512
+            #expect(try evaluator.evaluate(expr: "2 ^ 3 ^ 2") as? Int == 512)
+
+            // 3^(2^2) = 3^4 = 81
+            #expect(try evaluator.evaluate(expr: "3 ^ 2 ^ 2") as? Int == 81)
+        }
+
+        // MARK: - Exponentiation with parentheses
+
+        @Test("should evaluate exponentiation with parentheses")
+        func testEvaluateExponentiationWithParentheses() throws {
+
+            // (2^3)^2 = 8^2 = 64
+            #expect(try evaluator.evaluate(expr: "(2 ^ 3) ^ 2") as? Int == 64)
+
+            // 2^(3^2) = 2^9 = 512
+            #expect(try evaluator.evaluate(expr: "2 ^ (3 ^ 2)") as? Int == 512)
+        }
+    }
+    
+    @Suite("Ternary Expressions")
+    struct TernaryExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should evaluate simple ternary expressions")
+        func testSimpleTernaryExpressions() throws {
+            #expect(try evaluator.evaluate(expr: "true ? 1 : 2") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "false ? 1 : 2") as? Int == 2)
+        }
+
+        @Test("should evaluate nested ternary expressions")
+        func testNestedTernaryExpressions() throws {
+            #expect(try evaluator.evaluate(expr: "true ? (false ? 1 : 2) : 3") as? Int == 2)
+            #expect(try evaluator.evaluate(expr: "false ? 1 : (true ? 2 : 3)") as? Int == 2)
+        }
+
+        @Test("should handle complex ternary expressions")
+        func testComplexTernaryExpressions() throws {
+            #expect(try evaluator.evaluate(expr: "(5 > 3) ? (10 + 5) : (20 - 5)") as? Int == 15)
+            #expect(try evaluator.evaluate(expr: "(2 + 2 == 5) ? \"yes\" : \"no\"") as? String == "no")
+        }
+
+        @Test("should handle ternary expressions with different data types")
+        func testTernaryExpressionsWithDifferentDataTypes() throws {
+            #expect(try evaluator.evaluate(expr: "true ? 42 : 0") as? Int == 42)
+            #expect(try evaluator.evaluate(expr: "false ? 42 : 0") as? Int == 0)
+            #expect(try evaluator.evaluate(expr: "true ? \"hello\" : \"world\"") as? String == "hello")
+            #expect(try evaluator.evaluate(expr: "false ? \"hello\" : \"world\"") as? String == "world")
+            #expect(try evaluator.evaluate(expr: "true ? true : false") as? Bool == true)
+            #expect(try evaluator.evaluate(expr: "false ? true : false") as? Bool == false)
+            #expect(try evaluator.evaluate(expr: "true ? null : 42") as? NSNull == nil)
+            #expect(try evaluator.evaluate(expr: "false ? 42 : null") as? NSNull == nil)
+
+            #expect(deepEqual(try evaluator.evaluate(expr: "true ? [1, 2, 3] : [4, 5, 6]"), [1, 2, 3]))
+            #expect(deepEqual(try evaluator.evaluate(expr: "false ? [1, 2, 3] : [4, 5, 6]"), [4, 5, 6]))
+
+            let objA: [String: Any?] = ["a": 1]
+            let objB: [String: Any?] = ["b": 2]
+            #expect(deepEqual(try evaluator.evaluate(expr: "true ? {\"a\": 1} : {\"b\": 2}"), objA))
+            #expect(deepEqual(try evaluator.evaluate(expr: "false ? {\"a\": 1} : {\"b\": 2}"), objB))
+        }
+
+        @Test("should handle ternary expressions with mixed data types")
+        func testTernaryExpressionsWithMixedDataTypes() throws {
+            #expect(try evaluator.evaluate(expr: "true ? 42 : \"string\"") as? Int == 42)
+            #expect(try evaluator.evaluate(expr: "false ? 42 : \"string\"") as? String == "string")
+            #expect(deepEqual(try evaluator.evaluate(expr: "true ? [1, 2] : {\"a\": 1}"), [1,2]))
+            let obj: [String: Any?] = ["a": 1]
+            #expect(deepEqual(try evaluator.evaluate(expr: "false ? [1, 2] : {\"a\": 1}"), obj))
+            #expect(try evaluator.evaluate(expr: "true ? null : false") as? NSNull == nil)
+            #expect(try evaluator.evaluate(expr: "false ? null : false") as? Bool == false)
+        }
+
+        @Test("should handle ternary expressions with context variables")
+        func testTernaryExpressionsWithContextVariables() throws {
+            try evaluator.declareContextValue("x", value: 10, isConst: false)
+            try evaluator.declareContextValue("y", value: 20, isConst: false)
+            try evaluator.declareContextValue("arr", value: [1,2,3], isConst: false)
+            try evaluator.declareContextValue("obj", value: ["name": "test"], isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "x > y ? x : y") as? Int == 20)
+            #expect(deepEqual(try evaluator.evaluate(expr: "x < y ? arr : obj"), [1,2,3]))
+            #expect(try evaluator.evaluate(expr: "x == 10 ? arr[0] : obj.name") as? Int == 1)
+            #expect(try evaluator.evaluate(expr: "y != 20 ? nil : \"found\"") as? String == "found")
+        }
+
+        @Test("should handle nested ternary expressions with different data types")
+        func testNestedTernaryExpressionsWithDifferentDataTypes() throws {
+            #expect(try evaluator.evaluate(expr: "true ? (false ? \"a\" : \"b\") : (true ? \"c\" : \"d\")") as? String == "b")
+            #expect(try evaluator.evaluate(expr: "false ? (true ? 1 : 2) : (false ? 3 : 4)") as? Int == 4)
+            #expect(deepEqual(try evaluator.evaluate(expr: "true ? (true ? [1] : [2]) : (true ? [3] : [4])"), [1]))
+            #expect(deepEqual(try evaluator.evaluate(expr: "false ? nil : (true ? {\"x\": 1} : {\"y\": 2})"), ["x": 1]))
+        }
+
+        @Test("should handle ternary expressions with complex conditions")
+        func testTernaryExpressionsWithComplexConditions() throws {
+            let users: [[String: Any?]] = [
+                ["name": "Alice", "age": 25],
+                ["name": "Bob", "age": 30]
+            ]
+            try evaluator.declareContextValue("users", value: users, isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "users[0].age > 20 ? users[0].name : \"unknown\"") as? String == "Alice")
+            #expect(try evaluator.evaluate(expr: "users[1].age < 25 ? users[1] : null") as? NSNull == nil)
+            #expect(deepEqual(try evaluator.evaluate(expr: "length(users) > 1 ? users : []"), users))
+        }
+
+        @Test("should handle ternary expressions with arithmetic operations")
+        func testTernaryExpressionsWithArithmeticOperations() throws {
+            #expect(try evaluator.evaluate(expr: "5 > 3 ? (10 + 5) : (20 - 5)") as? Int == 15)
+            #expect(try evaluator.evaluate(expr: "2 * 3 == 6 ? (100 / 10) : (50 * 2)") as? Int == 10)
+            #expect(try evaluator.evaluate(expr: "10 % 2 == 0 ? \"even\" : \"odd\"") as? String == "even")
+        }
+
+        @Test("should handle ternary expressions with logical operations")
+        func testTernaryExpressionsWithLogicalOperations() throws {
+            #expect(try evaluator.evaluate(expr: "true && false ? \"yes\" : \"no\"") as? String == "no")
+            #expect(try evaluator.evaluate(expr: "true || false ? 1 : 0") as? Int == 1)
+            #expect(deepEqual(try evaluator.evaluate(expr: "!false ? [1, 2] : [3, 4]"), [1,2]))
+            #expect(deepEqual(try evaluator.evaluate(expr: "(5 > 3) && (10 < 20) ? {\"result\": true} : {\"result\": false}"), ["result": true]))
+        }
+    }
+    
+    @Suite("Elvis Operator")
+    struct ElvisOperatorTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should return left operand if truthy")
+        func testElvisOperatorLeftTruthy() throws {
+            #expect(try evaluator.evaluate(expr: "42 ?: 0") as? Int == 42)
+            #expect(try evaluator.evaluate(expr: "\"hello\" ?: \"world\"") as? String == "hello")
+            #expect(try evaluator.evaluate(expr: "true ?: false") as? Bool == true)
+        }
+
+        @Test("should return right operand if left is falsy")
+        func testElvisOperatorLeftFalsy() throws {
+            #expect(try evaluator.evaluate(expr: "0 ?: 42") as? Int == 42)
+            #expect(try evaluator.evaluate(expr: "\"\" ?: \"default\"") as? String == "default")
+            #expect(try evaluator.evaluate(expr: "false ?: true") as? Bool == true)
+            #expect(try evaluator.evaluate(expr: "null ?: \"fallback\"") as? String == "fallback")
+        }
+
+        @Test("should work with context variables")
+        func testElvisOperatorWithContextVariables() throws {
+            try evaluator.declareContextValue("name", value: "", isConst: false)
+            #expect(try evaluator.evaluate(expr: "name ?: \"Anonymous\"") as? String == "Anonymous")
+            try evaluator.declareContextValue("name", value: "John", isConst: false)
+            #expect(try evaluator.evaluate(expr: "name ?: \"Anonymous\"") as? String == "John")
+        }
+
+        @Test("should work with nested elvis operators")
+        func testElvisOperatorWithNestedOperators() throws {
+            #expect(try evaluator.evaluate(expr: "null ?: \"\" ?: \"default\"") as? String == "default")
+            #expect(try evaluator.evaluate(expr: "0 ?: false ?: 100") as? Int == 100)
+        }
+
+        @Test("should work with complex expressions")
+        func testElvisOperatorWithComplexExpressions() throws {
+            let user: [String: Any?] = ["name": "", "age": 0]
+            try evaluator.declareContextValue("user", value: user, isConst: false)
+            #expect(try evaluator.evaluate(expr: "user.name ?: \"Unknown\"") as? String == "Unknown")
+            #expect(try evaluator.evaluate(expr: "user.age ?: 18") as? Int == 18)
+        }
+    }
+    
+    @Suite("Identifier Expressions")
+    struct IdentifierExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should evaluate identifiers from context")
+        func testEvaluateIdentifiersFromContext() throws {
+            try evaluator.declareContextValue("x", value: 10, isConst: false)
+            try evaluator.declareContextValue("y", value: 20, isConst: false)
+            try evaluator.declareContextValue("name", value: "Test", isConst: false)
+
+            #expect(try evaluator.evaluate(expr: "x") as? Int == 10)
+            #expect(try evaluator.evaluate(expr: "y") as? Int == 20)
+            #expect(try evaluator.evaluate(expr: "name") as? String == "Test")
+        }
+
+        @Test("should throw error for undefined identifiers")
+        func testThrowErrorForUndefinedIdentifiers() throws {
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "undefinedVar")
+            })
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "anotherUndefined")
+            })
+        }
+
+        @Test("should evaluate number identifier")
+        func testEvaluateNumberIdentifier() throws {
+            try evaluator.declareContextValue("num", value: 42, isConst: false)
+            #expect(try evaluator.evaluate(expr: "num") as? Int == 42)
+
+            try evaluator.declareContextValue("decimal", value: 3.14, isConst: false)
+            #expect(try evaluator.evaluate(expr: "decimal") as? Double == 3.14)
+
+            try evaluator.declareContextValue("negative", value: -100, isConst: false)
+            #expect(try evaluator.evaluate(expr: "negative") as? Int == -100)
+        }
+
+        @Test("should evaluate string identifier")
+        func testEvaluateStringIdentifier() throws {
+            try evaluator.declareContextValue("str", value: "hello", isConst: false)
+            #expect(try evaluator.evaluate(expr: "str") as? String == "hello")
+
+            try evaluator.declareContextValue("empty", value: "", isConst: false)
+            #expect(try evaluator.evaluate(expr: "empty") as? String == "")
+        }
+
+        @Test("should evaluate boolean identifier")
+        func testEvaluateBooleanIdentifier() throws {
+            try evaluator.declareContextValue("isTrue", value: true, isConst: false)
+            #expect(try evaluator.evaluate(expr: "isTrue") as? Bool == true)
+
+            try evaluator.declareContextValue("isFalse", value: false, isConst: false)
+            #expect(try evaluator.evaluate(expr: "isFalse") as? Bool == false)
+        }
+
+        @Test("should evaluate null identifier")
+        func testEvaluateNullIdentifier() throws {
+            try evaluator.declareContextValue("nullValue", value: nil, isConst: false)
+            #expect(try evaluator.evaluate(expr: "nullValue") as? NSNull == nil)
+        }
+
+        @Test("should evaluate array identifier")
+        func testEvaluateArrayIdentifier() throws {
+            try evaluator.declareContextValue("arr", value: [1, 2, 3], isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "arr"), [1, 2, 3]))
+
+            try evaluator.declareContextValue("emptyArr", value: [Any](), isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "emptyArr"), [Any]()))
+
+            try evaluator.declareContextValue("mixedArr", value: [1, "test", true, nil], isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "mixedArr"), [1, "test", true, nil]))
+        }
+
+        @Test("should evaluate object identifier")
+        func testEvaluateObjectIdentifier() throws {
+            let obj: [String: Any?] = ["key": "value"]
+            try evaluator.declareContextValue("obj", value: obj, isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "obj"), obj))
+
+            let emptyObj: [String: Any?] = [:]
+            try evaluator.declareContextValue("emptyObj", value: emptyObj, isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "emptyObj"), emptyObj))
+
+            let complexObj: [String: Any?] = [
+                "name": "test",
+                "count": 42,
+                "active": true,
+                "data": nil
+            ]
+            try evaluator.declareContextValue("complexObj", value: complexObj, isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "complexObj"), complexObj))
+        }
+
+        @Test("should evaluate nested object identifier")
+        func testEvaluateNestedObjectIdentifier() throws {
+            let level2: [String: Any?] = ["value": "deep"]
+            let level1: [String: Any?] = ["level2": level2]
+            let nested: [String: Any?] = ["level1": level1]
+            try evaluator.declareContextValue("nested", value: nested, isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "nested"), nested))
+        }
+
+        @Test("should evaluate array of objects identifier")
+        func testEvaluateArrayOfObjectsIdentifier() throws {
+            let user1: [String: Any?] = ["name": "Alice", "age": 25]
+            let user2: [String: Any?] = ["name": "Bob", "age": 30]
+            let users: [[String: Any?]] = [user1, user2]
+            try evaluator.declareContextValue("users", value: users, isConst: false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "users"), users))
+        }
+    }
+    
+    @Suite("Var Declaration Expressions")
+    struct VarDeclarationExpressionsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should declare variable with let keyword")
+        func testDeclareVariableWithLetKeyword() throws {
+            #expect(try evaluator.evaluate(expr: "let x = 10; x;") as? Int == 10)
+            #expect(try evaluator.evaluate(expr: "let y = 5.54; y;") as? Double == 5.54)
+            #expect(try evaluator.evaluate(expr: "let name = \"Test\"; name;") as? String == "Test")
+            #expect(try evaluator.evaluate(expr: "let isTrue = false; isTrue;") as? Bool == false)
+            #expect(deepEqual(try evaluator.evaluate(expr: "let arr = [1, 2, 3]; arr;"), [1, 2, 3]))
+            #expect(deepEqual(try evaluator.evaluate(expr: "let mixed = [1, \"two\", true, null]; mixed;"), [1, "two", true, nil]))
+
+            let expectedObj: [String: Any?] = ["key": "value"]
+            #expect(deepEqual(try evaluator.evaluate(expr: "let obj = {\"key\": \"value\"}; obj;"), expectedObj))
+
+            let expectedNestedObj: [String: Any?] = ["a": ["b": 2]]
+            #expect(deepEqual(try evaluator.evaluate(expr: "let nested = {\"a\": {\"b\": 2}}; nested;"), expectedNestedObj))
+        }
+
+        @Test("should declare variable with const keyword")
+        func testDeclareVariableWithConstKeyword() throws {
+            #expect(try evaluator.evaluate(expr: "const x = 20; x;") as? Int == 20)
+            #expect(try evaluator.evaluate(expr: "const greeting = \"Hello\"; greeting;") as? String == "Hello")
+            #expect(try evaluator.evaluate(expr: "const isValid = true; isValid;") as? Bool == true)
+            #expect(deepEqual(try evaluator.evaluate(expr: "const nums = [4, 5, 6]; nums;"), [4, 5, 6]))
+
+            let expectedSettings: [String: Any?] = ["theme": "dark"]
+            #expect(deepEqual(try evaluator.evaluate(expr: "const settings = {\"theme\": \"dark\"}; settings;"), expectedSettings))
+        }
+
+        @Test("should throw error for redeclaration of variable")
+        func testThrowErrorForRedeclarationOfVariable() throws {
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "let x = 10; let x = 20;")
+            })
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "const y = 5; const y = 15;")
+            })
+        }
+
+        @Test("should throw error for reassignment of const variable")
+        func testThrowErrorForReassignmentOfConstVariable() throws {
+            #expect(throws: ExceptionError.self, performing: {
+                try evaluator.evaluate(expr: "const z = 30; z = 40;")
+            })
+        }
+
+        @Test("should allow reassignment of let variable")
+        func testAllowReassignmentOfLetVariable() throws {
+            #expect(try evaluator.evaluate(expr: "let a = 1; a = 2; a;") as? Int == 2)
+        }
+
+        @Test("should handle variable scope correctly")
+        func testHandleVariableScopeCorrectly() throws {
+            #expect(try evaluator.evaluate(expr: """
+                let x = 10;
+                {
+                    let x = 20;
+                    x;
+                }
+            """) as? Int == 20)
+
+            #expect(try evaluator.evaluate(expr: """
+                let y = 5;
+                {
+                    let y = 15;
+                }
+                y;
+            """) as? Int == 5)
+        }
+
+        @Test("should create a variable in the global scope by declaring with global keyword")
+        func testCreateGlobalVariable() throws {
+            _ = try evaluator.evaluate(expr: "global let gVar = 100;")
+            #expect(try evaluator.getGlobalScopeVariables()["gVar"] as? Int == 100)
+
+            _ = try evaluator.evaluate(expr: "global const gConst = \"global\";")
+            #expect(try evaluator.getGlobalScopeVariables()["gConst"] as? String == "global")
+        }
+
+        @Test("should allow access to global variables from local scope")
+        func testAccessGlobalVariablesFromLocalScope() throws {
+            _ = try evaluator.evaluate(expr: "global let gNum = 50;")
+            #expect(try evaluator.evaluate(expr: """
+                {
+                    let localNum = gNum + 25;
+                    localNum;
+                }
+            """) as? Int == 75)
+        }
+
+        @Test("global scope variables redeclaration is allowed and it should not throw error")
+        func testGlobalScopeVariablesRedeclaration() throws {
+            _ = try evaluator.evaluate(expr: "global let gVar = 200; global let gVar = 300;")
+            #expect(try evaluator.getGlobalScopeVariables()["gVar"] as? Int == 300)
+            #expect(try evaluator.evaluate(expr: "global let gVar = 400;") != nil)
+
+
+            _ = try evaluator.evaluate(expr: "global const gConst = \"first\"; global const gConst = \"second\";")
+            #expect(try evaluator.getGlobalScopeVariables()["gConst"] as? String == "second")
+            #expect(try evaluator.evaluate(expr: "global const gConst = \"third\";") != nil)
+            
+
+        }
     }
 
 }

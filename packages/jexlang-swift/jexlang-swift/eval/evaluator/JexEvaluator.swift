@@ -26,7 +26,7 @@ public class JexEvaluator {
         )
     }()
     
-    private func convertContextToJexValue(context: [String: AnyObject]) -> [String: JexValue] {
+    private func convertContextToJexValue(context: [String: Any]) -> [String: JexValue] {
         var jexContext: [String: JexValue] = [:]
         if (!context.isEmpty) {
             for (key, value) in context {
@@ -36,17 +36,17 @@ public class JexEvaluator {
         return jexContext;
     }
     
-    private func convertJexValueToAnyObject(jexValueMap: [String: JexValue]) -> [String: AnyObject] {
-        var context: [String: AnyObject] = [:]
+    private func convertJexValueToAny(jexValueMap: [String: JexValue]) -> [String: Any] {
+        var context: [String: Any] = [:]
         for (key, value) in jexValueMap {
-            context[key] = value.toObject() as AnyObject
+            context[key] = value.toObject()
         }
         return context
     }
     
     private func addAllContextValuesIntoGlobalScope(context: [String: JexValue]) throws {
         for (key, value) in context {
-            try globalScope.declareVariable(key, value: value, isConst: false)
+            globalScope.declareVariable(key, value: value, isConst: false)
         }
     }
     
@@ -59,32 +59,35 @@ public class JexEvaluator {
     private var parser: JexLangParser!
 
     public init(
-        context initialContext: [String: AnyObject]? = nil,
+        context initialContext: [String: Any]? = nil,
         funcsMap initialFuncs: [String: FuncImpl]? = nil,
         transformMap initialTransforms: [String: TransformImpl]? = nil
     ) throws {
 
-        if let initialContext = initialContext {
-            self.context = convertContextToJexValue(context: initialContext)
+        try catchNSException { [weak self] in
+            guard let self = self else { return }
+            if let initialContext = initialContext {
+                self.context = self.convertContextToJexValue(context: initialContext)
+            }
+
+            if let initialFuncs = initialFuncs {
+                self.funcsMap = initialFuncs
+            }
+
+            if let initialTransforms = initialTransforms {
+                self.transformMap = initialTransforms
+            }
+
+            try self.addAllContextValuesIntoGlobalScope(context: self.context)
+
+            let evaluatorContext = EvaluatorContext(jexEvaluator: self)
+            self.evalVisitor = EvalVisitor(
+                scope: self.globalScope,
+                ctx: evaluatorContext,
+                funcsMap: self.funcsMap,
+                transformsMap: self.transformMap
+            )
         }
-
-        if let initialFuncs = initialFuncs {
-            self.funcsMap = initialFuncs
-        }
-
-        if let initialTransforms = initialTransforms {
-            self.transformMap = initialTransforms
-        }
-
-        try self.addAllContextValuesIntoGlobalScope(context: self.context)
-
-        let evaluatorContext = EvaluatorContext(jexEvaluator: self)
-        self.evalVisitor = EvalVisitor(
-            scope: globalScope,
-            ctx: evaluatorContext,
-            funcsMap: self.funcsMap,
-            transformsMap: self.transformMap
-        )
     }
 
 
@@ -126,24 +129,8 @@ public class JexEvaluator {
     // MARK: - Evaluate
     public func evaluate(
         expr: String,
-        programScopeVariables: [String: AnyObject]? = nil
-    ) throws -> AnyObject? {
-        return try catchNSException {
-            let programContext = try self.parseExpression(expr: expr)
-            if let programScopeVariables = programScopeVariables {
-                self.evalVisitor.setProgramScopeContext(context: programScopeVariables)
-            }
-            // Evaluate using the retained parser context
-            let value = self.evalVisitor.visit(programContext)
-
-            return value.toObject()
-        }
-    }
-    
-    public func evaluate(
-        expr: String,
         programScopeVariables: [String: Any]? = nil
-    ) throws -> AnyObject? {
+    ) throws -> Any? {
         return try catchNSException {
             let programContext = try self.parseExpression(expr: expr)
             if let programScopeVariables = programScopeVariables {
@@ -164,60 +151,38 @@ public class JexEvaluator {
         return self.cacheExpressions
     }
     
-    public func setContextValue(_ key: String, _ value: AnyObject) throws {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        try self.globalScope.assignVariable(key, value: jexValue)
-    }
-    
     public func setContextValue(_ key: String, _ value: Any) throws {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        try self.globalScope.assignVariable(key, value: jexValue)
+        return try catchNSException {
+            let jexValue = JexValueFactory.from(value)
+            self.context[key] = jexValue
+            self.globalScope.assignVariable(key, value: jexValue)
+        }
     }
     
     public func setContextValue(_ key: String, _ value: JexValue) throws {
-        self.context[key] = value
-        try self.globalScope.assignVariable(key, value: value)
+        return try catchNSException {
+            self.context[key] = value
+            self.globalScope.assignVariable(key, value: value)
+        }
     }
     
     @discardableResult
-    public func declareContextValue(_ key: String, value: AnyObject, isConst: Bool = false) throws -> JexValue {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
-        return jexValue
-    }
-    
-    @discardableResult
-    public func declareContextValue(_ key: String, value: Any, isConst: Bool = false) throws -> JexValue {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
-        return jexValue
+    public func declareContextValue(_ key: String, value: Any?, isConst: Bool = false) throws -> JexValue {
+        return try catchNSException {
+            let jexValue = JexValueFactory.from(value)
+            self.context[key] = jexValue
+            self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+            return jexValue
+        }
     }
     
     @discardableResult
     public func declareContextValue(_ key: String, value: JexValue, isConst: Bool = false) throws -> JexValue {
-        self.context[key] = value
-        try self.globalScope.declareVariable(key, value: value, isConst: isConst)
-        return value
-    }
-    
-    @discardableResult
-    public func setContextOrDeclareContextValue(
-        _ key: String,
-        _ value: AnyObject,
-        isConst: Bool = false
-    ) throws -> JexValue {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        if (self.globalScope.hasVariable(key)) {
-            try self.globalScope.assignVariable(key, value: jexValue)
-        } else {
-            try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+        return try catchNSException {
+            self.context[key] = value
+            self.globalScope.declareVariable(key, value: value, isConst: isConst)
+            return value
         }
-        return jexValue
     }
     
     @discardableResult
@@ -226,26 +191,31 @@ public class JexEvaluator {
         _ value: Any,
         isConst: Bool = false
     ) throws -> JexValue {
-        let jexValue = JexValueFactory.from(value)
-        self.context[key] = jexValue
-        if (self.globalScope.hasVariable(key)) {
-            try self.globalScope.assignVariable(key, value: jexValue)
-        } else {
-            try self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+        return try catchNSException {
+            let jexValue = JexValueFactory.from(value)
+            self.context[key] = jexValue
+            if (self.globalScope.hasVariable(key)) {
+                self.globalScope.assignVariable(key, value: jexValue)
+            } else {
+                self.globalScope.declareVariable(key, value: jexValue, isConst: isConst)
+            }
+            return jexValue
         }
-        return jexValue
     }
     
     public func resetContext() throws {
-        self.context.removeAll()
-        self.globalScope = createGlobalScope()
-        try addAllContextValuesIntoGlobalScope(context: self.context)
-        self.evalVisitor = EvalVisitor(
-            scope: self.globalScope,
-            ctx: EvaluatorContext(jexEvaluator: self),
-            funcsMap: self.funcsMap,
-            transformsMap: self.transformMap
-        )
+        return try catchNSException { [weak self] in
+            guard let self = self else { return }
+            self.context.removeAll()
+            self.globalScope = createGlobalScope()
+            try self.addAllContextValuesIntoGlobalScope(context: self.context)
+            self.evalVisitor = EvalVisitor(
+                scope: self.globalScope,
+                ctx: EvaluatorContext(jexEvaluator: self),
+                funcsMap: self.funcsMap,
+                transformsMap: self.transformMap
+            )
+        }
     }
     
     public func resetFunctions() {
@@ -268,7 +238,7 @@ public class JexEvaluator {
         )
     }
     
-    public func getContextValue(_ name: String) -> AnyObject? {
+    public func getContextValue(_ name: String) -> Any? {
         let jexValue = self.context[name] ?? nil
         if let jexValue = jexValue {
             return jexValue.toObject()
@@ -284,11 +254,11 @@ public class JexEvaluator {
         return nil
     }
     
-    public func getGlobalScopeVariables() -> [String: AnyObject] {
+    public func getGlobalScopeVariables() -> [String: Any] {
         guard let globalVariables = self.evalVisitor.getGlobalScopeVariables() else {
             return [:]
         }
-        return self.convertJexValueToAnyObject(jexValueMap: globalVariables)
+        return self.convertJexValueToAny(jexValueMap: globalVariables)
     }
     
     public func addFunction(
