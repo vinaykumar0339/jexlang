@@ -2849,4 +2849,475 @@ struct jexlang_swiftTests {
         }
     }
 
+    // MARK: - Prefix Expressions Tests
+
+    @Suite("Prefix Expressions")
+    struct PrefixExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Prefix Increment/Decrement with Variables")
+        struct PrefixIncrementDecrementVariables {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment variable with prefix operator")
+            func testPrefixIncrementVariable() throws {
+                try evaluator.declareContextValue("x", value: 5, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++x") as? Int == 6)
+                #expect(try evaluator.evaluate(expr: "x") as? Int == 6)
+            }
+            
+            @Test("should decrement variable with prefix operator")
+            func testPrefixDecrementVariable() throws {
+                try evaluator.declareContextValue("y", value: 10, isConst: false)
+                #expect(try evaluator.evaluate(expr: "--y") as? Int == 9)
+                #expect(try evaluator.evaluate(expr: "y") as? Int == 9)
+            }
+            
+            @Test("should return new value after prefix increment")
+            func testNewValueAfterPrefixIncrement() throws {
+                try evaluator.declareContextValue("count", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++count") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "++count") as? Int == 2)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 2)
+            }
+            
+            @Test("should return new value after prefix decrement")
+            func testNewValueAfterPrefixDecrement() throws {
+                try evaluator.declareContextValue("count", value: 5, isConst: false)
+                #expect(try evaluator.evaluate(expr: "--count") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "--count") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 3)
+            }
+            
+            @Test("should handle multiple prefix operations")
+            func testMultiplePrefixOperations() throws {
+                try evaluator.declareContextValue("a", value: 0, isConst: false)
+                try evaluator.declareContextValue("b", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++a + ++b") as? Int == 2)
+                #expect(try evaluator.evaluate(expr: "a") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "b") as? Int == 1)
+            }
+            
+            @Test("should throw error for undefined variable")
+            func testPrefixUndefinedVariable() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "++undefinedVar")
+                }
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "--undefinedVar")
+                }
+            }
+        }
+        
+        @Suite("Prefix Increment/Decrement with Array Elements")
+        struct PrefixIncrementDecrementArray {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment array element with positive index")
+            func testPrefixIncrementPositiveIndex() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3], isConst: false)
+                #expect(try evaluator.evaluate(expr: "++arr[0]") as? Int == 2)
+                #expect(try evaluator.evaluate(expr: "arr[0]") as? Int == 2)
+            }
+            
+            @Test("should decrement array element with positive index")
+            func testPrefixDecrementPositiveIndex() throws {
+                try evaluator.declareContextValue("arr", value: [10, 20, 30], isConst: false)
+                #expect(try evaluator.evaluate(expr: "--arr[1]") as? Int == 19)
+                #expect(try evaluator.evaluate(expr: "arr[1]") as? Int == 19)
+            }
+            
+            @Test("should increment array element with negative index")
+            func testPrefixIncrementNegativeIndex() throws {
+                try evaluator.declareContextValue("arr", value: [5, 10, 15], isConst: false)
+                #expect(try evaluator.evaluate(expr: "++arr[-1]") as? Int == 16)
+                #expect(try evaluator.evaluate(expr: "arr[-1]") as? Int == 16)
+                #expect(try evaluator.evaluate(expr: "arr[2]") as? Int == 16)
+            }
+            
+            @Test("should decrement array element with negative index")
+            func testPrefixDecrementNegativeIndex() throws {
+                try evaluator.declareContextValue("arr", value: [100, 200, 300], isConst: false)
+                #expect(try evaluator.evaluate(expr: "--arr[-2]") as? Int == 199)
+                #expect(try evaluator.evaluate(expr: "arr[-2]") as? Int == 199)
+                #expect(try evaluator.evaluate(expr: "arr[1]") as? Int == 199)
+            }
+            
+            @Test("should handle prefix operations with expression as index")
+            func testPrefixExpressionAsIndex() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3, 4, 5], isConst: false)
+                try evaluator.declareContextValue("idx", value: 2, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++arr[idx + 1]") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "arr[3]") as? Int == 5)
+            }
+            
+            @Test("should return null for out of bounds array index")
+            func testOutOfBoundsArrayIndex() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3], isConst: false)
+                let result = try evaluator.evaluate(expr: "++arr[10]")
+                #expect(result as? NSNull == nil)
+            }
+            
+            @Test("should handle nested array increment")
+            func testNestedArrayIncrement() throws {
+                let matrix: [[Int]] = [[1, 2], [3, 4]]
+                try evaluator.declareContextValue("matrix", value: matrix, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++matrix[0][1]") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "matrix[0][1]") as? Int == 3)
+            }
+        }
+        
+        @Suite("Prefix Increment/Decrement with Object Properties")
+        struct PrefixIncrementDecrementObject {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment object property with dot notation")
+            func testPrefixIncrementDotNotation() throws {
+                let obj: [String: Any] = ["count": 5]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++obj.count") as? Int == 6)
+                #expect(try evaluator.evaluate(expr: "obj.count") as? Int == 6)
+            }
+            
+            @Test("should decrement object property with dot notation")
+            func testPrefixDecrementDotNotation() throws {
+                let obj: [String: Any] = ["value": 20]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "--obj.value") as? Int == 19)
+                #expect(try evaluator.evaluate(expr: "obj.value") as? Int == 19)
+            }
+            
+            @Test("should increment object property with bracket notation")
+            func testPrefixIncrementBracketNotation() throws {
+                let obj: [String: Any] = ["score": 10]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++obj[\"score\"]") as? Int == 11)
+                #expect(try evaluator.evaluate(expr: "obj.score") as? Int == 11)
+            }
+            
+            @Test("should decrement object property with bracket notation")
+            func testPrefixDecrementBracketNotation() throws {
+                let obj: [String: Any] = ["points": 50]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "--obj[\"points\"]") as? Int == 49)
+                #expect(try evaluator.evaluate(expr: "obj.points") as? Int == 49)
+            }
+            
+            @Test("should handle prefix operations with dynamic property names")
+            func testDynamicPropertyName() throws {
+                let obj: [String: Any] = ["x": 5, "y": 10]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                try evaluator.declareContextValue("key", value: "x", isConst: false)
+                #expect(try evaluator.evaluate(expr: "++obj[key]") as? Int == 6)
+                #expect(try evaluator.evaluate(expr: "obj.x") as? Int == 6)
+            }
+            
+            @Test("should handle nested object property increment")
+            func testNestedObjectPropertyIncrement() throws {
+                let user: [String: Any] = ["age": 25]
+                let data: [String: Any] = ["user": user]
+                try evaluator.declareContextValue("data", value: data, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++data.user.age") as? Int == 26)
+                #expect(try evaluator.evaluate(expr: "data.user.age") as? Int == 26)
+            }
+            
+            @Test("should throw error for non-object property access")
+            func testNonObjectPropertyAccessThrows() throws {
+                try evaluator.declareContextValue("num", value: 42, isConst: false)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "++num.prop")
+                }
+            }
+        }
+    }
+
+    // MARK: - Postfix Expressions Tests
+
+    @Suite("Postfix Expressions")
+    struct PostfixExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Postfix Increment/Decrement with Variables")
+        struct PostfixIncrementDecrementVariables {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment variable with postfix operator")
+            func testPostfixIncrementVariable() throws {
+                try evaluator.declareContextValue("x", value: 5, isConst: false)
+                #expect(try evaluator.evaluate(expr: "x++") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "x") as? Int == 6)
+            }
+            
+            @Test("should decrement variable with postfix operator")
+            func testPostfixDecrementVariable() throws {
+                try evaluator.declareContextValue("y", value: 10, isConst: false)
+                #expect(try evaluator.evaluate(expr: "y--") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "y") as? Int == 9)
+            }
+            
+            @Test("should return old value after postfix increment")
+            func testOldValueAfterPostfixIncrement() throws {
+                try evaluator.declareContextValue("count", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: "count++") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "count++") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 2)
+            }
+            
+            @Test("should return old value after postfix decrement")
+            func testOldValueAfterPostfixDecrement() throws {
+                try evaluator.declareContextValue("count", value: 5, isConst: false)
+                #expect(try evaluator.evaluate(expr: "count--") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "count--") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "count") as? Int == 3)
+            }
+            
+            @Test("should handle multiple postfix operations")
+            func testMultiplePostfixOperations() throws {
+                try evaluator.declareContextValue("a", value: 0, isConst: false)
+                try evaluator.declareContextValue("b", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: "a++ + b++") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "a") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "b") as? Int == 1)
+            }
+            
+            @Test("should handle mix of prefix and postfix")
+            func testMixPrefixPostfix() throws {
+                try evaluator.declareContextValue("x", value: 5, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++x + x++") as? Int == 12) // 6 + 6, then x = 7
+                #expect(try evaluator.evaluate(expr: "x") as? Int == 7)
+            }
+            
+            @Test("should throw error for undefined variable")
+            func testUndefinedVariablePostfix() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "undefinedVar++")
+                }
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "undefinedVar--")
+                }
+            }
+        }
+        
+        @Suite("Postfix Increment/Decrement with Array Elements")
+        struct PostfixIncrementDecrementArray {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment array element with positive index")
+            func testPostfixIncrementPositiveIndex() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[0]++") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "arr[0]") as? Int == 2)
+            }
+            
+            @Test("should decrement array element with positive index")
+            func testPostfixDecrementPositiveIndex() throws {
+                try evaluator.declareContextValue("arr", value: [10, 20, 30], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[1]--") as? Int == 20)
+                #expect(try evaluator.evaluate(expr: "arr[1]") as? Int == 19)
+            }
+            
+            @Test("should increment array element with negative index")
+            func testPostfixIncrementNegativeIndex() throws {
+                try evaluator.declareContextValue("arr", value: [5, 10, 15], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[-1]++") as? Int == 15)
+                #expect(try evaluator.evaluate(expr: "arr[-1]") as? Int == 16)
+                #expect(try evaluator.evaluate(expr: "arr[2]") as? Int == 16)
+            }
+            
+            @Test("should decrement array element with negative index")
+            func testPostfixDecrementNegativeIndex() throws {
+                try evaluator.declareContextValue("arr", value: [100, 200, 300], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[-2]--") as? Int == 200)
+                #expect(try evaluator.evaluate(expr: "arr[-2]") as? Int == 199)
+                #expect(try evaluator.evaluate(expr: "arr[1]") as? Int == 199)
+            }
+            
+            @Test("should handle postfix operations with expression as index")
+            func testPostfixExpressionAsIndex() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3, 4, 5], isConst: false)
+                try evaluator.declareContextValue("idx", value: 2, isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[idx + 1]++") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "arr[3]") as? Int == 5)
+            }
+            
+            @Test("should handle postfix with computed index expression")
+            func testPostfixComputedIndex() throws {
+                try evaluator.declareContextValue("arr", value: [10, 20, 30, 40], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr[1 + 1]++") as? Int == 30)
+                #expect(try evaluator.evaluate(expr: "arr[2]") as? Int == 31)
+            }
+            
+            @Test("should return null for out of bounds array index")
+            func testPostfixOutOfBounds() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3], isConst: false)
+                let result = try evaluator.evaluate(expr: "arr[10]++")
+                #expect(result as? NSNull == nil)
+            }
+            
+            @Test("should handle nested array decrement")
+            func testPostfixNestedArrayDecrement() throws {
+                let matrix: [[Int]] = [[1, 2], [3, 4]]
+                try evaluator.declareContextValue("matrix", value: matrix, isConst: false)
+                #expect(try evaluator.evaluate(expr: "matrix[1][0]--") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "matrix[1][0]") as? Int == 2)
+            }
+        }
+        
+        @Suite("Postfix Increment/Decrement with Object Properties")
+        struct PostfixIncrementDecrementObject {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should increment object property with dot notation")
+            func testPostfixIncrementDotNotation() throws {
+                let obj: [String: Any] = ["count": 5]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj.count++") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "obj.count") as? Int == 6)
+            }
+            
+            @Test("should decrement object property with dot notation")
+            func testPostfixDecrementDotNotation() throws {
+                let obj: [String: Any] = ["value": 20]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj.value--") as? Int == 20)
+                #expect(try evaluator.evaluate(expr: "obj.value") as? Int == 19)
+            }
+            
+            @Test("should increment object property with bracket notation")
+            func testPostfixIncrementBracketNotation() throws {
+                let obj: [String: Any] = ["score": 10]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj[\"score\"]++") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "obj.score") as? Int == 11)
+            }
+            
+            @Test("should decrement object property with bracket notation")
+            func testPostfixDecrementBracketNotation() throws {
+                let obj: [String: Any] = ["points": 50]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj[\"points\"]--") as? Int == 50)
+                #expect(try evaluator.evaluate(expr: "obj.points") as? Int == 49)
+            }
+            
+            @Test("should handle postfix operations with dynamic property names")
+            func testPostfixDynamicProperty() throws {
+                let obj: [String: Any] = ["x": 5, "y": 10]
+                try evaluator.declareContextValue("obj", value: obj, isConst: false)
+                try evaluator.declareContextValue("key", value: "y", isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj[key]++") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "obj.y") as? Int == 11)
+            }
+            
+            @Test("should handle nested object property decrement")
+            func testPostfixNestedObjectProperty() throws {
+                let user: [String: Any] = ["age": 25]
+                let data: [String: Any] = ["user": user]
+                try evaluator.declareContextValue("data", value: data, isConst: false)
+                #expect(try evaluator.evaluate(expr: "data.user.age--") as? Int == 25)
+                #expect(try evaluator.evaluate(expr: "data.user.age") as? Int == 24)
+            }
+            
+            @Test("should throw error for non-object property access")
+            func testPostfixNonObjectPropertyAccess() throws {
+                try evaluator.declareContextValue("str", value: "test", isConst: false)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "str.length++")
+                }
+            }
+        }
+        
+        @Suite("Complex Postfix/Prefix Scenarios")
+        struct PostfixPrefixComplex {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle array of objects with postfix")
+            func testArrayOfObjectsPostfix() throws {
+                let users: [[String: Any]] = [
+                    ["score": 10],
+                    ["score": 20]
+                ]
+                try evaluator.declareContextValue("users", value: users, isConst: false)
+                #expect(try evaluator.evaluate(expr: "users[0].score++") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "users[0].score") as? Int == 11)
+            }
+            
+            @Test("should handle object with array property and prefix")
+            func testObjectWithArrayPrefix() throws {
+                let data: [String: Any] = ["values": [5, 10, 15]]
+                try evaluator.declareContextValue("data", value: data, isConst: false)
+                #expect(try evaluator.evaluate(expr: "++data.values[1]") as? Int == 11)
+                #expect(try evaluator.evaluate(expr: "data.values[1]") as? Int == 11)
+            }
+            
+            @Test("should handle negative index with postfix in nested array")
+            func testNegativeIndexNestedArray() throws {
+                let matrix: [[Int]] = [[1, 2], [3, 4], [5, 6]]
+                try evaluator.declareContextValue("matrix", value: matrix, isConst: false)
+                #expect(try evaluator.evaluate(expr: "matrix[-1][-1]++") as? Int == 6)
+                #expect(try evaluator.evaluate(expr: "matrix[-1][-1]") as? Int == 7)
+                #expect(try evaluator.evaluate(expr: "matrix[2][1]") as? Int == 7)
+            }
+            
+            @Test("should handle expression in both array and object access")
+            func testExpressionArrayObject() throws {
+                let items: [[String: Any]] = [
+                    ["count": 0],
+                    ["count": 5]
+                ]
+                let complex: [String: Any] = ["items": items]
+                try evaluator.declareContextValue("complex", value: complex, isConst: false)
+                try evaluator.declareContextValue("idx", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: "complex.items[idx + 1].count++") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "complex.items[1].count") as? Int == 6)
+            }
+        }
+    }
+
 }

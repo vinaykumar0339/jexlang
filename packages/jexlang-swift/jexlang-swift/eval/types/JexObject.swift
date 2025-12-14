@@ -18,7 +18,31 @@ public class JexObject: JexValue {
     }
     
     
-    private let value: [String: JexValue]
+    private var value: [String: JexValue]
+    
+    public func get(_ key: String) -> JexValue? {
+        return value[key]
+    }
+
+    public func set(_ key: String, _ newValue: JexValue) {
+        value[key] = newValue
+    }
+
+    public func remove(_ key: String) {
+        value.removeValue(forKey: key)
+    }
+
+    public func contains(_ key: String) -> Bool {
+        value[key] != nil
+    }
+
+    public var keys: [String] {
+        Array(value.keys)
+    }
+
+    public var count: Int {
+        value.count
+    }
     
     init(value: [String : JexValue]) {
         self.value = value

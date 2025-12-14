@@ -8,10 +8,22 @@
 import Foundation
 
 public class JexArray: JexValue {
-    private let value: [JexValue]
+    private var value: [JexValue]
     
     init(value: [JexValue]) {
         self.value = value
+    }
+    
+    public func get(_ index: Int) -> JexValue {
+        return value[index]
+    }
+
+    public func set(_ index: Int, _ newValue: JexValue) {
+        value[index] = newValue
+    }
+
+    public var count: Int {
+        value.count
     }
     
     public func isInteger() -> Bool {

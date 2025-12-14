@@ -828,13 +828,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot use prefix operator on a non-object property"))
                 return JexNil()
             }
-            var objectValue = try! object.asObject(context: "Prefix Expression")
+            let objectValue = try! object.asObject(context: "Prefix Expression")
             let properyKey = try! propertyName.asString(context: "Prefix Expression")
             let currentValue = toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
             
             let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-            let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-            objectValue[properyKey] = jexNewValue;
+            let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+            // update
+            let objectObject = object as! JexObject
+            objectObject.set(properyKey, jexNewValue)
             
             return jexNewValue;
         } else if let expr = expr as? JexLangParser.MemberIndexExpressionContext {
@@ -843,7 +845,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             
             if object.isArray()
             {
-                var arrayValue = try! object.asArray(context: "Prefix Expression")
+                let arrayValue = try! object.asArray(context: "Prefix Expression")
                 let indexNumber = toNumber(value: propertyName, ctx: "Prefix Expression")
                 let doubleValue = indexNumber.doubleValue
                 
@@ -858,19 +860,27 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 {
                     let currentValue = toNumber(value: arrayValue[index], ctx: "Prefix Expression")
                     let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    arrayValue[index] = jexNewValue
+                    let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                    
+                    // update
+                    let arrayObject = object as! JexArray
+                    arrayObject.set(index, jexNewValue)
+                    
                     return jexNewValue
                 }
             } else if
                 object.isObject()
             {
-                var objectValue = try! object.asObject(context: "Prefix Expression")
+                let objectValue = try! object.asObject(context: "Prefix Expression")
                 let properyKey = toString(value: propertyName, ctx: "Prefix Expression")
                 let currentValue = toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
                 let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                objectValue[properyKey] = jexNewValue
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                // update
+                let objectObject = object as! JexObject
+                objectObject.set(properyKey, jexNewValue)
+                
                 return jexNewValue
             }
         } else {
@@ -924,8 +934,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             {
                 let currentValue = toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
                 let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                objectValue[properyKey] = jexNewValue;
+                
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                let objectObj = object as! JexObject;
+                objectObj.set(properyKey, jexNewValue)
+                
                 return JexNumber(value: currentValue); // return the original value before increment/decrement
             }
         } else if let expr = expr as? JexLangParser.MemberIndexExpressionContext {
@@ -949,8 +963,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 {
                     let currentValue = toNumber(value: arrayValue[index], ctx: "Prefix Expression")
                     let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    arrayValue[index] = jexNewValue
+                    
+                    let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                    
+                    let arrayObj = object as! JexArray;
+                    arrayObj.set(index, jexNewValue)
+                    
                     return JexNumber(value: currentValue); // return the original value before increment/decrement
                 }
             } else if
@@ -961,8 +979,11 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 let currentValue = toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
                 
                 let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                objectValue[properyKey] = jexNewValue
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                let objectObj = object as! JexObject;
+                objectObj.set(properyKey, jexNewValue)
+                
                 return JexNumber(value: currentValue); // return the original value before increment/decrement
             }
         } else {
