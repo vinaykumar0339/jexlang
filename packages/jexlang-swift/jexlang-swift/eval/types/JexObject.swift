@@ -84,7 +84,7 @@ public class JexObject: JexValue {
         throw JexValueFactory.typeError(want: "string", ctx: context, actualValue: self)
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false;
     }
     

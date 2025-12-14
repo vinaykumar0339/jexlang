@@ -13,7 +13,7 @@ public protocol JexValue: AnyObject, CustomStringConvertible {
     func isNumber() -> Bool
     func isBoolean() -> Bool
     func isString() -> Bool
-    func isNil() -> Bool
+    func isNull() -> Bool
     func isArray() -> Bool
     func isObject() -> Bool
     
@@ -100,8 +100,8 @@ public class JexValueFactory {
         return fromObject(object: jexMap)
     }
     
-    static func fromNil() -> JexNil {
-        return JexNil()
+    static func fromNil() -> JexNull {
+        return JexNull()
     }
     
     private static func unwrapAllOptionals(_ value: Any?) -> Any? {
@@ -158,6 +158,9 @@ public class JexValueFactory {
         
         case _ as NSNull:
             return fromNil()
+            
+        case let jexValue as JexValue:
+            return jexValue
 
         default:
             fatalError("Unsupported type: \(type(of: value)). Supported types: nil, NSNumber, Int, Double, Bool, String, [Any], [String: Any]")

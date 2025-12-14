@@ -35,7 +35,7 @@ public class JexString: JexValue {
         return true
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     

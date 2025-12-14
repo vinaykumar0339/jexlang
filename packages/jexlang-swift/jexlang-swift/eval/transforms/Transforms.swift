@@ -58,10 +58,10 @@ public class Transforms {
             return num(toNumber(value: v, ctx: "number transform").doubleValue)
         }
         transforms["string"] = { (v, ctx) in
-            return str(try! v.asString(context: "string transform"))
+            str(toString(value: v, ctx: "string function"))
         }
         transforms["boolean"] = { (v, ctx) in
-            return bool(try! v.asBoolean(context: "boolean transform"))
+            bool(toBoolean(value: v, ctx: "boolean function"))
         }
         transforms["int"] = { (v, ctx) in
             return integer(toNumber(value: v, ctx: "int transform").intValue)

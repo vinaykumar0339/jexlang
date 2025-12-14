@@ -46,7 +46,7 @@ public class Functions {
         functions["min"] = { (ctx, args) in
             if (args.count == 0) {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "min requires at least one argument"))
-                return JexNil()
+                return JexNull()
             }
             var best = Double.greatestFiniteMagnitude
             for i in 0..<args.count {
@@ -61,7 +61,7 @@ public class Functions {
         functions["max"] = { (ctx, args) in
             if (args.count == 0) {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "max requires at least one argument"))
-                return JexNil()
+                return JexNull()
             }
             var best = -Double.greatestFiniteMagnitude
             for i in 0..<args.count {
@@ -122,7 +122,7 @@ public class Functions {
             }
             
             NSException.raise(jexLangError: TypeMismatchError(operation: "length", expected: "string or array", actual: value.getType()))
-            return JexNil()
+            return JexNull()
         }
         functions["upper"] = { (ctx, args) in
             str(toString(value: args[0], ctx: "upper method").uppercased())
@@ -149,10 +149,10 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
             let vs = try! arr.asArray(context: "first method")
-            return vs.isEmpty ? JexNil() : vs[0]
+            return vs.isEmpty ? JexNull() : vs[0]
         }
 
         functions["last"] = { (ctx, args) in
@@ -165,10 +165,10 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
             let vs = try! arr.asArray(context: "last method")
-            return vs.isEmpty ? JexNil() : vs[vs.count - 1]
+            return vs.isEmpty ? JexNull() : vs[vs.count - 1]
         }
 
         functions["push"] = { (ctx, args) in
@@ -181,13 +181,15 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
-            var vs = try! arr.asArray(context: "push method")
+            let arrObject = arr as! JexArray
             if args.count > 1 {
-                vs.append(contentsOf: args[1...])
+                for arg in args[1...] {
+                    arrObject.push(arg)
+                }
             }
-            return JexValueFactory.from(vs)
+            return arrObject
         }
 
         functions["pop"] = { (ctx, args) in
@@ -200,13 +202,13 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
-            var vs = try! arr.asArray(context: "pop method")
-            if vs.isEmpty {
-                return JexNil()
+            let arrObject = arr as! JexArray
+            if arrObject.isEmpty {
+                return JexNull()
             }
-            return vs.removeLast()
+            return JexValueFactory.from(arrObject.pop())
         }
 
         functions["sum"] = { (ctx, args) in
@@ -219,7 +221,7 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
             let vs = try! arr.asArray(context: "sum method")
             if vs.isEmpty {
@@ -242,11 +244,11 @@ public class Functions {
                         actual: arr.getType()
                     )
                 )
-                return JexNil()
+                return JexNull()
             }
             let vs = try! arr.asArray(context: "avg method")
             if vs.isEmpty {
-                return JexNil()
+                return JexNull()
             }
             var s = 0.0
             for i in 0..<vs.count {
@@ -349,7 +351,7 @@ public class Functions {
         functions["addDays"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addDays requires 2 arguments: timestamp, days"))
-                return JexNil()
+                return JexNull()
             }
             let cal = Calendar.current
             let ts = toNumber(value: args[0], ctx: "addDays timestamp").doubleValue
@@ -362,7 +364,7 @@ public class Functions {
         functions["addMonths"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addMonths requires 2 arguments: timestamp, months"))
-                return JexNil()
+                return JexNull()
             }
             let cal = Calendar.current
             let ts = toNumber(value: args[0], ctx: "addMonths timestamp").doubleValue
@@ -375,7 +377,7 @@ public class Functions {
         functions["addYears"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addYears requires 2 arguments: timestamp, years"))
-                return JexNil()
+                return JexNull()
             }
             let cal = Calendar.current
             let ts = toNumber(value: args[0], ctx: "addYears timestamp").doubleValue
@@ -388,7 +390,7 @@ public class Functions {
         functions["addHours"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addHours requires 2 arguments: timestamp, hours"))
-                return JexNil()
+                return JexNull()
             }
             let cal = Calendar.current
             let ts = toNumber(value: args[0], ctx: "addHours timestamp").doubleValue
@@ -401,7 +403,7 @@ public class Functions {
         functions["addMinutes"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addMinutes requires 2 arguments: timestamp, minutes"))
-                return JexNil()
+                return JexNull()
             }
             let cal = Calendar.current
             let ts = toNumber(value: args[0], ctx: "addMinutes timestamp").doubleValue
@@ -414,7 +416,7 @@ public class Functions {
         functions["daysBetween"] = { (ctx, args) in
             if args.count < 2 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "daysBetween requires 2 arguments: timestamp1, timestamp2"))
-                return JexNil()
+                return JexNull()
             }
             let ts1 = toNumber(value: args[0], ctx: "daysBetween timestamp1").doubleValue
             let ts2 = toNumber(value: args[1], ctx: "daysBetween timestamp2").doubleValue
@@ -428,7 +430,7 @@ public class Functions {
         functions["isLeapYear"] = { (ctx, args) in
             if args.count < 1 {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "isLeapYear requires 1 argument: year"))
-                return JexNil()
+                return JexNull()
             }
             let year = toNumber(value: args[0], ctx: "isLeapYear year").intValue
             let isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)

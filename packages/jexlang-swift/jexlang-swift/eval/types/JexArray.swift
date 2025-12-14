@@ -21,9 +21,24 @@ public class JexArray: JexValue {
     public func set(_ index: Int, _ newValue: JexValue) {
         value[index] = newValue
     }
+    
+    public func push(_ value: JexValue) {
+        self.value.append(value)
+    }
+    
+    public func pop() -> JexValue? {
+        guard !value.isEmpty else {
+            return nil
+        }
+        return value.removeLast()
+    }
 
     public var count: Int {
         value.count
+    }
+    
+    public var isEmpty: Bool {
+        value.isEmpty
     }
     
     public func isInteger() -> Bool {
@@ -46,7 +61,7 @@ public class JexArray: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     

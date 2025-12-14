@@ -113,7 +113,7 @@ public final class Scope {
             return parent.getVariable(name)
         }
 
-        return JexNil()
+        return JexNull()
     }
 
     public func hasVariable(_ name: String) -> Bool {

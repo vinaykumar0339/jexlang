@@ -53,7 +53,7 @@ public func bool(_ b: Bool) -> JexValue {
 
 @inline(__always)
 public func nilValue() -> JexValue {
-    JexNil()
+    JexNull()
 }
 
 @inline(__always)
@@ -126,7 +126,7 @@ func n3(
 
 public func getJexValueType(value: JexValue?) -> String {
     guard let value = value else {
-        return "nil"
+        return "null"
     }
     return value.getType();
 }
@@ -134,7 +134,7 @@ public func getJexValueType(value: JexValue?) -> String {
 public func toNumber(value: JexValue, ctx: String) -> NSNumber {
     do {
         switch value {
-        case is JexNil:
+        case is JexNull:
             return NSNumber(value: 0.0)
 
         case is JexNumber:
@@ -180,7 +180,7 @@ public func toNumber(value: JexValue, ctx: String) -> NSNumber {
 
 public func toBoolean(value: JexValue, ctx: String) -> Bool {
     do {
-        if value is JexNil {
+        if value is JexNull {
             return false
         }
         
@@ -223,8 +223,8 @@ public func toBoolean(value: JexValue, ctx: String) -> Bool {
 public func toString(value: JexValue, ctx: String) -> String {
     do {
         switch value {
-        case is JexNil:
-            return "nil"
+        case is JexNull:
+            return "null"
         case is JexString:
             return try value.asString(context: ctx)
         case is JexInteger:
@@ -261,11 +261,11 @@ public func isEqual(_ lhs: JexValue, _ rhs: JexValue) -> Bool {
     
     do {
         // 1. If both are null → true
-        if lhs.isNil() && rhs.isNil() { return true }
+        if lhs.isNull() && rhs.isNull() { return true }
         
         // 2. null == undefined behavior (you can choose if you support undefined)
         //        // For now: null is only equal to null in JexLang.
-        if lhs.isNil() || rhs.isNil() { return false }
+        if lhs.isNull() || rhs.isNull() { return false }
         
         
         // 3. If types match → direct compare
@@ -508,7 +508,7 @@ public func toPrimitive(value: JexValue) -> JexValue {
         value.isString()
         || value.isNumber()
         || value.isBoolean()
-        || value.isNil()
+        || value.isNull()
         || value.isInteger()
         || value.isDouble()
     ) {
@@ -541,7 +541,7 @@ public func jsToNumberForRelOp(
     value: JexValue
 ) -> Double {
     do {
-        if (value.isNil()) {
+        if (value.isNull()) {
             return 0
         }
         
@@ -632,16 +632,16 @@ public func createGlobalScope() -> Scope {
     let sqrtHalf = Darwin.sqrt(0.5)
     let sqrt2 = Darwin.sqrt(2.0)
     
-    try! scope.declareVariable("PI", value: JexNumber(value: NSNumber(value: Double.pi)), isConst: true)
-    try! scope.declareVariable("E", value: JexNumber(value: NSNumber(value: Darwin.M_E)), isConst: true)
-    try! scope.declareVariable("LN2", value: JexNumber(value: NSNumber(value: ln2)), isConst: true)
-    try! scope.declareVariable("LN10", value: JexNumber(value: NSNumber(value: ln10)), isConst: true)
-    try! scope.declareVariable("LOG2E", value: JexNumber(value: NSNumber(value: log2e)), isConst: true)
-    try! scope.declareVariable("LOG10E", value: JexNumber(value: NSNumber(value: log10e)), isConst: true)
-    try! scope.declareVariable("SQRT1_2", value: JexNumber(value: NSNumber(value: sqrtHalf)), isConst: true)
-    try! scope.declareVariable("SQRT2", value: JexNumber(value: NSNumber(value: sqrt2)), isConst: true)
-    try! scope.declareVariable("VERSION", value: JexString(value: Version.value), isConst: true)
-    try! scope.declareVariable("__CLIENT_LANGUAGE", value: JexString(value: "swift"), isConst: true)
+    scope.declareVariable("PI", value: JexNumber(value: NSNumber(value: Double.pi)), isConst: true)
+    scope.declareVariable("E", value: JexNumber(value: NSNumber(value: Darwin.M_E)), isConst: true)
+    scope.declareVariable("LN2", value: JexNumber(value: NSNumber(value: ln2)), isConst: true)
+    scope.declareVariable("LN10", value: JexNumber(value: NSNumber(value: ln10)), isConst: true)
+    scope.declareVariable("LOG2E", value: JexNumber(value: NSNumber(value: log2e)), isConst: true)
+    scope.declareVariable("LOG10E", value: JexNumber(value: NSNumber(value: log10e)), isConst: true)
+    scope.declareVariable("SQRT1_2", value: JexNumber(value: NSNumber(value: sqrtHalf)), isConst: true)
+    scope.declareVariable("SQRT2", value: JexNumber(value: NSNumber(value: sqrt2)), isConst: true)
+    scope.declareVariable("VERSION", value: JexString(value: Version.value), isConst: true)
+    scope.declareVariable("__CLIENT_LANGUAGE", value: JexString(value: "swift"), isConst: true)
     
     return scope;
 }

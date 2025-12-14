@@ -35,7 +35,7 @@ public class JexDouble: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     

@@ -3651,4 +3651,534 @@ struct jexlang_swiftTests {
             }
         }
     }
+
+    // MARK: - Transform Expressions Tests
+
+    @Suite("Transform Expressions")
+    struct TransformExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Built-in Transforms")
+        struct BuiltInTransformsTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Suite("String Transforms")
+            struct StringTransformsTests {
+                
+                var evaluator: JexEvaluator
+                
+                init() throws {
+                    self.evaluator = try JexEvaluator()
+                }
+                
+                @Test("should transform with upper")
+                func testUpperTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | upper") as? String == "HELLO")
+                    #expect(try evaluator.evaluate(expr: "\"HeLLo WoRLd\" | upper") as? String == "HELLO WORLD")
+                    #expect(try evaluator.evaluate(expr: "123 | upper") as? String == "123")
+                    #expect(try evaluator.evaluate(expr: "true | upper") as? String == "TRUE")
+                    #expect(try evaluator.evaluate(expr: "null | upper") as? String == "NULL")
+                }
+                
+                @Test("should transform with lower")
+                func testLowerTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"HELLO\" | lower") as? String == "hello")
+                    #expect(try evaluator.evaluate(expr: "\"HeLLo WoRLd\" | lower") as? String == "hello world")
+                    #expect(try evaluator.evaluate(expr: "123 | lower") as? String == "123")
+                    #expect(try evaluator.evaluate(expr: "true | lower") as? String == "true")
+                    #expect(try evaluator.evaluate(expr: "null | lower") as? String == "null")
+                }
+                
+                @Test("should transform with capitalize")
+                func testCapitalizeTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"hello world\" | capitalize") as? String == "Hello World")
+                    #expect(try evaluator.evaluate(expr: "\"HELLO WORLD\" | capitalize") as? String == "Hello World")
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | capitalize") as? String == "Hello")
+                    #expect(try evaluator.evaluate(expr: "\"a b c\" | capitalize") as? String == "A B C")
+                    #expect(try evaluator.evaluate(expr: "123 | capitalize") as? String == "123")
+                    #expect(try evaluator.evaluate(expr: "true | capitalize") as? String == "True")
+                    #expect(try evaluator.evaluate(expr: "null | capitalize") as? String == "Null")
+                }
+                
+                @Test("should transform with trim")
+                func testTrimTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"  hello  \" | trim") as? String == "hello")
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | trim") as? String == "hello")
+                    #expect(try evaluator.evaluate(expr: "\"  \" | trim") as? String == "")
+                    #expect(try evaluator.evaluate(expr: "123 | trim") as? String == "123")
+                    #expect(try evaluator.evaluate(expr: "true | trim") as? String == "true")
+                    #expect(try evaluator.evaluate(expr: "null | trim") as? String == "null")
+                }
+                
+                @Test("should chain string transforms")
+                func testChainedStringTransforms() throws {
+                    #expect(try evaluator.evaluate(expr: "\"  HELLO world  \" | trim | lower") as? String == "hello world")
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | upper | trim") as? String == "HELLO")
+                    #expect(try evaluator.evaluate(expr: "\"  hello world  \" | trim | capitalize") as? String == "Hello World")
+                }
+            }
+            
+            @Suite("Numeric Transforms")
+            struct NumericTransformsTests {
+                
+                var evaluator: JexEvaluator
+                
+                init() throws {
+                    self.evaluator = try JexEvaluator()
+                }
+                
+                @Test("should transform with abs")
+                func testAbsTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "-5 | abs") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "3.14 | abs") as? Double == 3.14)
+                    #expect(try evaluator.evaluate(expr: "-10.5 | abs") as? Double == 10.5)
+                    #expect(try evaluator.evaluate(expr: "0 | abs") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "\"-7\" | abs") as? Int == 7)
+                    #expect(try evaluator.evaluate(expr: "true | abs") as? Int == 1)
+                    #expect(try evaluator.evaluate(expr: "false | abs") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "null | abs") as? Int == 0)
+                }
+                
+                @Test("should transform with floor")
+                func testFloorTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "4.2 | floor") as? Int == 4)
+                    #expect(try evaluator.evaluate(expr: "4.8 | floor") as? Int == 4)
+                    #expect(try evaluator.evaluate(expr: "-4.2 | floor") as? Int == -5)
+                    #expect(try evaluator.evaluate(expr: "0 | floor") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "\"4.7\" | floor") as? Int == 4)
+                    #expect(try evaluator.evaluate(expr: "true | floor") as? Int == 1)
+                    #expect(try evaluator.evaluate(expr: "null | floor") as? Int == 0)
+                }
+                
+                @Test("should transform with ceil")
+                func testCeilTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "4.2 | ceil") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "4.8 | ceil") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "-4.2 | ceil") as? Int == -4)
+                    #expect(try evaluator.evaluate(expr: "0 | ceil") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "\"4.1\" | ceil") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "true | ceil") as? Int == 1)
+                    #expect(try evaluator.evaluate(expr: "null | ceil") as? Int == 0)
+                }
+                
+                @Test("should transform with round")
+                func testRoundTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "4.2 | round") as? Int == 4)
+                    #expect(try evaluator.evaluate(expr: "4.8 | round") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "4.5 | round") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "0 | round") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "\"4.6\" | round") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "true | round") as? Int == 1)
+                    #expect(try evaluator.evaluate(expr: "null | round") as? Int == 0)
+                }
+                
+                @Test("should chain numeric transforms")
+                func testChainedNumericTransforms() throws {
+                    #expect(try evaluator.evaluate(expr: "-4.7 | abs | floor") as? Int == 4)
+                    #expect(try evaluator.evaluate(expr: "4.3 | ceil | abs") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "-4.8 | abs | round") as? Int == 5)
+                }
+            }
+            
+            @Suite("Length Transform")
+            struct LengthTransformTests {
+                
+                var evaluator: JexEvaluator
+                
+                init() throws {
+                    self.evaluator = try JexEvaluator()
+                }
+                
+                @Test("should transform array with length")
+                func testArrayLength() throws {
+                    #expect(try evaluator.evaluate(expr: "[1,2,3] | length") as? Int == 3)
+                    #expect(try evaluator.evaluate(expr: "[] | length") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "[1,2,3,4,5] | length") as? Int == 5)
+                }
+                
+                @Test("should transform string with length")
+                func testStringLength() throws {
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | length") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "\"\" | length") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "\"hello world\" | length") as? Int == 11)
+                }
+                
+                @Test("should transform object with length")
+                func testObjectLength() throws {
+                    #expect(try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} | length") as? Int == 2)
+                    #expect(try evaluator.evaluate(expr: "{} | length") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "{\"x\":1,\"y\":2,\"z\":3} | length") as? Int == 3)
+                }
+                
+                @Test("should return 0 for other types")
+                func testLengthOtherTypes() throws {
+                    #expect(try evaluator.evaluate(expr: "123 | length") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "true | length") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "null | length") as? Int == 0)
+                }
+            }
+            
+            @Suite("Type Conversion Transforms")
+            struct TypeConversionTransformsTests {
+                
+                var evaluator: JexEvaluator
+                
+                init() throws {
+                    self.evaluator = try JexEvaluator()
+                }
+                
+                @Test("should transform with number")
+                func testNumberTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"42\" | number") as? Int == 42)
+                    #expect(try evaluator.evaluate(expr: "\"3.14\" | number") as? Double == 3.14)
+                    #expect(try evaluator.evaluate(expr: "true | number") as? Int == 1)
+                    #expect(try evaluator.evaluate(expr: "false | number") as? Int == 0)
+                    #expect(try evaluator.evaluate(expr: "null | number") as? Int == 0)
+                    #expect(throws: ExceptionError.self) {
+                        try evaluator.evaluate(expr: "\"invalid\" | number")
+                    }
+                }
+                
+                @Test("should transform with string")
+                func testStringTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "42 | string") as? String == "42")
+                    #expect(try evaluator.evaluate(expr: "3.14 | string") as? String == "3.14")
+                    #expect(try evaluator.evaluate(expr: "true | string") as? String == "true")
+                    #expect(try evaluator.evaluate(expr: "null | string") as? String == "null")
+                    #expect(try evaluator.evaluate(expr: "[1, 2, 3] | string") as? String == "[1, 2, 3]")
+                }
+                
+                @Test("should transform with boolean")
+                func testBooleanTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "1 | boolean") as? Bool == true)
+                    #expect(try evaluator.evaluate(expr: "0 | boolean") as? Bool == false)
+                    #expect(try evaluator.evaluate(expr: "\"hello\" | boolean") as? Bool == true)
+                    #expect(try evaluator.evaluate(expr: "\"\" | boolean") as? Bool == false)
+                    #expect(try evaluator.evaluate(expr: "null | boolean") as? Bool == false)
+                    #expect(try evaluator.evaluate(expr: "[1] | boolean") as? Bool == true)
+                    #expect(try evaluator.evaluate(expr: "[] | boolean") as? Bool == false)
+                    #expect(try evaluator.evaluate(expr: "{\"a\":1} | boolean") as? Bool == true)
+                    #expect(try evaluator.evaluate(expr: "{} | boolean") as? Bool == false)
+                }
+                
+                @Test("should transform with int")
+                func testIntTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"42\" | int") as? Int == 42)
+                    #expect(try evaluator.evaluate(expr: "\"3.14\" | int") as? Int == 3)
+                    #expect(try evaluator.evaluate(expr: "5.9 | int") as? Int == 5)
+                    #expect(try evaluator.evaluate(expr: "-4.7 | int") as? Int == -4)
+                }
+                
+                @Test("should transform with float")
+                func testFloatTransform() throws {
+                    let result1 = try evaluator.evaluate(expr: "\"3.14\" | float") as? Double
+                    #expect(abs((result1 ?? 0) - 3.140000104904175) < 0.001)
+                    #expect(try evaluator.evaluate(expr: "\"42\" | float") as? Double == 42.0)
+                    #expect(try evaluator.evaluate(expr: "5 | float") as? Double == 5.0)
+                }
+                
+                @Test("should transform with double")
+                func testDoubleTransform() throws {
+                    #expect(try evaluator.evaluate(expr: "\"3.14159\" | double") as? Double == 3.14159)
+                    #expect(try evaluator.evaluate(expr: "\"42\" | double") as? Double == 42.0)
+                    #expect(try evaluator.evaluate(expr: "5 | double") as? Double == 5.0)
+                }
+                
+                @Test("should chain type conversions")
+                func testChainedTypeConversions() throws {
+                    #expect(try evaluator.evaluate(expr: "\"3.7\" | number | int") as? Int == 3)
+                    #expect(try evaluator.evaluate(expr: "42 | string | upper") as? String == "42")
+                    #expect(try evaluator.evaluate(expr: "\"5.5\" | float | round") as? Int == 6)
+                }
+            }
+        }
+        
+        @Suite("Custom Transforms")
+        struct CustomTransformTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should add and use custom transform")
+            func testCustomTransform() throws {
+                evaluator.addTransform(name: "double") { input, _ in
+                    JexValueFactory.from(toNumber(value: input, ctx: "double").doubleValue * 2)
+                }
+                #expect(try evaluator.evaluate(expr: "5 | double") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "3.5 | double") as? Double == 7)
+            }
+            
+            @Test("should add and use custom string transform")
+            func testCustomStringTransform() throws {
+                evaluator.addTransform(name: "reverse") { input, _ in
+                    JexValueFactory.from(String(toString(value: input, ctx: "reverse").reversed()))
+                }
+                #expect(try evaluator.evaluate(expr: "\"hello\" | reverse") as? String == "olleh")
+                #expect(try evaluator.evaluate(expr: "\"abc\" | reverse") as? String == "cba")
+            }
+            
+            @Test("should add and use custom array transform")
+            func testCustomArrayTransform() throws {
+                evaluator.addTransform(name: "sort") { input, _ in
+                    if let arr = input.toObject() as? [Any] {
+                        let sorted = arr.compactMap { toNumber(value: JexValueFactory.from($0), ctx: "sort").doubleValue }
+                            .sorted()
+                        return JexValueFactory.from(sorted)
+                    }
+                    return input
+                }
+                
+                #expect(deepEqual(try evaluator.evaluate(expr: "[3,1,4,1,5] | sort"), [1.0, 1.0, 3.0, 4.0, 5.0]))
+                #expect(deepEqual(try evaluator.evaluate(expr: "[10,2,8,5] | sort"), [2.0, 5.0, 8.0, 10.0]))
+            }
+            
+            @Test("should use custom transform with context")
+            func testTransformWithContext() throws {
+                evaluator.addTransform(name: "prefix") { input, ctx in
+                    let prefix = ctx.getJexEvaluator().getContextValue("prefix") as? String ?? ""
+                    return JexValueFactory.from(prefix + toString(value: input, ctx: "prefix"))
+                }
+                try evaluator.declareContextValue("prefix", value: "Hello: ", isConst: false)
+                
+                #expect(try evaluator.evaluate(expr: "\"World\" | prefix") as? String == "Hello: World")
+            }
+            
+            @Test("should mix built-in and custom transforms")
+            func testMixedTransformChain() throws {
+                evaluator.addTransform(name: "square") { input, _ in
+                    let n = toNumber(value: input, ctx: "square").doubleValue
+                    return JexValueFactory.from(n * n)
+                }
+                
+                #expect(try evaluator.evaluate(expr: "4.7 | floor | square") as? Int == 16)
+                #expect(try evaluator.evaluate(expr: "-3 | abs | square") as? Int == 9)
+            }
+            
+            @Test("should remove custom transform")
+            func testRemoveTransform() throws {
+                evaluator.addTransform(name: "t") { input, _ in input }
+                #expect(evaluator.hasTransform(name: "t"))
+                
+                evaluator.removeTransform(name: "t")
+                #expect(!evaluator.hasTransform(name: "t"))
+                
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "5 | t")
+                }
+            }
+            
+            @Test("should reset custom transforms")
+            func testResetTransforms() throws {
+                evaluator.addTransform(name: "t1") { input, _ in input }
+                evaluator.addTransform(name: "t2") { input, _ in input }
+                
+                evaluator.resetTransforms()
+                
+                #expect(!evaluator.hasTransform(name: "t1"))
+                #expect(!evaluator.hasTransform(name: "t2"))
+            }
+        }
+        
+        @Suite("Transform Expressions with Variables")
+        struct TransformWithVariablesTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should transform variable value")
+            func testVariableTransform() throws {
+                try evaluator.declareContextValue("name", value: "john", isConst: false)
+                #expect(try evaluator.evaluate(expr: "name | upper") as? String == "JOHN")
+            }
+            
+            @Test("should transform array variable")
+            func testArrayVariableTransform() throws {
+                try evaluator.declareContextValue("arr", value: [1, 2, 3, 4, 5], isConst: false)
+                #expect(try evaluator.evaluate(expr: "arr | length") as? Int == 5)
+            }
+            
+            @Test("should transform object variable")
+            func testObjectVariableTransform() throws {
+                try evaluator.declareContextValue("obj", value: ["a": 1, "b": 2, "c": 3], isConst: false)
+                #expect(try evaluator.evaluate(expr: "obj | length") as? Int == 3)
+            }
+            
+            @Test("should transform member access")
+            func testMemberAccessTransform() throws {
+                try evaluator.declareContextValue("user", value: ["name": "alice"], isConst: false)
+                #expect(try evaluator.evaluate(expr: "user.name | upper") as? String == "ALICE")
+            }
+            
+            @Test("should transform array element")
+            func testArrayIndexTransform() throws {
+                try evaluator.declareContextValue("items", value: ["hello", "world"], isConst: false)
+                #expect(try evaluator.evaluate(expr: "items[0] | upper") as? String == "HELLO")
+            }
+        }
+        
+        @Suite("Transform Expressions with Expressions")
+        struct TransformInExpressionsTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should transform arithmetic result")
+            func testArithmeticTransform() throws {
+                #expect(try evaluator.evaluate(expr: "(2 + 3) | string") as? String == "5")
+                #expect(try evaluator.evaluate(expr: "(10 / 3) | floor") as? Int == 3)
+            }
+            
+            @Test("should transform ternary result")
+            func testTernaryTransform() throws {
+                #expect(try evaluator.evaluate(expr: "(true ? \"hello\" : \"world\") | upper") as? String == "HELLO")
+                #expect(try evaluator.evaluate(expr: "(false ? 10 : 20) | string") as? String == "20")
+            }
+            
+            @Test("should transform function result")
+            func testFunctionTransform() throws {
+                #expect(try evaluator.evaluate(expr: "abs(-5) | string") as? String == "5")
+                #expect(try evaluator.evaluate(expr: "min(1,2,3) | double") as? Double == 1.0)
+            }
+        }
+        
+        @Suite("Fallback to Functions")
+        struct TransformFallbackTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should use function if transform not found")
+            func testFallbackToFunction() throws {
+                evaluator.addFunction(name: "triple") { _, args in
+                    JexValueFactory.from(toNumber(value: args[0], ctx: "triple").int64Value * 3)
+                }
+                #expect(try evaluator.evaluate(expr: "5 | triple") as? Int == 15)
+            }
+            
+            @Test("should prefer transform over function")
+            func testTransformWins() throws {
+                evaluator.addTransform(name: "multiply") { input, _ in
+                    JexValueFactory.from(toNumber(value: input, ctx: "multiply").int64Value * 2)
+                }
+                evaluator.addFunction(name: "multiply") { _, args in
+                    JexValueFactory.from(toNumber(value: args[0], ctx: "multiply").int64Value * 3)
+                }
+                
+                #expect(try evaluator.evaluate(expr: "5 | multiply") as? Int == 10)
+            }
+            
+            @Test("should throw if neither exists")
+            func testMissingTransformAndFunction() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "5 | nonexistent")
+                }
+            }
+        }
+        
+        @Suite("Complex Transform Scenarios")
+        struct ComplexTransformTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle multiple chained transforms")
+            func testMultipleChained() throws {
+                #expect(try evaluator.evaluate(expr: "\"  hello world  \" | trim | upper | length") as? Int == 11)
+                #expect(try evaluator.evaluate(expr: "4.7 | abs | floor | string") as? String == "4")
+            }
+            
+            @Test("should transform inside expressions")
+            func testTransformInsideExpression() throws {
+                try evaluator.declareContextValue("text", value: "hello", isConst: false)
+                #expect(try evaluator.evaluate(expr: "(text | upper) + \" WORLD\"") as? String == "HELLO WORLD")
+            }
+            
+            @Test("should transform in conditional expressions")
+            func testTransformInConditional() throws {
+                #expect(try evaluator.evaluate(expr: "(\"hello\" | length) > 3 ? \"long\" : \"short\"") as? String == "long")
+            }
+            
+            @Test("should handle transforms in repeat expressions")
+            func testRepeatTransform() throws {
+                let result = try evaluator.evaluate(expr: """
+                    let arr = ["hello", "world"];
+                    let result = "";
+                    repeat(arr) {
+                        result = result + ($it | upper) + " ";
+                    }
+                    result | trim;
+                    """)
+                #expect(result as? String == "HELLO WORLD")
+            }
+            
+            @Test("should handle nested transforms")
+            func testNestedTransforms() throws {
+                evaluator.addTransform(name: "wrap") { input, _ in
+                    JexValueFactory.from("[" + toString(value: input, ctx: "wrap") + "]")
+                }
+                #expect(try evaluator.evaluate(expr: "\"hello\" | upper | wrap") as? String == "[HELLO]")
+            }
+            
+            @Test("should handle array comprehension-like patterns")
+            func testArrayComprehension() throws {
+                let result = try evaluator.evaluate(expr: """
+                    let words = ["hello","world","test"];
+                    let upper = [];
+                    repeat(words) {
+                        push(upper, $it | upper);
+                    }
+                    upper;
+                    """)
+                
+                #expect(deepEqual(result, ["HELLO", "WORLD", "TEST"]))
+            }
+        }
+        
+        @Suite("Transform Error Handling")
+        struct TransformErrorHandlingTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle transform errors")
+            func testTransformError() throws {
+                evaluator.addTransform(name: "err") { input, ctx in
+                    NSException.raise(jexLangError: JexLangRuntimeError(message: "Transform error"))
+                    return JexNull()
+                }
+                
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "5 | err")
+                }
+            }
+        }
+    }
 }
