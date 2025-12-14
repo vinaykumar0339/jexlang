@@ -3320,4 +3320,335 @@ struct jexlang_swiftTests {
         }
     }
 
+    // MARK: - Function Call Expressions Tests
+
+    @Suite("Function Call Expressions")
+    struct FunctionCallExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Math Functions")
+        struct MathFunctions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should evaluate abs function")
+            func testEvaluateAbsFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "abs(-5)") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "abs(3.14)") as? Double == 3.14)
+                #expect(try evaluator.evaluate(expr: "abs(-10.5)") as? Double == 10.5)
+                #expect(try evaluator.evaluate(expr: "abs(10.0)") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "abs(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "abs(\"-7\")") as? Int == 7)
+                #expect(try evaluator.evaluate(expr: "abs(\"4.2\")") as? Double == 4.2)
+                #expect(try evaluator.evaluate(expr: "abs(\"-0\")") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "abs(\"0\")") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "abs(\"-10.0\")") as? Int == 10)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "abs(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "abs(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "abs(false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "abs(-false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "abs(-true)") as? Int == 1)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "abs(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate ceil function")
+            func testEvaluateCeilFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "ceil(4.2)") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "ceil(4.8)") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "ceil(-4.2)") as? Int == -4)
+                #expect(try evaluator.evaluate(expr: "ceil(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "ceil(\"4.2\")") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "ceil(\"4.8\")") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "ceil(\"-4.2\")") as? Int == -4)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "ceil(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "ceil(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "ceil(false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "ceil(0.3)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "ceil(-0.3)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "ceil(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate floor function")
+            func testEvaluateFloorFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "floor(4.2)") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "floor(4.8)") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "floor(-4.2)") as? Int == -5)
+                #expect(try evaluator.evaluate(expr: "floor(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "floor(\"4.2\")") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "floor(\"4.8\")") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "floor(\"-4.2\")") as? Int == -5)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "floor(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "floor(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "floor(false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "floor(0.7)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "floor(-0.3)") as? Int == -1)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "floor(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate round function")
+            func testEvaluateRoundFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "round(4.2)") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "round(4.8)") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "round(4.5)") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "round(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "round(\"4.2\")") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "round(\"4.8\")") as? Int == 5)
+                #expect(try evaluator.evaluate(expr: "round(\"4.5\")") as? Int == 5)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "round(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "round(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "round(false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "round(0.5)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "round(-0.5)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "round(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate trunc function")
+            func testEvaluateTruncFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "trunc(4.9)") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "trunc(-4.9)") as? Int == -4)
+                #expect(try evaluator.evaluate(expr: "trunc(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "trunc(\"4.9\")") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "trunc(\"-4.9\")") as? Int == -4)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "trunc(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "trunc(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "trunc(false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "trunc(0.9)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "trunc(-0.9)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "trunc(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate min function")
+            func testEvaluateMinFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "min(1, 2, 3)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "min(5, -2, 10)") as? Int == -2)
+                #expect(try evaluator.evaluate(expr: "min(3.14, 2.71, 1.41)") as? Double == 1.41)
+                #expect(try evaluator.evaluate(expr: "min(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "min(\"1\", \"2\", \"3\")") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "min(\"5\", \"-2\", \"10\")") as? Int == -2)
+                #expect(try evaluator.evaluate(expr: "min(\"3.14\", \"2.71\", \"1.41\")") as? Double == 1.41)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "min(\"invalid\", \"1\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "min(true, false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "min(false, false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "min(true, true)") as? Int == 1)
+                
+                // mixed input
+                #expect(try evaluator.evaluate(expr: "min(3, \"2\", true, false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "min(5, \"3\", false)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "min(null, 1, 2)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "min(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate max function")
+            func testEvaluateMaxFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "max(1, 2, 3)") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "max(5, -2, 10)") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "max(3.14, 2.71, 1.41)") as? Double == 3.14)
+                #expect(try evaluator.evaluate(expr: "max(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "max(\"1\", \"2\", \"3\")") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "max(\"5\", \"-2\", \"10\")") as? Int == 10)
+                #expect(try evaluator.evaluate(expr: "max(\"3.14\", \"2.71\", \"1.41\")") as? Double == 3.14)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "max(\"invalid\", \"1\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "max(true, false)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "max(false, false)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "max(true, true)") as? Int == 1)
+                
+                // mixed input
+                #expect(try evaluator.evaluate(expr: "max(3, \"2\", true, false)") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "max(1, \"2\", true)") as? Int == 2)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "max(null, -1, 0)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "max(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate pow function")
+            func testEvaluatePowFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "pow(2, 3)") as? Int == 8)
+                #expect(try evaluator.evaluate(expr: "pow(5, 2)") as? Int == 25)
+                #expect(try evaluator.evaluate(expr: "pow(10, 0)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "pow(0, 5)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "pow(\"2\", \"3\")") as? Int == 8)
+                #expect(try evaluator.evaluate(expr: "pow(\"5\", \"2\")") as? Int == 25)
+                #expect(try evaluator.evaluate(expr: "pow(\"10\", \"0\")") as? Int == 1)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "pow(\"invalid\", 2)")
+                }
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "pow(2, \"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "pow(true, false)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "pow(false, true)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "pow(true, true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "pow(false, false)") as? Int == 1)
+                
+                // mixed input
+                #expect(try evaluator.evaluate(expr: "pow(2, \"3\")") as? Int == 8)
+                #expect(try evaluator.evaluate(expr: "pow(\"5\", 2)") as? Int == 25)
+                #expect(try evaluator.evaluate(expr: "pow(true, 3)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "pow(5, false)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "pow(false, 3)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "pow(5, true)") as? Int == 5)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "pow(null, 3)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "pow(5, null)") as? Int == 1)
+            }
+            
+            @Test("should evaluate sqrt function")
+            func testEvaluateSqrtFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "sqrt(16)") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "sqrt(2.25)") as? Double == 1.5)
+                #expect(try evaluator.evaluate(expr: "sqrt(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "sqrt(\"16\")") as? Int == 4)
+                #expect(try evaluator.evaluate(expr: "sqrt(\"2.25\")") as? Double == 1.5)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "sqrt(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "sqrt(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "sqrt(false)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "sqrt(null)") as? Int == 0)
+                
+                // negative number should throw
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "sqrt(-4)")
+                }
+            }
+            
+            @Test("should evaluate cbrt function")
+            func testEvaluateCbrtFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "cbrt(8)") as? Int == 2)
+                #expect(try evaluator.evaluate(expr: "cbrt(27)") as? Int == 3)
+                #expect(try evaluator.evaluate(expr: "cbrt(0)") as? Int == 0)
+                #expect(try evaluator.evaluate(expr: "cbrt(-8)") as? Int == -2)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "cbrt(\"8\")") as? Int == 2)
+                #expect(try evaluator.evaluate(expr: "cbrt(\"27\")") as? Int == 3)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "cbrt(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "cbrt(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "cbrt(false)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "cbrt(null)") as? Int == 0)
+            }
+            
+            @Test("should evaluate random function")
+            func testEvaluateRandomFunction() throws {
+                let result = try evaluator.evaluate(expr: "random()") as? Double
+                #expect(result != nil)
+                #expect((result ?? -1) >= 0)
+                #expect((result ?? 2) < 1)
+            }
+            
+            @Test("should evaluate sign function")
+            func testEvaluateSignFunction() throws {
+                // number input
+                #expect(try evaluator.evaluate(expr: "sign(5)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "sign(-5)") as? Int == -1)
+                #expect(try evaluator.evaluate(expr: "sign(0)") as? Int == 0)
+                
+                // string input
+                #expect(try evaluator.evaluate(expr: "sign(\"5\")") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "sign(\"-5\")") as? Int == -1)
+                #expect(try evaluator.evaluate(expr: "sign(\"0\")") as? Int == 0)
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: "sign(\"invalid\")")
+                }
+                
+                // boolean input
+                #expect(try evaluator.evaluate(expr: "sign(true)") as? Int == 1)
+                #expect(try evaluator.evaluate(expr: "sign(false)") as? Int == 0)
+                
+                // null input
+                #expect(try evaluator.evaluate(expr: "sign(null)") as? Int == 0)
+            }
+        }
+    }
 }

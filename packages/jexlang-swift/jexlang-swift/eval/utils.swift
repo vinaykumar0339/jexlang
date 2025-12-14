@@ -74,6 +74,10 @@ public func assertFinite(_ name: String, _ x: Double) throws {
     }
 }
 
+func jexRound(_ x: Double) -> Double {
+    floor(x + 0.5)
+}
+
 
 func n1(_ f: @escaping Unary, _ ctxName: String) -> FuncImpl {
     return { _, args in

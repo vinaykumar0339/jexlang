@@ -30,7 +30,7 @@ public class Transforms {
             num(abs(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         transforms["round"] = { (v, ctx) in
-            num(round(toNumber(value: v, ctx: "abs transform").doubleValue))
+            num(jexRound(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         transforms["floor"] = { (v, ctx) in
             num(floor(toNumber(value: v, ctx: "abs transform").doubleValue))

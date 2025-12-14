@@ -15,7 +15,7 @@ public class Functions {
         functions["abs"] = n1(abs, "abs function")
         functions["ceil"] = n1(ceil, "ceil function")
         functions["floor"] = n1(floor, "floor function")
-        functions["round"] = n1(round, "round function")
+        functions["round"] = n1(jexRound, "round function")
         functions["trunc"] = n1(trunc, "trunc function")
         
         // Trigonometric functions
