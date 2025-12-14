@@ -50,7 +50,7 @@ public class Functions {
             }
             var best = Double.greatestFiniteMagnitude
             for i in 0..<args.count {
-                let v = (try! toNumber(value: args[i], ctx: "min arg \(i+1)")).doubleValue
+                let v = (toNumber(value: args[i], ctx: "min arg \(i+1)")).doubleValue
                 if (v < best) {
                     best = v
                 }
@@ -65,7 +65,7 @@ public class Functions {
             }
             var best = -Double.greatestFiniteMagnitude
             for i in 0..<args.count {
-                let v = (try! toNumber(value: args[i], ctx: "max arg \(i+1)")).doubleValue
+                let v = (toNumber(value: args[i], ctx: "max arg \(i+1)")).doubleValue
                 if (v > best) {
                     best = v
                 }
@@ -103,13 +103,13 @@ public class Functions {
             bool(toBoolean(value: args[0], ctx: "boolean function"))
         }
         functions["int"] = { (ctx, args) in
-            integer(try! toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "int transform").intValue)
+            integer(toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "int transform").intValue)
         }
         functions["float"] = { (ctx, args) in
-            doubleValue(try! toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "float transform").doubleValue)
+            doubleValue(toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "float transform").doubleValue)
         }
         functions["double"] = { (ctx, args) in
-            doubleValue(try! toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "double transform").doubleValue)
+            doubleValue(toNumber(value: args.count > 0 ? args[0] : JexValueFactory.from(0), ctx: "double transform").doubleValue)
         }
         
         // String functions
@@ -227,7 +227,7 @@ public class Functions {
             }
             var s = 0.0
             for i in 0..<vs.count {
-                s += try! toNumber(value: vs[i], ctx: "sum[\(i)]").doubleValue
+                s += toNumber(value: vs[i], ctx: "sum[\(i)]").doubleValue
             }
             return num(s)
         }
@@ -250,7 +250,7 @@ public class Functions {
             }
             var s = 0.0
             for i in 0..<vs.count {
-                s += try! toNumber(value: vs[i], ctx: "avg[\(i)]").doubleValue
+                s += toNumber(value: vs[i], ctx: "avg[\(i)]").doubleValue
             }
             return num(s / Double(vs.count))
         }
@@ -272,75 +272,75 @@ public class Functions {
             if args.count == 0 {
                 return num(Double(Date().timeIntervalSince1970 * 1000))
             }
-            let ts = try! toNumber(value: args[0], ctx: "date function").doubleValue
+            let ts = toNumber(value: args[0], ctx: "date function").doubleValue
             return num(ts)
         }
 
         functions["year"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "year function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "year function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.year, from: date)))
         }
 
         functions["month"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "month function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "month function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.month, from: date)))
         }
 
         functions["day"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "day function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "day function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.day, from: date)))
         }
 
         functions["hour"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "hour function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "hour function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.hour, from: date)))
         }
 
         functions["minute"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "minute function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "minute function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.minute, from: date)))
         }
 
         functions["second"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "second function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "second function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.second, from: date)))
         }
 
         functions["weekday"] = { (ctx, args) in
-            var cal = Calendar.current
+            let cal = Calendar.current
             var date = Date()
             if args.count > 0 {
-                let ts = try! toNumber(value: args[0], ctx: "weekday function").doubleValue
+                let ts = toNumber(value: args[0], ctx: "weekday function").doubleValue
                 date = Date(timeIntervalSince1970: ts / 1000)
             }
             return num(Double(cal.component(.weekday, from: date) - 1))
@@ -351,9 +351,9 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addDays requires 2 arguments: timestamp, days"))
                 return JexNil()
             }
-            var cal = Calendar.current
-            let ts = try! toNumber(value: args[0], ctx: "addDays timestamp").doubleValue
-            let days = try! toNumber(value: args[1], ctx: "addDays days").intValue
+            let cal = Calendar.current
+            let ts = toNumber(value: args[0], ctx: "addDays timestamp").doubleValue
+            let days = toNumber(value: args[1], ctx: "addDays days").intValue
             var date = Date(timeIntervalSince1970: ts / 1000)
             date = cal.date(byAdding: .day, value: days, to: date)!
             return num(Double(date.timeIntervalSince1970 * 1000))
@@ -364,9 +364,9 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addMonths requires 2 arguments: timestamp, months"))
                 return JexNil()
             }
-            var cal = Calendar.current
-            let ts = try! toNumber(value: args[0], ctx: "addMonths timestamp").doubleValue
-            let months = try! toNumber(value: args[1], ctx: "addMonths months").intValue
+            let cal = Calendar.current
+            let ts = toNumber(value: args[0], ctx: "addMonths timestamp").doubleValue
+            let months = toNumber(value: args[1], ctx: "addMonths months").intValue
             var date = Date(timeIntervalSince1970: ts / 1000)
             date = cal.date(byAdding: .month, value: months, to: date)!
             return num(Double(date.timeIntervalSince1970 * 1000))
@@ -377,9 +377,9 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addYears requires 2 arguments: timestamp, years"))
                 return JexNil()
             }
-            var cal = Calendar.current
-            let ts = try! toNumber(value: args[0], ctx: "addYears timestamp").doubleValue
-            let years = try! toNumber(value: args[1], ctx: "addYears years").intValue
+            let cal = Calendar.current
+            let ts = toNumber(value: args[0], ctx: "addYears timestamp").doubleValue
+            let years = toNumber(value: args[1], ctx: "addYears years").intValue
             var date = Date(timeIntervalSince1970: ts / 1000)
             date = cal.date(byAdding: .year, value: years, to: date)!
             return num(Double(date.timeIntervalSince1970 * 1000))
@@ -390,9 +390,9 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addHours requires 2 arguments: timestamp, hours"))
                 return JexNil()
             }
-            var cal = Calendar.current
-            let ts = try! toNumber(value: args[0], ctx: "addHours timestamp").doubleValue
-            let hours = try! toNumber(value: args[1], ctx: "addHours hours").intValue
+            let cal = Calendar.current
+            let ts = toNumber(value: args[0], ctx: "addHours timestamp").doubleValue
+            let hours = toNumber(value: args[1], ctx: "addHours hours").intValue
             var date = Date(timeIntervalSince1970: ts / 1000)
             date = cal.date(byAdding: .hour, value: hours, to: date)!
             return num(Double(date.timeIntervalSince1970 * 1000))
@@ -403,9 +403,9 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "addMinutes requires 2 arguments: timestamp, minutes"))
                 return JexNil()
             }
-            var cal = Calendar.current
-            let ts = try! toNumber(value: args[0], ctx: "addMinutes timestamp").doubleValue
-            let minutes = try! toNumber(value: args[1], ctx: "addMinutes minutes").intValue
+            let cal = Calendar.current
+            let ts = toNumber(value: args[0], ctx: "addMinutes timestamp").doubleValue
+            let minutes = toNumber(value: args[1], ctx: "addMinutes minutes").intValue
             var date = Date(timeIntervalSince1970: ts / 1000)
             date = cal.date(byAdding: .minute, value: minutes, to: date)!
             return num(Double(date.timeIntervalSince1970 * 1000))
@@ -416,8 +416,8 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "daysBetween requires 2 arguments: timestamp1, timestamp2"))
                 return JexNil()
             }
-            let ts1 = try! toNumber(value: args[0], ctx: "daysBetween timestamp1").doubleValue
-            let ts2 = try! toNumber(value: args[1], ctx: "daysBetween timestamp2").doubleValue
+            let ts1 = toNumber(value: args[0], ctx: "daysBetween timestamp1").doubleValue
+            let ts2 = toNumber(value: args[1], ctx: "daysBetween timestamp2").doubleValue
             let cal = Calendar.current
             let d1 = cal.startOfDay(for: Date(timeIntervalSince1970: ts1 / 1000))
             let d2 = cal.startOfDay(for: Date(timeIntervalSince1970: ts2 / 1000))
@@ -430,7 +430,7 @@ public class Functions {
                 NSException.raise(jexLangError: JexLangRuntimeError(message: "isLeapYear requires 1 argument: year"))
                 return JexNil()
             }
-            let year = try! toNumber(value: args[0], ctx: "isLeapYear year").intValue
+            let year = toNumber(value: args[0], ctx: "isLeapYear year").intValue
             let isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
             return bool(isLeap)
         }

@@ -483,7 +483,7 @@ struct jexlang_swiftTests {
             
             // Add a function: double(val) => val * 2
             evaluator.addFunction(name: "double") { ctx, args in
-                let val = try! toNumber(value: args[0], ctx: "bracket property assignment")
+                let val = toNumber(value: args[0], ctx: "bracket property assignment")
                 return JexValueFactory.from(val.int64Value * 2)
             }
             
@@ -499,6 +499,62 @@ struct jexlang_swiftTests {
             
             // Assuming evaluator has a built-in `length` function for arrays
             #expect(try evaluator.evaluate(expr: "length(arr)") as! Int == 3)
+        }
+    }
+    
+    @Suite("additive expressions")
+    struct AdditiveExpressionsTests {
+
+        let evaluator = try! JexEvaluator()
+
+        @Test("simple addition")
+        func testSimpleAddition() throws {
+            #expect(try evaluator.evaluate(expr: "1 + 2") as? Int == 3)
+        }
+
+        @Test("addition with negative number")
+        func testAdditionWithNegative() throws {
+            #expect(try evaluator.evaluate(expr: "5 + -3") as? Int == 2)
+        }
+
+        @Test("multiple additions")
+        func testMultipleAdditions() throws {
+            #expect(try evaluator.evaluate(expr: "1 + 2 + 3 + 4") as? Int == 10)
+        }
+
+        @Test("addition and subtraction")
+        func testAdditionAndSubtraction() throws {
+            #expect(try evaluator.evaluate(expr: "10 + 5 - 3 + 2 - 1") as? Int == 13)
+        }
+
+        @Test("addition with parentheses")
+        func testAdditionWithParentheses() throws {
+            #expect(try evaluator.evaluate(expr: "(1 + 2) + (3 + 4)") as? Int == 10)
+        }
+
+        @Test("string and number addition")
+        func testStringAndNumberAddition() throws {
+            #expect(try evaluator.evaluate(expr: "\"The answer is: \" + 42") as? String == "The answer is: 42")
+            #expect(try evaluator.evaluate(expr: "42 + \" is the answer\"") as? String == "42 is the answer")
+            #expect(try evaluator.evaluate(expr: "\"10\" + 5") as? String == "105")
+            #expect(try evaluator.evaluate(expr: "5 + \"10\"") as? String == "510")
+            #expect(try evaluator.evaluate(expr: "\"1\" + 100 + \"0\"") as? String == "11000")
+            #expect(try evaluator.evaluate(expr: "\"2.0\" + 3.5") as? String == "2.03.5")
+            #expect(try evaluator.evaluate(expr: "3.5 + \"2.0\"") as? String == "3.52.0")
+            #expect(try evaluator.evaluate(expr: "\"2.0\" + 2 + 100") as? String == "2.02100")
+            #expect(try evaluator.evaluate(expr: "2 + 2 + \"2.0\"") as? String == "42.0")
+            #expect(try evaluator.evaluate(expr: "\"2.0\" + (2 + 100)") as? String == "2.0102")
+        }
+
+        @Test("string concatenation")
+        func testStringConcatenation() throws {
+            #expect(try evaluator.evaluate(expr: "\"Hello, \" + \"world!\"") as? String == "Hello, world!")
+            #expect(try evaluator.evaluate(expr: "\"Foo\" + \"Bar\" + \"Baz\"") as? String == "FooBarBaz")
+            #expect(try evaluator.evaluate(expr: "\"The answer is: \" + \"42\"") as? String == "The answer is: 42")
+
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: "\"Value: \" - 100")
+            }
         }
     }
 }

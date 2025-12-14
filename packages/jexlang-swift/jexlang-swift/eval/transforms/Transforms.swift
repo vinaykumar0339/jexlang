@@ -15,7 +15,7 @@ public class Transforms {
         transforms["upper"] = { (v, ctx) in
             str(toString(value: v, ctx: "upper transform").uppercased())
         }
-        transforms["lower"] { (v, ctx) in
+        transforms["lower"] = { (v, ctx) in
             str(toString(value: v, ctx: "upper transform").lowercased())
         }
         transforms["capitalize"] = { (v, ctx) in
@@ -27,16 +27,16 @@ public class Transforms {
         
         // Numeric transforms
         transforms["abs"] = { (v, ctx) in
-            num(abs(try! toNumber(value: v, ctx: "abs transform").doubleValue))
+            num(abs(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         transforms["round"] = { (v, ctx) in
-            num(round(try! toNumber(value: v, ctx: "abs transform").doubleValue))
+            num(round(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         transforms["floor"] = { (v, ctx) in
-            num(floor(try! toNumber(value: v, ctx: "abs transform").doubleValue))
+            num(floor(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         transforms["ceil"] = { (v, ctx) in
-            num(ceil(try! toNumber(value: v, ctx: "abs transform").doubleValue))
+            num(ceil(toNumber(value: v, ctx: "abs transform").doubleValue))
         }
         
         // Array/object/string length
@@ -55,7 +55,7 @@ public class Transforms {
         
         // Type transforms
         transforms["number"] = { (v, ctx) in
-            return num(try! toNumber(value: v, ctx: "number transform").doubleValue)
+            return num(toNumber(value: v, ctx: "number transform").doubleValue)
         }
         transforms["string"] = { (v, ctx) in
             return str(try! v.asString(context: "string transform"))
@@ -64,13 +64,13 @@ public class Transforms {
             return bool(try! v.asBoolean(context: "boolean transform"))
         }
         transforms["int"] = { (v, ctx) in
-            return integer(try! toNumber(value: v, ctx: "int transform").intValue)
+            return integer(toNumber(value: v, ctx: "int transform").intValue)
         }
         transforms["float"] = { (v, ctx) in
-            return doubleValue(try! toNumber(value: v, ctx: "float transform").floatValue)
+            return doubleValue(toNumber(value: v, ctx: "float transform").floatValue)
         }
         transforms["double"] = { (v, ctx) in
-            return doubleValue(try! toNumber(value: v, ctx: "float transform").doubleValue)
+            return doubleValue(toNumber(value: v, ctx: "float transform").doubleValue)
         }
         return transforms
     }
