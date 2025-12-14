@@ -22,7 +22,22 @@ public func doubleValue(_ v: Double) -> JexValue {
 }
 
 @inline(__always)
+public func doubleValue(_ v: Int) -> JexValue {
+    JexDouble(value: Double(v))
+}
+
+@inline(__always)
+public func doubleValue(_ v: Float) -> JexValue {
+    JexDouble(value: Double(v))
+}
+
+@inline(__always)
 public func num(_ v: Double) -> JexValue {
+    JexValueFactory.from(v)
+}
+
+@inline(__always)
+public func num(_ v: Int) -> JexValue {
     JexValueFactory.from(v)
 }
 
