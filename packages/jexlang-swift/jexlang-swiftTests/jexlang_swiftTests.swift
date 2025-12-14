@@ -1811,5 +1811,163 @@ struct jexlang_swiftTests {
 
         }
     }
+    
+    @Suite("block statements")
+    struct BlockStatementsTests {
+
+        var evaluator: JexEvaluator
+
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+
+        @Test("should evaluate block statements correctly")
+        func testEvaluateBlockStatementsCorrectly() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 10;
+                let y = 20;
+                x + y;
+            }
+            """)
+            #expect(result as? Int == 30)
+        }
+
+        @Test("should maintain variable scope within blocks")
+        func testMaintainVariableScopeWithinBlocks() {
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: """
+                {
+                    let x = 5;
+                }
+                x;
+                """)
+            }
+        }
+
+        @Test("should allow nested blocks")
+        func testAllowNestedBlocks() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 2;
+                {
+                    let y = 3;
+                    x * y;
+                }
+            }
+            """)
+            #expect(result as? Int == 6)
+        }
+
+        @Test("should access outer scope variables within inner blocks")
+        func testAccessOuterScopeVariablesWithinInnerBlocks() throws {
+            let result = try evaluator.evaluate(expr: """
+            let a = 4;
+            {
+                let b = 5;
+                a + b;
+            }
+            """)
+            #expect(result as? Int == 9)
+        }
+
+        @Test("should not allow inner block variables to leak to outer scope")
+        func testNotAllowInnerBlockVariablesToLeakToOuterScope() {
+            #expect(throws: ExceptionError.self) {
+                try evaluator.evaluate(expr: """
+                {
+                    let m = 7;
+                }
+                m;
+                """)
+            }
+        }
+
+        @Test("should handle multiple statements in a block")
+        func testHandleMultipleStatementsInABlock() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 1;
+                x = x + 1;
+                x = x * 3;
+                x;
+            }
+            """)
+            #expect(result as? Int == 6)
+        }
+
+        @Test("should handle blocks with only variable declarations")
+        func testHandleBlocksWithOnlyVariableDeclarations() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 10;
+                const y = 20;
+            }
+            """)
+            #expect(result as? Int == 20)
+        }
+
+        @Test("should handle blocks with global variable declarations")
+        func testHandleBlocksWithGlobalVariableDeclarations() throws {
+            _ = try evaluator.evaluate(expr: """
+            {
+                global let gVar = 123;
+                global const gConst = "block";
+            }
+            """)
+
+            let globals = evaluator.getGlobalScopeVariables()
+            #expect(globals["gVar"] as? Int == 123)
+            #expect(globals["gConst"] as? String == "block")
+        }
+
+        @Test("should handle blocks with nested variable declarations")
+        func testHandleBlocksWithNestedVariableDeclarations() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 5;
+                {
+                    let y = 10;
+                    {
+                        let z = 15;
+                        x + y + z;
+                    }
+                }
+            }
+            """)
+            #expect(result as? Int == 30)
+        }
+
+        @Test("should return last evaluated expression in the block")
+        func testReturnLastEvaluatedExpressionInTheBlock() throws {
+            let result = try evaluator.evaluate(expr: """
+            {
+                let x = 3;
+                let y = 4;
+                x * y;
+            }
+            """)
+            #expect(result as? Int == 12)
+        }
+
+        @Test("should handle async execution within blocks")
+        func testHandleAsyncExecutionWithinBlocks() throws {
+            let asyncFunc: FuncImpl = { _, _ in
+                Thread.sleep(forTimeInterval: 0.01)
+                return JexValueFactory.fromNumber(int: 5)
+            }
+
+            evaluator.addFunction(name: "asyncFunc", function: asyncFunc)
+
+            let result = try evaluator.evaluate(expr: """
+            {
+                let abc = asyncFunc();
+                let bcc = 10;
+                abc + bcc;
+            }
+            """)
+            #expect(result as? Int == 15)
+        }
+    }
 
 }

@@ -130,7 +130,7 @@ public class JexEvaluator {
     public func evaluate(
         expr: String,
         programScopeVariables: [String: Any]? = nil
-    ) throws -> Any? {
+    ) throws -> Any {
         return try catchNSException {
             let programContext = try self.parseExpression(expr: expr)
             if let programScopeVariables = programScopeVariables {
