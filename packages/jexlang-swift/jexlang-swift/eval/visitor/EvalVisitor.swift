@@ -340,7 +340,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         for time in 0..<times {
             self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: time), isConst: false)
-            self.scope.declareVariable("$it", value: JexValueFactory.fromNumber(int: time), isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: JexValueFactory.fromNumber(int: time), isConst: false)
             result = self.visit(block)
         }
         
@@ -359,7 +359,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         for (i, _) in arrayValue.enumerated() {
             self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
-            self.scope.declareVariable("$it", value: arrayValue[i], isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: arrayValue[i], isConst: false)
             result = self.visit(block)
         }
         
@@ -379,8 +379,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         for key in keys {
             self.scope.declareAndAssignVariable("$key", value: JexValueFactory.fromString(string: key), isConst: false)
-            self.scope.declareVariable("$value", value: objectValue[key]!, isConst: false)
-            self.scope.declareVariable("$it", value: objectValue[key]!, isConst: false)
+            self.scope.declareAndAssignVariable("$value", value: objectValue[key]!, isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: objectValue[key]!, isConst: false)
             result = self.visit(block)
         }
         
@@ -399,7 +399,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         for (i, c) in stringValue.enumerated() {
             self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
-            self.scope.declareVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
             result = self.visit(block)
         }
         
