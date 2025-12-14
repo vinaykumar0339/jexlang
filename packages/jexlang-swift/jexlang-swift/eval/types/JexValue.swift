@@ -86,6 +86,11 @@ public class JexValueFactory {
         let jexList = value.map { from($0) }
         return fromArray(array: jexList)
     }
+    
+    static func fromArray(value: [Any]) -> JexArray {
+        let jexList = value.map { from($0) }
+        return fromArray(array: jexList)
+    }
 
     static func fromObject(value: Any) -> JexObject {
         guard let map = value as? [String: AnyObject] else {

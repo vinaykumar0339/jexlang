@@ -682,6 +682,80 @@ struct jexlang_swiftTests {
             #expect((try evaluator.evaluate(expr: "\"5\" != 5")) as! Bool == false)
             #expect((try evaluator.evaluate(expr: "0 != false")) as! Bool == false)
         }
+        
+        @Test("array equality with Lists")
+        func testArrayEquality() throws {
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 3]") as! Bool) == false)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] == [1, 2, 4]") as! Bool) == false)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 4]") as! Bool) == true)
+            #expect((try evaluator.evaluate(expr: "[1, 2, 3] != [1, 2, 3]") as! Bool) == true)
+            
+            // reference equality
+            let list = [1, 2, 3]
+            let jexArrayList = JexValueFactory.fromArray(value: list)
+            try evaluator.declareContextValue("list", value: jexArrayList, isConst: false)
+            #expect(try evaluator.evaluate(expr: "list == list") as! Bool == true)
+            try evaluator.declareContextValue("plainList", value: list, isConst: false)
+            #expect(try evaluator.evaluate(expr: "plainList == plainList") as! Bool == true)
+            
+            let list2 = [1, 2, 3]
+            let jexArrayList2 = JexValueFactory.fromArray(value: list)
+            try evaluator.declareContextValue("list2", value: jexArrayList2, isConst: false)
+            #expect(try evaluator.evaluate(expr: "list != list2") as! Bool == true)
+            try evaluator.declareContextValue("plainList2", value: list2, isConst: false)
+            #expect(try evaluator.evaluate(expr: "plainList != plainList2") as! Bool == true)
+            
+            try evaluator.declareContextValue("list3", value: jexArrayList, isConst: false)
+            #expect(try evaluator.evaluate(expr: "list == list3") as! Bool == true)
+            
+            try evaluator.declareContextValue("plainList3", value: list)
+            #expect(try evaluator.evaluate(expr: "plainList == plainList3") as! Bool == false)
+        }
+        
+        @Test("object equality with Maps")
+        func testObjectEquality() throws {
+
+            // value equality (objects are NOT deeply equal)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":2}") as! Bool) == false)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} == {\"a\":1,\"b\":3}") as! Bool) == false)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":3}") as! Bool) == true)
+            #expect((try evaluator.evaluate(expr: "{\"a\":1,\"b\":2} != {\"a\":1,\"b\":2}") as! Bool) == true)
+
+            // reference equality — JexObject
+            let obj: [String: Any] = [
+                "a": 1,
+                "b": 2
+            ]
+            let jexObject = JexValueFactory.fromObject(value: obj)
+
+            try evaluator.declareContextValue("obj", value: jexObject, isConst: false)
+            #expect(try evaluator.evaluate(expr: "obj == obj") as! Bool == true)
+
+            // reference equality — plain Swift dictionary
+            try evaluator.declareContextValue("hashObj", value: obj, isConst: false)
+            #expect(try evaluator.evaluate(expr: "hashObj == hashObj") as! Bool == true)
+
+            // different instances with same values
+            let obj2: [String: Any] = [
+                "a": 1,
+                "b": 2
+            ]
+            let jexObject2 = JexValueFactory.fromObject(value: obj2)
+
+            try evaluator.declareContextValue("obj2", value: jexObject2, isConst: false)
+            #expect(try evaluator.evaluate(expr: "obj != obj2") as! Bool == true)
+
+            try evaluator.declareContextValue("hashObj2", value: obj2, isConst: false)
+            #expect(try evaluator.evaluate(expr: "hashObj != hashObj2") as! Bool == true)
+
+            // same reference again
+            try evaluator.declareContextValue("obj3", value: jexObject, isConst: false)
+            #expect(try evaluator.evaluate(expr: "obj == obj3") as! Bool == true)
+
+            try evaluator.declareContextValue("hashObj3", value: obj, isConst: false)
+            #expect(try evaluator.evaluate(expr: "hashObj == hashObj3") as! Bool == false)
+        }
+
     }
 
 }

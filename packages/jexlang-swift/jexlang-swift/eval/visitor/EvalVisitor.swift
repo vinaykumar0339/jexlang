@@ -256,7 +256,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 properties.merge(propObject) { (_, new) in new }
             } // ignore if the response is not an object.
         }
-        return JexValueFactory.fromObject(value: properties)
+        return JexValueFactory.fromObject(object: properties)
     }
     
     public override func visitPropertyExpressionObjectProperty(_ ctx: JexLangParser.PropertyExpressionObjectPropertyContext) -> JexValue {
@@ -267,7 +267,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let key = toString(value: propertyName, ctx: "property expression object property")
         object[key] = propertyValue
         
-        return JexValueFactory.fromObject(value: object)
+        return JexValueFactory.fromObject(object: object)
     }
     
     public override func visitComputedPropertyExpressionObjectProperty(_ ctx: JexLangParser.ComputedPropertyExpressionObjectPropertyContext) -> JexValue {
@@ -278,7 +278,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let key = toString(value: propertyName, ctx: "computed property expression object property")
         object[key] = propertyValue
         
-        return JexValueFactory.fromObject(value: object)
+        return JexValueFactory.fromObject(object: object)
     }
     
     public override func visitShorthandPropertyExpressionObjectProperty(_ ctx: JexLangParser.ShorthandPropertyExpressionObjectPropertyContext) -> JexValue {
