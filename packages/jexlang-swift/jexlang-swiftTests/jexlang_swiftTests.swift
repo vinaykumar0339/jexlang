@@ -1970,4 +1970,883 @@ struct jexlang_swiftTests {
         }
     }
 
+    // MARK: - Repeat Expressions Tests
+
+    @Suite("Repeat Expressions")
+    struct RepeatExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Numeric Repeat")
+        struct NumericRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should repeat block specified number of times")
+            func testRepeatBlockSpecifiedNumberOfTimes() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let sum = 0;
+                    repeat (5) {
+                        sum = sum + 1;
+                    }
+                    sum;
+                    """) as? Int == 5)
+            }
+            
+            @Test("should provide $index variable in numeric repeat")
+            func testNumericRepeatIndexVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let total = 0;
+                    repeat (3) {
+                        total = total + $index;
+                    }
+                    total;
+                    """) as? Int == 3)
+            }
+            
+            @Test("should provide $it variable equal to $index in numeric repeat")
+            func testNumericRepeatItVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let sum = 0;
+                    repeat (4) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """) as? Int == 6)
+            }
+            
+            @Test("should handle zero iterations")
+            func testNumericRepeatZeroIterations() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let count = 0;
+                    repeat (0) {
+                        count = count + 1;
+                    }
+                    count;
+                    """) as? Int == 0)
+            }
+            
+            @Test("should throw error for negative iterations")
+            func testNumericRepeatNegativeIterations() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: """
+                        repeat (-5) {
+                            let x = 1;
+                        }
+                        """)
+                }
+            }
+            
+            @Test("should return last evaluated result from block")
+            func testNumericRepeatLastEvaluatedResult() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    repeat (3) {
+                        $index * 2;
+                    }
+                    """) as? Int == 4)
+            }
+        }
+        
+        @Suite("Array Repeat")
+        struct ArrayRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should iterate over array elements")
+            func testArrayRepeatIteration() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let arr = [10, 20, 30];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """) as? Int == 60)
+            }
+            
+            @Test("should provide $index variable in array repeat")
+            func testArrayRepeatIndexVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let arr = ["a", "b", "c"];
+                    let indices = 0;
+                    repeat (arr) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                    """) as? Int == 3)
+            }
+            
+            @Test("should provide $it variable with current element")
+            func testArrayRepeatItVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let arr = [5, 10, 15];
+                    let product = 1;
+                    repeat (arr) {
+                        product = product * $it;
+                    }
+                    product;
+                    """) as? Int == 750)
+            }
+            
+            @Test("should handle empty array")
+            func testArrayRepeatEmptyArray() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let arr = [];
+                    let count = 0;
+                    repeat (arr) {
+                        count = count + 1;
+                    }
+                    count;
+                    """) as? Int == 0)
+            }
+            
+            @Test("should return last evaluated result from array iteration")
+            func testArrayRepeatLastResult() throws {
+                let result = try evaluator.evaluate(expr: """
+                    let arr = [1, 2, 3, 4];
+                    repeat (arr) {
+                        $it * 10;
+                    }
+                    """) as? Int
+                
+                #expect([10, 20, 30, 40].contains(result ?? 0))
+            }
+        }
+        
+        @Suite("Object Repeat")
+        struct ObjectRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should iterate over object properties")
+            func testObjectRepeatIteration() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let obj = {"a": 1, "b": 2, "c": 3};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + $it;
+                    }
+                    sum;
+                    """) as? Int == 6)
+            }
+            
+            @Test("should provide $key variable in object repeat")
+            func testObjectRepeatKeyVariable() throws {
+                let result = try evaluator.evaluate(expr: """
+                    let obj = {"x": 10, "y": 20};
+                    let keys = "";
+                    repeat (obj) {
+                        keys = keys + $key;
+                    }
+                    keys;
+                    """) as? String
+                
+                #expect(result == "xy" || result == "yx")
+            }
+            
+            @Test("should provide $value variable equal to $it")
+            func testObjectRepeatValueVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let obj = {"a": 5, "b": 10};
+                    let total = 0;
+                    repeat (obj) {
+                        total = total + $value;
+                    }
+                    total;
+                    """) as? Int == 15)
+            }
+            
+            @Test("should handle empty object")
+            func testObjectRepeatEmptyObject() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let obj = {};
+                    let count = 0;
+                    repeat (obj) {
+                        count = count + 1;
+                    }
+                    count;
+                    """) as? Int == 0)
+            }
+            
+            @Test("should return last evaluated result from object iteration")
+            func testObjectRepeatLastResult() throws {
+                let result = try evaluator.evaluate(expr: """
+                    let obj = {"a": 1, "b": 2};
+                    repeat (obj) {
+                        $it * 100;
+                    }
+                    """) as? Int
+                
+                #expect(result == 100 || result == 200)
+            }
+        }
+        
+        @Suite("String Repeat")
+        struct StringRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should iterate over string characters")
+            func testStringRepeatIteration() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let str = "abc";
+                    let combined = "";
+                    repeat (str) {
+                        combined = combined + $it;
+                    }
+                    combined;
+                    """) as? String == "abc")
+            }
+            
+            @Test("should provide $index variable in string repeat")
+            func testStringRepeatIndexVariable() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let str = "test";
+                    let indices = 0;
+                    repeat (str) {
+                        indices = indices + $index;
+                    }
+                    indices;
+                    """) as? Int == 6)
+            }
+            
+            @Test("should handle empty string")
+            func testStringRepeatEmpty() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let str = "";
+                    let count = 0;
+                    repeat (str) {
+                        count = count + 1;
+                    }
+                    count;
+                    """) as? Int == 0)
+            }
+            
+            @Test("should return last evaluated result from string iteration")
+            func testStringRepeatLastResult() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let str = "xyz";
+                    repeat (str) {
+                        $it;
+                    }
+                    """) as? String == "z")
+            }
+        }
+        
+        @Suite("Null and Undefined Handling")
+        struct NullUndefinedTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should return null for null iterable")
+            func testRepeatNullIterable() throws {
+                let result = try evaluator.evaluate(expr: """
+                    repeat (null) {
+                        let x = 1;
+                    }
+                    """)
+                #expect(result as? NSNull == nil)
+            }
+            
+            @Test("should handle null from expression")
+            func testRepeatNullExpression() throws {
+                try evaluator.declareContextValue("nullValue", value: nil, isConst: false)
+                let result = try evaluator.evaluate(expr: """
+                    repeat (nullValue) {
+                        let x = 1;
+                    }
+                    """)
+                #expect(result as? NSNull == nil)
+            }
+        }
+        
+        @Suite("Nested Repeat Expressions")
+        struct NestedRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle nested numeric repeats")
+            func testNestedNumericRepeat() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let sum = 0;
+                    repeat (3) {
+                        repeat (2) {
+                            sum = sum + 1;
+                        }
+                    }
+                    sum;
+                    """) as? Int == 6)
+            }
+            
+            @Test("should handle nested array repeats")
+            func testNestedArrayRepeat() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let matrix = [[1, 2], [3, 4]];
+                    let total = 0;
+                    repeat (matrix) {
+                        repeat ($it) {
+                            total = total + $it;
+                        }
+                    }
+                    total;
+                    """) as? Int == 10)
+            }
+        }
+        
+        @Suite("Scope and Variable Shadowing")
+        struct ScopeAndShadowingTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should create new scope for repeat block")
+            func testRepeatBlockScopeIsolation() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: """
+                        repeat (1) {
+                            let blockVar = 5;
+                        }
+                        blockVar;
+                        """)
+                }
+            }
+            
+            @Test("should access outer scope variables")
+            func testRepeatAccessOuterScope() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let outer = 10;
+                    repeat (2) {
+                        outer = outer + 5;
+                    }
+                    outer;
+                    """) as? Int == 20)
+            }
+            
+            @Test("should not leak $index and $it variables")
+            func testRepeatVariableLeakage() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: """
+                        repeat (3) {
+                            let x = $index;
+                        }
+                        $index;
+                        """)
+                }
+                
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: """
+                        repeat ([1, 2]) {
+                            let y = $it;
+                        }
+                        $it;
+                        """)
+                }
+            }
+        }
+        
+        @Suite("Async Repeat Expressions")
+        struct AsyncRepeatTests {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle async operations in numeric repeat")
+            func testAsyncNumericRepeat() throws {
+                let asyncFunc: FuncImpl = { _, _ in
+                    JexValueFactory.fromNumber(int: 5)
+                }
+                evaluator.addFunction(name: "asyncFunc", function: asyncFunc)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    let sum = 0;
+                    repeat(2) {
+                        let asyncVal = asyncFunc();
+                        sum = sum + asyncVal;
+                    }
+                    sum;
+                    """) as? Int == 10)
+            }
+            
+            @Test("should handle async operations in array repeat")
+            func testAsyncArrayRepeat() throws {
+                let asyncDouble: FuncImpl = { _, args in
+                    Thread.sleep(forTimeInterval: 0.005)
+                    let val = toNumber(value: args[0], ctx: "asyncDouble")
+                    return JexValueFactory.fromNumber(double: val.doubleValue * 2)
+                }
+                evaluator.addFunction(name: "asyncDouble", function: asyncDouble)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    let arr = [1, 2, 3];
+                    let sum = 0;
+                    repeat (arr) {
+                        sum = sum + asyncDouble($it);
+                    }
+                    sum;
+                    """) as? Int == 12)
+            }
+            
+            @Test("should handle async operations in object repeat")
+            func testAsyncObjectRepeat() throws {
+                let asyncValue: FuncImpl = { _, args in
+                    let val = toNumber(value: args[0], ctx: "asyncValue")
+                    return JexValueFactory.fromNumber(double: val.doubleValue + 10)
+                }
+                evaluator.addFunction(name: "asyncValue", function: asyncValue)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    let obj = {"a": 1, "b": 2};
+                    let sum = 0;
+                    repeat (obj) {
+                        sum = sum + asyncValue($it);
+                    }
+                    sum;
+                    """) as? Int == 23)
+            }
+            
+            @Test("should handle async operations in string repeat")
+            func testAsyncStringRepeat() throws {
+                let asyncCharCode: FuncImpl = { _, args in
+                    let str = toString(value: args[0], ctx: "asyncCharCode")
+                    let charCode = str.unicodeScalars.first?.value ?? 0
+                    return JexValueFactory.fromNumber(int: Int(charCode))
+                }
+                evaluator.addFunction(name: "asyncCharCode", function: asyncCharCode)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    let str = "abc";
+                    let total = 0;
+                    repeat (str) {
+                        total = total + asyncCharCode($it);
+                    }
+                    total;
+                    """) as? Int == 294)
+            }
+        }
+    }
+
+    // MARK: - If-Else Expressions Tests
+
+    @Suite("If-Else Expressions")
+    struct IfElseExpressionsTests {
+        
+        var evaluator: JexEvaluator
+        
+        init() throws {
+            self.evaluator = try JexEvaluator()
+        }
+        
+        @Suite("Basic If Expressions")
+        struct BasicIfExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should execute if block when condition is true")
+            func testExecuteIfBlockWhenConditionIsTrue() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (true) {
+                        42;
+                    }
+                    """) as? Int == 42)
+            }
+            
+            @Test("should return null when condition is false and no else")
+            func testReturnNullWhenConditionFalseNoElse() throws {
+                let result = try evaluator.evaluate(expr: """
+                    if (false) {
+                        42;
+                    }
+                    """)
+                #expect(result as? NSNull == nil)
+            }
+            
+            @Test("should evaluate condition expressions")
+            func testEvaluateConditionExpressions() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (5 > 3) {
+                        "greater";
+                    }
+                    """) as? String == "greater")
+            }
+            
+            @Test("should handle falsy values")
+            func testHandleFalsyValues() throws {
+                #expect(try evaluator.evaluate(expr: "if (0) { \"yes\"; }") as? NSNull == nil)
+                #expect(try evaluator.evaluate(expr: "if (\"\") { \"yes\"; }") as? NSNull == nil)
+                #expect(try evaluator.evaluate(expr: "if (null) { \"yes\"; }") as? NSNull == nil)
+                #expect(try evaluator.evaluate(expr: "if (false) { \"yes\"; }") as? NSNull == nil)
+            }
+            
+            @Test("should handle truthy values")
+            func testHandleTruthyValues() throws {
+                #expect(try evaluator.evaluate(expr: "if (1) { \"yes\"; }") as? String == "yes")
+                #expect(try evaluator.evaluate(expr: "if (\"hello\") { \"yes\"; }") as? String == "yes")
+                #expect(try evaluator.evaluate(expr: "if (true) { \"yes\"; }") as? String == "yes")
+                #expect(try evaluator.evaluate(expr: "if ([1]) { \"yes\"; }") as? String == "yes")
+                #expect(try evaluator.evaluate(expr: "if ({\"a\": 1}) { \"yes\"; }") as? String == "yes")
+            }
+            
+            @Test("should handle empty arrays and objects as falsy")
+            func testHandleEmptyArraysObjectsAsFalsy() throws {
+                #expect(try evaluator.evaluate(expr: "if ([]) { \"yes\"; }") as? NSNull == nil)
+                #expect(try evaluator.evaluate(expr: "if ({}) { \"yes\"; }") as? NSNull == nil)
+            }
+        }
+        
+        @Suite("If-Else Expressions")
+        struct IfElseExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should execute else block when condition is false")
+            func testExecuteElseBlockWhenConditionFalse() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (false) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                    """) as? String == "else")
+            }
+            
+            @Test("should execute if block when condition is true")
+            func testExecuteIfBlockWhenConditionTrue() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (true) {
+                        "if";
+                    } else {
+                        "else";
+                    }
+                    """) as? String == "if")
+            }
+            
+            @Test("should handle complex expressions in blocks")
+            func testHandleComplexExpressionsInBlocks() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (10 > 5) {
+                        let x = 20;
+                        x * 2;
+                    } else {
+                        let y = 10;
+                        y * 3;
+                    }
+                    """) as? Int == 40)
+            }
+        }
+        
+        @Suite("If-Else-If Expressions")
+        struct IfElseIfExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should execute first true condition")
+            func testExecuteFirstTrueCondition() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (false) {
+                        "first";
+                    } else if (true) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                    """) as? String == "second")
+            }
+            
+            @Test("should execute else when all conditions are false")
+            func testExecuteElseWhenAllFalse() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    } else {
+                        "third";
+                    }
+                    """) as? String == "third")
+            }
+            
+            @Test("should handle multiple else-if clauses")
+            func testHandleMultipleElseIfClauses() throws {
+                try evaluator.declareContextValue("score", value: 85, isConst: false)
+                #expect(try evaluator.evaluate(expr: """
+                    if (score >= 90) {
+                        "A";
+                    } else if (score >= 80) {
+                        "B";
+                    } else if (score >= 70) {
+                        "C";
+                    } else {
+                        "F";
+                    }
+                    """) as? String == "B")
+            }
+            
+            @Test("should return null when all conditions are false and no else")
+            func testReturnNullWhenAllFalseNoElse() throws {
+                let result = try evaluator.evaluate(expr: """
+                    if (false) {
+                        "first";
+                    } else if (false) {
+                        "second";
+                    }
+                    """)
+                #expect(result as? NSNull == nil)
+            }
+            
+            @Test("should stop at first true condition")
+            func testStopAtFirstTrueCondition() throws {
+                try evaluator.declareContextValue("counter", value: 0, isConst: false)
+                #expect(try evaluator.evaluate(expr: """
+                    if (false) {
+                        counter = counter + 1;
+                        "first";
+                    } else if (true) {
+                        counter = counter + 10;
+                        "second";
+                    } else if (true) {
+                        counter = counter + 100;
+                        "third";
+                    }
+                    counter;
+                    """) as? Int == 10)
+            }
+        }
+        
+        @Suite("Nested If Expressions")
+        struct NestedIfExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle nested if statements")
+            func testHandleNestedIfStatements() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (true) {
+                        if (true) {
+                            "nested";
+                        }
+                    }
+                    """) as? String == "nested")
+            }
+            
+            @Test("should handle nested if-else statements")
+            func testHandleNestedIfElseStatements() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    if (true) {
+                        if (false) {
+                            "inner-if";
+                        } else {
+                            "inner-else";
+                        }
+                    } else {
+                        "outer-else";
+                    }
+                    """) as? String == "inner-else")
+            }
+            
+            @Test("should handle deeply nested conditions")
+            func testHandleDeeplyNestedConditions() throws {
+                try evaluator.declareContextValue("x", value: 5, isConst: false)
+                try evaluator.declareContextValue("y", value: 10, isConst: false)
+                #expect(try evaluator.evaluate(expr: """
+                    if (x < y) {
+                        if (x > 0) {
+                            if (y > 5) {
+                                "all conditions met";
+                            }
+                        }
+                    }
+                    """) as? String == "all conditions met")
+            }
+        }
+        
+        @Suite("If Expressions with Variables")
+        struct IfExpressionsWithVariables {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should access outer scope variables")
+            func testAccessOuterScopeVariables() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let x = 10;
+                    if (x > 5) {
+                        x * 2;
+                    }
+                    """) as? Int == 20)
+            }
+            
+            @Test("should modify outer scope variables")
+            func testModifyOuterScopeVariables() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let count = 0;
+                    if (true) {
+                        count = count + 5;
+                    }
+                    count;
+                    """) as? Int == 5)
+            }
+            
+            @Test("should declare variables in if block scope")
+            func testDeclareVariablesInIfBlockScope() {
+                #expect(throws: ExceptionError.self) {
+                    try evaluator.evaluate(expr: """
+                        if (true) {
+                            let blockVar = 10;
+                        }
+                        blockVar;
+                        """)
+                }
+            }
+            
+            @Test("should handle variable declarations in different branches")
+            func testHandleVariableDeclarationsInDifferentBranches() throws {
+                try evaluator.declareContextValue("flag", value: true, isConst: false)
+                #expect(try evaluator.evaluate(expr: """
+                    let result = 0;
+                    if (flag) {
+                        let temp = 10;
+                        result = temp;
+                    } else {
+                        let temp = 20;
+                        result = temp;
+                    }
+                    result;
+                    """) as? Int == 10)
+            }
+        }
+        
+        @Suite("Async If Expressions")
+        struct AsyncIfExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle async condition evaluation")
+            func testAsyncConditionEvaluation() throws {
+                let asyncCheck: FuncImpl = { _, _ in
+                    Thread.sleep(forTimeInterval: 0.01)
+                    return JexValueFactory.from(true)
+                }
+                evaluator.addFunction(name: "asyncCheck", function: asyncCheck)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    if (asyncCheck()) {
+                        "async-true";
+                    } else {
+                        "async-false";
+                    }
+                    """) as? String == "async-true")
+            }
+        }
+        
+        @Suite("Sync If Expressions")
+        struct SyncIfExpressions {
+            
+            var evaluator: JexEvaluator
+            
+            init() throws {
+                self.evaluator = try JexEvaluator()
+            }
+            
+            @Test("should handle multiple sync operations in if block")
+            func testMultipleSyncOperationsInIfBlock() throws {
+                #expect(try evaluator.evaluate(expr: """
+                    let total = 0;
+                    if (true) {
+                        total = total + 10;
+                        total = total * 2;
+                        total = total + 5;
+                    }
+                    total;
+                    """) as? Int == 25)
+            }
+            
+            @Test("should handle sync expressions with context variables")
+            func testSyncExpressionsWithContextVariables() throws {
+                try evaluator.declareContextValue("multiplier", value: 3, isConst: false)
+                try evaluator.declareContextValue("base", value: 10, isConst: false)
+                #expect(try evaluator.evaluate(expr: """
+                    if (multiplier > 2) {
+                        base * multiplier;
+                    } else {
+                        base;
+                    }
+                    """) as? Int == 30)
+            }
+            
+            @Test("should handle sync function calls in conditions")
+            func testSyncFunctionCallsInConditions() throws {
+                let syncCheck: FuncImpl = { _, args in
+                    let val = toNumber(value: args[0], ctx: "syncCheck")
+                    return JexValueFactory.from(val.int64Value % 2 == 0)
+                }
+                evaluator.addFunction(name: "syncCheck", function: syncCheck)
+                
+                #expect(try evaluator.evaluate(expr: """
+                    if (syncCheck(10)) {
+                        "even";
+                    } else {
+                        "odd";
+                    }
+                    """) as? String == "even")
+            }
+        }
+    }
+
 }
