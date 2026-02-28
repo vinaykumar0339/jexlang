@@ -8,6 +8,8 @@
 #ifndef ObjectiveCExceptionCatcher_h
 #define ObjectiveCExceptionCatcher_h
 
+#import <Foundation/Foundation.h>
+
 // A helper class to safely run a block of code and catch NSExceptions
 @interface ObjectiveCExceptionCatcher : NSObject
 

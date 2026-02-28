@@ -48,6 +48,7 @@ JexLang is available in multiple language implementations:
 
 - [JavaScript/TypeScript Implementation](./packages/jexlang-ts/README.md)
 - [Java Implementation](./packages/jexlang-java/README.md)
+- [Swift Implementation](./packages/jexlang-swift/README.md)
 
 ## License
 [MIT License](LICENSE)

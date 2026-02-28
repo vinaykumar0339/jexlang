@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ObjectiveCExceptionCatcher
 
 public enum ExceptionError: Error {
     case nsException(exception: NSException)

@@ -100,7 +100,7 @@ public class JexNumber: JexValue {
     }
     
     public func isEqual(to other: any JexValue) -> Bool {
-        return jexlang_swift.isEqual(self, other)
+        return JexlangSwift.isEqual(self, other)
     }
     
 }

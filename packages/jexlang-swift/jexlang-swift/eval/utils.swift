@@ -286,32 +286,32 @@ public func isEqual(_ lhs: JexValue, _ rhs: JexValue) -> Bool {
         
         // 4. boolean → number conversion
         if (lhs.isBoolean()) {
-            return jexlang_swift.isEqual(JexValueFactory.fromNumber(int: (try lhs.asBoolean(context: "==") ? 1 : 0)), rhs)
+            return JexlangSwift.isEqual(JexValueFactory.fromNumber(int: (try lhs.asBoolean(context: "==") ? 1 : 0)), rhs)
         }
         if (rhs.isBoolean()) {
-            return jexlang_swift.isEqual(lhs, JexValueFactory.fromNumber(int: (try rhs.asBoolean(context: "==") ? 1 : 0)))
+            return JexlangSwift.isEqual(lhs, JexValueFactory.fromNumber(int: (try rhs.asBoolean(context: "==") ? 1 : 0)))
         }
         
         // 5. string ↔ number conversion
         if (lhs.isString() && rhs.isNumber()) {
             if let num = Double(try lhs.asString(context: "==")) {
-                return jexlang_swift.isEqual(JexValueFactory.fromNumber(double: num), rhs)
+                return JexlangSwift.isEqual(JexValueFactory.fromNumber(double: num), rhs)
             }
             return false
         }
         if (lhs.isNumber() && rhs.isString()) {
             if let num = Double(try rhs.asString(context: "==")) {
-                return jexlang_swift.isEqual(lhs, JexValueFactory.fromNumber(double: num))
+                return JexlangSwift.isEqual(lhs, JexValueFactory.fromNumber(double: num))
             }
             return false
         }
         
         // 6. array → primitive conversion (like JS ToPrimitive)
         if (lhs.isArray() && !rhs.isArray()) {
-            return jexlang_swift.isEqual(toPrimitive(value: lhs), rhs)
+            return JexlangSwift.isEqual(toPrimitive(value: lhs), rhs)
         }
         if (!lhs.isArray() && rhs.isArray()) {
-            return jexlang_swift.isEqual(lhs, toPrimitive(value: rhs))
+            return JexlangSwift.isEqual(lhs, toPrimitive(value: rhs))
         }
         // 7. array reference equality
         if lhs.isArray() && rhs.isArray() {
@@ -320,10 +320,10 @@ public func isEqual(_ lhs: JexValue, _ rhs: JexValue) -> Bool {
         
         // 8. object → primitive conversion (like JS ToPrimitive)
         if (lhs.isObject() && !rhs.isObject()) {
-            return jexlang_swift.isEqual(toPrimitive(value: lhs), rhs)
+            return JexlangSwift.isEqual(toPrimitive(value: lhs), rhs)
         }
         if (!lhs.isObject() && rhs.isObject()) {
-            return jexlang_swift.isEqual(lhs, toPrimitive(value: rhs))
+            return JexlangSwift.isEqual(lhs, toPrimitive(value: rhs))
         }
         
         // 9. object reference equality
