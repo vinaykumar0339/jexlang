@@ -40,7 +40,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         super.init()
     }
     
-    public func addFunction(name: String, fn: FuncImpl) {
+    public func addFunction(name: String, fn: @escaping FuncImpl) {
         self.funcRegistry.set(name, fn)
     }
     
@@ -56,7 +56,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         return self.funcRegistry.has(name)
     }
     
-    public func addTransform(name: String, transform: TransformImpl) {
+    public func addTransform(name: String, transform: @escaping TransformImpl) {
         self.transformRegistry.set(name, transform)
     }
     
@@ -76,6 +76,10 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         self.programScopeContext = context;
     }
     
+    public func setProgramScopeContext(context: [String: Any]) {
+        self.programScopeContext = context.mapValues { $0 as AnyObject };
+    }
+    
     public func getProgramScopeContext() -> [String: AnyObject] {
         return self.programScopeContext;
     }
@@ -93,9 +97,9 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visit(_ tree: (any ParseTree)?) -> JexValue {
         if let tree = tree {
-            return super.visit(tree) ?? JexNil()
+            return super.visit(tree) ?? JexNull()
         }
-        return JexNil()
+        return JexNull()
     }
     
     private func setScopeToParent() {
@@ -112,11 +116,10 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         
         // initialize the program scope with the provided context variable
         for (key, value) in programScopeContext {
-            // Force crash.
-            try! scope.declareVariable(key, value: JexValueFactory.from(value), isConst: false) // create as non-const variable
+            scope.declareVariable(key, value: JexValueFactory.from(value), isConst: false) // create as non-const variable
         }
         
-        var result: JexValue = JexNil()
+        var result: JexValue = JexNull()
         
         for (_, statement) in ctx.statement().enumerated() {
             result = self.visit(statement);
@@ -141,12 +144,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             return self.visit(emptyStatement)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitVarDeclaration(_ ctx: JexLangParser.VarDeclarationContext) -> JexValue {
         let varName = ctx.IDENTIFIER()!.getText();
-        var varValue: JexValue = JexNil()
+        var varValue: JexValue = JexNull()
         
         if let singleExpression = ctx.singleExpression() {
             varValue = self.visit(singleExpression)
@@ -155,14 +158,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let isConst = ctx.CONST() != nil
         let isGlobal = ctx.GLOBAL() != nil
         
-        if let globalScope = self.scope.resolveScope(ofType: .global) {
-            if (isGlobal) {
-                try! globalScope.declareVariable(varName, value: varValue, isConst: isConst)
-            }
+        if
+            let globalScope = self.scope.resolveScope(ofType: .global),
+            isGlobal
+        {
+            globalScope.declareVariable(varName, value: varValue, isConst: isConst)
             return varValue
         }
         
-        try! self.scope.declareVariable(varName, value: varValue, isConst: isConst)
+        self.scope.declareVariable(varName, value: varValue, isConst: isConst)
         return varValue
         
     }
@@ -173,22 +177,22 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     
     public override func visitEmptyStatement(_ ctx: JexLangParser.EmptyStatementContext) -> JexValue {
-        return JexNil()
+        return JexNull()
     }
     
-    public override func visitExpressionSequence(_ ctx: JexLangParser.ExpressionSequenceContext) -> JexValue? {
-        var result: JexValue? = nil
+    public override func visitExpressionSequence(_ ctx: JexLangParser.ExpressionSequenceContext) -> JexValue {
+        var result: JexValue = JexNull()
         for singleExpression in ctx.singleExpression() {
             result = self.visit(singleExpression)
         }
-        return result != nil ? result : JexNil()
+        return result
     }
     
     public override func visitBlock(_ ctx: JexLangParser.BlockContext) -> JexValue {
         // Create a new scope for the block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
-        var value: JexValue = JexNil()
+        var value: JexValue = JexNull()
         
         for statement in ctx.statement() {
             value = self.visit(statement)
@@ -205,10 +209,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     }
     
     public override func visitNumberLiteral(_ ctx: JexLangParser.NumberLiteralContext) -> JexValue {
-        if let number = try? JexValueFactory.fromNumber(number: toNumber(value: JexString(value: ctx.getText()), ctx: "number literal")) {
-            return number
-        }
-        return JexNil()
+        return JexValueFactory.fromNumber(number: toNumber(value: JexString(value: ctx.getText()), ctx: "number literal"))
     }
     
     public override func visitBooleanLiteral(_ ctx: JexLangParser.BooleanLiteralContext) -> JexValue {
@@ -221,7 +222,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     }
     
     public override func visitNullLiteral(_ ctx: JexLangParser.NullLiteralContext) -> JexValue {
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitArrayLiteralExpression(_ ctx: JexLangParser.ArrayLiteralExpressionContext) -> JexValue {
@@ -248,11 +249,14 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         var properties = [String: JexValue]()
         for propertyCtx in ctx.objectProperty() {
             let prop = self.visit(propertyCtx)
-            if prop.isObject(), let propObject = try? prop.asObject(context: "visit object literal") {
+            if
+                prop.isObject(),
+                let propObject = try? prop.asObject(context: "visit object literal")
+            {
                 properties.merge(propObject) { (_, new) in new }
             } // ignore if the response is not an object.
         }
-        return JexValueFactory.fromObject(value: properties)
+        return JexValueFactory.fromObject(object: properties)
     }
     
     public override func visitPropertyExpressionObjectProperty(_ ctx: JexLangParser.PropertyExpressionObjectPropertyContext) -> JexValue {
@@ -260,11 +264,10 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyValue = self.visit(ctx.singleExpression())
         
         var object = [String: JexValue]()
-        if let key = try? toString(value: propertyName, ctx: "visit property expression object property") {
-            object[key] = propertyValue
-        }
+        let key = toString(value: propertyName, ctx: "property expression object property")
+        object[key] = propertyValue
         
-        return JexValueFactory.fromObject(value: object)
+        return JexValueFactory.fromObject(object: object)
     }
     
     public override func visitComputedPropertyExpressionObjectProperty(_ ctx: JexLangParser.ComputedPropertyExpressionObjectPropertyContext) -> JexValue {
@@ -272,29 +275,27 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyValue = self.visit(ctx.singleExpression(1))
         
         var object = [String: JexValue]()
-        if let key = try? toString(value: propertyName, ctx: "visit compoted property expression object property") {
-            object[key] = propertyValue
-        }
+        let key = toString(value: propertyName, ctx: "computed property expression object property")
+        object[key] = propertyValue
         
-        return JexValueFactory.fromObject(value: object)
+        return JexValueFactory.fromObject(object: object)
     }
     
     public override func visitShorthandPropertyExpressionObjectProperty(_ ctx: JexLangParser.ShorthandPropertyExpressionObjectPropertyContext) -> JexValue {
         guard let propertyName = ctx.IDENTIFIER()?.getText() else {
-            return JexValueFactory.fromObject(value: [String: JexValue]())
+            return JexValueFactory.fromObject(object: [String: JexValue]())
         }
+        
         let propertyValue = self.scope.getVariable(propertyName)
         
-        var object: [String: JexValue] = [
+        return JexValueFactory.fromObject(object: [
             propertyName: propertyValue
-        ]
-        
-        return JexValueFactory.fromObject(value: object)
+        ]) // don't throw any error if it didn't find the variable just set the null value
     }
     
     public override func visitObjectPropertyName(_ ctx: JexLangParser.ObjectPropertyNameContext) -> (any JexValue)? {
-        guard let s = ctx.STRING() else {
-            return JexString(value: ctx.getText())
+        guard ctx.STRING() != nil else {
+            return JexString(value: ctx.getText()) // Return string representation of the identifier or number
         }
         
         let text = ctx.getText()
@@ -306,7 +307,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let iterable = self.visit(ctx.expressionSequence())
         
         guard let block = ctx.block() else {
-            return JexNil()
+            return JexNull()
         }
         
         if (
@@ -321,7 +322,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             return handleObjectRepeat(object: iterable as! JexObject, block: block)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     private func handleNumericRepeat(number: JexNumber, block: JexLangParser.BlockContext) -> JexValue {
@@ -329,17 +330,17 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let times = number.asNumber(context: "repeat expression").intValue
         
         if (times < 0) {
-            // throw
-            // TODO: make proper error propagation later.
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot repeat a block negative times: \(times)"))
         }
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
-        var result: JexValue = JexNil()
+        var result: JexValue = JexNull()
         
         for time in 0..<times {
-            try? self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumer(int: time), isConst: false)
-            try? self.scope.declareVariable("$it", value: JexValueFactory.fromNumer(int: time), isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: time), isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: JexValueFactory.fromNumber(int: time), isConst: false)
             result = self.visit(block)
         }
         
@@ -351,13 +352,14 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     private func handleArrayRepeat(array: JexArray, block: JexLangParser.BlockContext) -> JexValue {
         let arrayValue = array.asArray(context: "repeat expression")
         
-        var result: JexValue = JexNil()
+        var result: JexValue = JexNull()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, _) in arrayValue.enumerated() {
-            try? self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumer(int: i), isConst: false)
-            try? self.scope.declareVariable("$it", value: arrayValue[i], isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: arrayValue[i], isConst: false)
             result = self.visit(block)
         }
         
@@ -370,14 +372,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let objectValue = object.asObject(context: "repeat expression")
         let keys: [String] = Array(objectValue.keys)
         
-        var result: JexValue = JexNil()
+        var result: JexValue = JexNull()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for key in keys {
-            try? self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumer(int: keys.firstIndex(of: key)!), isConst: false)
-            try? self.scope.declareVariable("$value", value: objectValue[key]!, isConst: false)
-            try? self.scope.declareVariable("$it", value: objectValue[key]!, isConst: false)
+            self.scope.declareAndAssignVariable("$key", value: JexValueFactory.fromString(string: key), isConst: false)
+            self.scope.declareAndAssignVariable("$value", value: objectValue[key]!, isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: objectValue[key]!, isConst: false)
             result = self.visit(block)
         }
         
@@ -388,15 +391,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     private func handleStringRepeat(string: JexString, block: JexLangParser.BlockContext) -> JexValue {
         let stringValue = string.asString(context: "repeat expression")
-        let times = stringValue.count
         
-        var result: JexValue = JexNil()
+        var result: JexValue = JexNull()
         
+        // Create a new scope for the repeat block
         self.scope = Scope(parentScope: self.scope, scopeType: .block)
         
         for (i, c) in stringValue.enumerated() {
-            try? self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumer(int: i), isConst: false)
-            try? self.scope.declareVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
+            self.scope.declareAndAssignVariable("$index", value: JexValueFactory.fromNumber(int: i), isConst: false)
+            self.scope.declareAndAssignVariable("$it", value: JexValueFactory.fromString(string: "\(c)"), isConst: false)
             result = self.visit(block)
         }
         
@@ -407,14 +410,13 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visitIdentifierExpression(_ ctx: JexLangParser.IdentifierExpressionContext) -> JexValue {
         guard let identifier = ctx.IDENTIFIER()?.getText() else {
-            return JexNil()
+            return JexNull()
         }
         if (self.scope.hasVariable(identifier)) {
             return self.scope.getVariable(identifier)
         }
-        // TODO: here actually we need to implement undefined error throw with proper strategy.
-        // throw
-        return JexNil()
+        NSException.raise(jexLangError: UndefinedVariableError(variableName: identifier))
+        return JexNull()
     }
     
     public override func visitParenthesizedExpression(_ ctx: JexLangParser.ParenthesizedExpressionContext) -> JexValue {
@@ -424,7 +426,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     public override func visitAssignmentExpression(_ ctx: JexLangParser.AssignmentExpressionContext) -> JexValue {
         let varValue = self.visit(ctx.singleExpression())
         if let varName = ctx.IDENTIFIER()?.getText() {
-            try? self.scope.assignVariable(varName, value: varValue)
+            self.scope.assignVariable(varName, value: varValue)
         }
         return varValue;
     }
@@ -434,17 +436,15 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyKey = self.visit(ctx.singleExpression(1))
         let propertyValue = self.visit(ctx.singleExpression(2))
         
-        if objectValue.isObject(),
-           var objectValue = try? objectValue.asObject(context: "bracket property assignment"),
-           let key = try? toString(value: propertyKey, ctx: "bracket property assignment")
-        {
+        if (objectValue.isObject()) {
+            var objectValue = try! objectValue.asObject(context: "bracket property assignment")
+            let key = toString(value: propertyKey, ctx: "bracket property assignment")
             objectValue[key] = propertyValue
-            return JexValueFactory.fromObject(value: objectValue)
-        } else if
-            objectValue.isArray(),
-            var arrayValue = try? objectValue.asArray(context: "bracket property assignment"),
-            let indexNumber = try? toNumber(value: propertyKey, ctx: "bracket property assignment")
-         {
+            return JexValueFactory.fromObject(object: objectValue)
+        } else if (objectValue.isArray()) {
+            var arrayValue = try! objectValue.asArray(context: "bracket property assignment")
+            let indexNumber = toNumber(value: propertyKey, ctx: "bracket property assignment")
+            
             let doubleValue = indexNumber.doubleValue
             
             var index = doubleValue.isNaN ? -1 : Int(doubleValue)
@@ -458,12 +458,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 return JexValueFactory.fromArray(array: arrayValue)
             }
             
-            // out of bounds -> return nil
-            return JexNil()
+            // if out of bounds just return JexNull, don't throw any errors.
+            return JexNull()
         }
         
-        // TODO: actually throw an error
-        return JexNil()
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot assign property to non-object/non-array in bracket property assignment"))
+        return JexNull()
     }
     
     public override func visitDotPropertyAssignment(_ ctx: JexLangParser.DotPropertyAssignmentContext) -> JexValue {
@@ -471,17 +471,17 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyKey = self.visit(ctx.singleExpression(1))
         let propertyValue = self.visit(ctx.singleExpression(2))
         
-        if objectValue.isObject(),
-           var objectValue = try? objectValue.asObject(context: "dot property assignment"),
-           let key = try? toString(value: propertyKey, ctx: "dot property assignment")
+        if objectValue.isObject()
         {
+            var objectValue = try! objectValue.asObject(context: "dot property assignment")
+            let key = toString(value: propertyKey, ctx: "dot property assignment")
             objectValue[key] = propertyValue
-            return JexValueFactory.fromObject(value: objectValue)
+            return JexValueFactory.fromObject(object: objectValue)
         } else if
-            objectValue.isArray(),
-            var arrayValue = try? objectValue.asArray(context: "dot property assignment"),
-            let indexNumber = try? toNumber(value: propertyKey, ctx: "dot property assignment")
+            objectValue.isArray()
          {
+            var arrayValue = try! objectValue.asArray(context: "dot property assignment")
+            let indexNumber = toNumber(value: propertyKey, ctx: "dot property assignment")
             let doubleValue = indexNumber.doubleValue
             
             var index = doubleValue.isNaN ? -1 : Int(doubleValue)
@@ -495,20 +495,20 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 return JexValueFactory.fromArray(array: arrayValue)
             }
             
-            // out of bounds -> return nil
-            return JexNil()
+            // if out of bounds just return JexNull, don't throw any errors.
+            return JexNull()
         }
         
-        // TODO: actually throw an error
-        return JexNil()
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot assign property to non-object/non-array in dot property assignment"))
+        return JexNull()
     }
     
     public override func visitTernaryExpression(_ ctx: JexLangParser.TernaryExpressionContext) -> JexValue {
         let condition = self.visit(ctx.singleExpression(0))
+        
         if
             // empty array and objects are falsy
-            let isTrue = try? toBoolean(value: condition, ctx: "ternary expression"),
-            isTrue
+            toBoolean(value: condition, ctx: "ternary expression")
         {
             return self.visit(ctx.singleExpression(1))
         } else {
@@ -520,8 +520,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let condition = self.visit(ctx.singleExpression(0));
         if
             // empty array and objects are falsy
-            let isTrue = try? toBoolean(value: condition, ctx: "ternary expression"),
-            isTrue
+            toBoolean(value: condition, ctx: "short ternary expression")
         {
             return condition
         } else {
@@ -531,13 +530,16 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     
     public override func visitTransformExpression(_ ctx: JexLangParser.TransformExpressionContext) -> JexValue {
         let input = self.visit(ctx.singleExpression())
-        if
-            let transformName = ctx.IDENTIFIER()?.getText(),
-            self.transformRegistry.has(transformName)
-        {
-            return self.transformRegistry.transform(transformName, input, self.evaluatorContext)
+        
+        guard let transformName = ctx.IDENTIFIER()?.getText() else {
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Expected transform name. But not found."))
+            return JexNull()
         }
         
+        if (self.transformRegistry.has(transformName)) {
+            return self.transformRegistry.transform(transformName, input, self.evaluatorContext)
+        }
+
         // if transform not found lets check in functions
         if
             let functionName = ctx.IDENTIFIER()?.getText(),
@@ -545,22 +547,18 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         {
             return self.funcRegistry.call(functionName, self.evaluatorContext, [input])
         }
-        // TODO: throw error says transform name not found
-        return JexNil()
+        
+        NSException.raise(jexLangError: UndefinedTransformError(transformName: transformName))
+        return JexNull()
     }
     
     public override func visitPowerExpression(_ ctx: JexLangParser.PowerExpressionContext) -> JexValue {
         let left = self.visit(ctx.singleExpression(0))
         let right = self.visit(ctx.singleExpression(1))
         
-        if let base = try? toNumber(value: left, ctx: "power expression"),
-           let exponent = try? toNumber(value: right, ctx: "power expression")
-        {
-            return JexNumber(value: pow(base.doubleValue, exponent.doubleValue))
-        }
-        
-        // TODO: throw error
-        return JexNil()
+        let base = toNumber(value: left, ctx: "power expression")
+        let exponent = toNumber(value: right, ctx: "power expression")
+        return JexNumber(value: pow(base.doubleValue, exponent.doubleValue))
     }
     
     // MARK: Multiple
@@ -568,20 +566,19 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let left = self.visit(ctx.singleExpression(0))
         let right = self.visit(ctx.singleExpression(1))
         
-        if let leftNum = try? toNumber(value: left, ctx: "multiplicative expression"),
-           let rightNum = try? toNumber(value: right, ctx: "multiplicative expression")
-        {
-            if let _ = ctx.MULTIPLY() {
-                return JexNumber(value: leftNum.doubleValue * rightNum.doubleValue)
-            } else if let _ = ctx.DIVIDE() {
-                return JexNumber(value: leftNum.doubleValue / rightNum.doubleValue)
-            } else if let _ = ctx.MODULO() {
-                return JexNumber(value: leftNum.doubleValue.truncatingRemainder(dividingBy: rightNum.doubleValue))
-            }
+        let leftNum = toNumber(value: left, ctx: "multiplicative expression")
+        let rightNum = toNumber(value: right, ctx: "multiplicative expression")
+        
+        if let _ = ctx.MULTIPLY() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue * rightNum.doubleValue)
+        } else if let _ = ctx.DIVIDE() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue / rightNum.doubleValue)
+        } else if let _ = ctx.MODULO() {
+            return JexValueFactory.fromNumber(double: leftNum.doubleValue.truncatingRemainder(dividingBy: rightNum.doubleValue))
         }
         
-        // TODO: throw error
-        return JexNil()
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Unknown multiplicative operator \(String(describing: ctx.getChild(1)))"))
+        return JexNull()
     }
     
     // MARK: Additive
@@ -592,22 +589,23 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         if (ctx.PLUS() != nil) {
             // If either operand is a string, perform string concatenation
             if (left.isString() || right.isString()) {
-                if let leftString = try? toString(value: left, ctx: "additive expression"), let rightString = try? toString(value: right, ctx: "additive expression") {
-                    return JexValueFactory.fromString(string: leftString + rightString)
-                }
+                let leftString = toString(value: left, ctx: "additive expression")
+                let rightString = toString(value: right, ctx: "additive expression")
+                return JexValueFactory.fromString(string: leftString + rightString)
             }
             
-            if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue + rightNum.doubleValue))
-            }
+            let lefNum = toNumber(value: left, ctx: "additive expression")
+            let rightNum = toNumber(value: right, ctx: "additive expression")
+            return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue + rightNum.doubleValue))
             
         } else if (ctx.MINUS() != nil) {
-            if let lefNum = try? toNumber(value: left, ctx: "additive expression"), let rightNum = try? toNumber(value: right, ctx: "additive expression") {
-                return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue - rightNum.doubleValue))
-            }
+            let lefNum = toNumber(value: left, ctx: "additive expression")
+            let rightNum = toNumber(value: right, ctx: "additive expression")
+            return JexValueFactory.fromNumber(number: NSNumber(value: lefNum.doubleValue - rightNum.doubleValue))
         }
         
-        return JexNil()
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Unknown additive operator  \(String(describing: ctx.getChild(1)))"))
+        return JexNull()
     }
     
     // MARK: Relational Expression
@@ -616,16 +614,16 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let right = self.visit(ctx.singleExpression(1))
         
         if let _ = ctx.LT() {
-            return JexBoolean(value: isLessThan(lhs: left, rhs: right))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .LESS_THAN))
         } else if let _ = ctx.GT() {
-            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .GREATER_THAN))
         } else if let _ = ctx.LTE() {
-            return JexBoolean(value: isLessThan(lhs: left, rhs: right, alsoEqual: true))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .LESS_THAN_EQUAL))
         } else if let _ = ctx.GTE() {
-            return JexBoolean(value: isGreaterThan(lhs: left, rhs: right, alsoEqual: true))
+            return JexBoolean(value: jsRelational(left: left, right: right, op: .GREATER_THAN_EQUAL))
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     // MARK: Equality Expression
@@ -634,50 +632,43 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let right = self.visit(ctx.singleExpression(1))
         
         if let _ = ctx.EQ() {
-            return JexBoolean(value: isEqual(left, right))
+            return JexBoolean(value: left.isEqual(to: right))
         } else if let _ = ctx.NEQ() {
-            return JexBoolean(value: !isEqual(left, right))
+            return JexBoolean(value: !left.isEqual(to: right))
         }
         
-        return JexNil()
-    }
-    
-    private func asSafeBool(_ value: JexValue) -> Bool {
-        if value.isNil() { return false }
-        if value.isBoolean() { return (try? value.asBoolean(context: "logical")) ?? false }
-        if value.isNumber() { return ((try? value.asNumber(context: "logical"))?.doubleValue ?? 0) != 0 }
-        return false
+        return JexNull()
     }
     
     // MARK: Logical 'and' Expression
     public override func visitLogicalAndExpression(_ ctx: JexLangParser.LogicalAndExpressionContext) -> JexValue {
         if let _ = ctx.AND() {
             let left = self.visit(ctx.singleExpression(0))
-            let leftBoolean: Bool = asSafeBool(left)
+            let leftBoolean: Bool = toBoolean(value: left, ctx: "and")
             if (!leftBoolean) { // short-circuit if left is falsy
                 return JexBoolean(value: false)
             }
             let right = self.visit(ctx.singleExpression(1))
-            let rightBoolean = asSafeBool(right)
+            let rightBoolean = toBoolean(value: right, ctx: "and")
             return JexBoolean(value: rightBoolean)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     // MARK: Logical 'or' Expression
     public override func visitLogicalOrExpression(_ ctx: JexLangParser.LogicalOrExpressionContext) -> JexValue {
         if let _ = ctx.OR() {
             let left = self.visit(ctx.singleExpression(0))
-            let leftBoolean: Bool = asSafeBool(left)
-            if (leftBoolean) {
+            let leftBoolean: Bool = toBoolean(value: left, ctx: "or")
+            if (leftBoolean) { // short-circuit if left is truthy
                 return JexBoolean(value: true)
             }
             let right = self.visit(ctx.singleExpression(1))
-            let rightBoolean = asSafeBool(right)
+            let rightBoolean = toBoolean(value: right, ctx: "or")
             return JexBoolean(value: rightBoolean)
         }
-        return JexNil()
+        return JexNull()
     }
     
     // MARK: Unary Expression
@@ -685,40 +676,28 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let jexValue = self.visit(ctx.singleExpression())
         
         if let _ = ctx.PLUS() {
-            guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
-                // TODO: Need to throw error
-                return JexNil()
-            }
+            let number = toNumber(value: jexValue, ctx: "unary expression")
             return JexValueFactory.fromNumber(double: number.doubleValue)
         } else if let _ = ctx.MINUS() {
-            guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
-                // TODO: Need to throw error
-                return JexNil()
-            }
+            let number = toNumber(value: jexValue, ctx: "unary expression")
             return JexValueFactory.fromNumber(double: -number.doubleValue)
         } else if let _ = ctx.NOT() {
-            guard let bool = try? toBoolean(value: jexValue, ctx: "unary expression") else {
-                // TODO: Need to throw error
-                return JexNil()
-            }
-            return JexValueFactory.fromBoolean(value: bool)
+            let bool = toBoolean(value: jexValue, ctx: "unary expression")
+            return JexValueFactory.fromBoolean(value: !bool)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitSquareRootExpression(_ ctx: JexLangParser.SquareRootExpressionContext) -> JexValue {
         let jexValue = self.visit(ctx.singleExpression())
-        guard let number = try? toNumber(value: jexValue, ctx: "unary expression") else {
-            // TODO: Need to throw error
-            return JexNil()
-        }
+        let number = toNumber(value: jexValue, ctx: "unary expression")
         
         if number.doubleValue < 0 {
-            // TODO: Need to throw error
-            return JexNil()
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot compute square root of negative number"))
+            return JexNull()
         }
-        return JexValueFactory.fromDouble(double: sqrt(number.doubleValue))
+        return JexValueFactory.fromNumber(double: sqrt(number.doubleValue))
     }
     
     public override func visitMemberDotExpression(_ ctx: JexLangParser.MemberDotExpressionContext) -> JexValue {
@@ -726,40 +705,34 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         let propertyName = self.visit(ctx.objectPropertyName())
         
         if !propertyName.isString() {
-            // TODO: Need to throw error
-            return JexNil()
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Invalid property name: \(propertyName)"))
+            return JexNull()
         }
         
         if obj.isObject(),
-           let object = try? obj.asObject(context: "member dot expression"),
-           propertyName.isString(),
-           let propertyName = try? propertyName.asString(context: "member dot expression") {
-            return object[propertyName] ?? JexNil()
+           propertyName.isString() {
+            let object = try! obj.asObject(context: "member dot expression")
+            let propertyName = try! propertyName.asString(context: "member dot expression")
+            return object[propertyName] ?? JexNull()
         }
         
-        return JexNil() // don't throw any error if the object is null or not an object just return null to further chain.
+        return JexNull() // don't throw any error if the object is null or not an object just return null to further chain.
     }
     
     public override func visitMemberIndexExpression(_ ctx: JexLangParser.MemberIndexExpressionContext) -> JexValue {
         let obj = self.visit(ctx.singleExpression())
         let propertyKey = self.visit(ctx.expressionSequence())
         
-        if !propertyKey.isString() {
-            // TODO: Need to throw error
-            return JexNil()
-        }
-        
-        if obj.isObject(),
-           let object = try? obj.asObject(context: "member index expression"),
-           propertyKey.isString(),
-           let propertyName = try? propertyKey.asString(context: "member index expression")
+        if obj.isObject()
         {
-            return object[propertyName] ?? JexNil()
+            let object = try! obj.asObject(context: "member index expression")
+            let propertyName = try! propertyKey.asString(context: "member index expression")
+            return object[propertyName] ?? JexNull()
         } else if
-            obj.isArray(),
-            let arrayValue = try? obj.asArray(context: "member index expression"),
-            let indexNumber = try? toNumber(value: propertyKey, ctx: "member index expression")
+            obj.isArray()
         {
+            let arrayValue = try! obj.asArray(context: "member index expression")
+            let indexNumber = toNumber(value: propertyKey, ctx: "member index expression")
             let doubleValue = indexNumber.doubleValue
             
             var index = doubleValue.isNaN ? -1 : Int(doubleValue)
@@ -773,15 +746,18 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             }
             
             // out of bounds -> return nil
-            return JexNil()
+            return JexNull()
         }
         
-        return JexNil() // don't throw any error if the object is null or not an object just return null to further chain.
+        return JexNull() // don't throw any error if the object is null or not an object just return null to further chain.
     }
     
     public override func visitFunctionCallExpression(_ ctx: JexLangParser.FunctionCallExpressionContext) -> JexValue {
+        guard let functionName = ctx.IDENTIFIER()?.getText() else {
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Missing function name"))
+            return JexNull()
+        }
         if
-            let functionName = ctx.IDENTIFIER()?.getText(),
             self.funcRegistry.has(functionName)
         {
             var args = [JexValue]()
@@ -795,8 +771,8 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             return self.funcRegistry.call(functionName, self.evaluatorContext, args)
         }
         
-        // TODO: throw error says transform name not found
-        return JexNil()
+        NSException.raise(jexLangError: UndefinedFunctionError(functionName: functionName))
+        return JexNull()
     }
     
     public override func visitArguments(_ ctx: JexLangParser.ArgumentsContext) -> JexValue {
@@ -814,12 +790,12 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             if (self.scope.hasVariable(identifier)) {
                 return self.scope.getVariable(identifier)
             }
-            // TODO: throw error says transform name not found
-            return JexNil()
+            NSException.raise(jexLangError: UndefinedVariableError(variableName: identifier))
+            return JexNull()
         }
         
-        // TODO: throw error says transform name not found
-        return JexNil()
+        NSException.raise(jexLangError: JexLangRuntimeError(message: "Unknown argument type: \(ctx.getText())"))
+        return JexNull()
     }
     
     public override func visitPrefixExpression(_ ctx: JexLangParser.PrefixExpressionContext) -> JexValue {
@@ -828,18 +804,18 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         // Handle identifier expression (variables)
         if let expr = expr as? JexLangParser.IdentifierExpressionContext {
             if let varName = expr.IDENTIFIER()?.getText() {
-                if (self.scope.hasVariable(varName)) {
-                    let jexValue = self.scope.getVariable(varName)
-                    if let number = try? toNumber(value: jexValue, ctx: "prefix expression") {
-                        let newValue = JexNumber(value:
-                            ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
-                        )
-                        try? self.scope.assignVariable(varName, value: newValue)
-                        return newValue // return the original value before increment/decrement
-                    }
+                if (!self.scope.hasVariable(varName)) {
+                    NSException.raise(jexLangError: UndefinedVariableError(variableName: varName))
+                    return JexNull()
                 }
-                // TODO: throw error says transform name not found
-                return JexNil()
+                
+                let jexValue = self.scope.getVariable(varName)
+                let number = toNumber(value: jexValue, ctx: "prefix expression")
+                let newValue = JexNumber(value:
+                    ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
+                )
+                self.scope.assignVariable(varName, value: newValue)
+                return newValue // return the original value before increment/decrement
             }
         }
         // Handle property access expression (obj.pro or obj[prop])
@@ -849,28 +825,28 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             if (
                 !object.isObject()
             ) {
-                // TODO: throw error says transform name not found
-                return JexNil()
+                NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot use prefix operator on a non-object property"))
+                return JexNull()
             }
-            if
-                object.isObject(),
-                var objectValue = try? object.asObject(context: "Prefix Expression"),
-                let properyKey = try? propertyName.asString(context: "Prefix Expression"),
-                let currentValue = try? toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
-            {
-                let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                objectValue[properyKey] = jexNewValue;
-                return jexNewValue;
-            }
+            let objectValue = try! object.asObject(context: "Prefix Expression")
+            let properyKey = try! propertyName.asString(context: "Prefix Expression")
+            let currentValue = toNumber(value: objectValue[properyKey] ?? JexNull(), ctx: "Prefix Expression")
+            
+            let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
+            let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+            // update
+            let objectObject = object as! JexObject
+            objectObject.set(properyKey, jexNewValue)
+            
+            return jexNewValue;
         } else if let expr = expr as? JexLangParser.MemberIndexExpressionContext {
             let object = self.visit(expr.singleExpression())
             let propertyName = self.visit(expr.expressionSequence())
             
-            if object.isArray(),
-               var arrayValue = try? object.asArray(context: "Prefix Expression"),
-               let indexNumber = try? toNumber(value: propertyName, ctx: "Prefix Expression")
+            if object.isArray()
             {
+                let arrayValue = try! object.asArray(context: "Prefix Expression")
+                let indexNumber = toNumber(value: propertyName, ctx: "Prefix Expression")
                 let doubleValue = indexNumber.doubleValue
                 
                 var index = doubleValue.isNaN ? -1 : Int(doubleValue)
@@ -880,39 +856,45 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 }
                 
                 if
-                    index >= 0 && index < arrayValue.count,
-                    let currentValue = try? toNumber(value: arrayValue[index], ctx: "Prefix Expression")
+                    index >= 0 && index < arrayValue.count
                 {
+                    let currentValue = toNumber(value: arrayValue[index], ctx: "Prefix Expression")
                     let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    arrayValue[index] = jexNewValue
+                    let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                    
+                    // update
+                    let arrayObject = object as! JexArray
+                    arrayObject.set(index, jexNewValue)
+                    
                     return jexNewValue
                 }
             } else if
-                object.isObject(),
-                var objectValue = try? object.asObject(context: "Prefix Expression"),
-                let properyKey = try? toString(value: propertyName, ctx: "Prefix Expression")
+                object.isObject()
             {
-                if let currentValue = try? toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression") {
-                    let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    objectValue[properyKey] = jexNewValue
-                    return jexNewValue
-                }
+                let objectValue = try! object.asObject(context: "Prefix Expression")
+                let properyKey = toString(value: propertyName, ctx: "Prefix Expression")
+                let currentValue = toNumber(value: objectValue[properyKey] ?? JexNull(), ctx: "Prefix Expression")
+                let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                // update
+                let objectObject = object as! JexObject
+                objectObject.set(properyKey, jexNewValue)
+                
+                return jexNewValue
             }
         } else {
             // For other expressions, we'll just calculate but not store.
             let value = self.visit(expr)
-            if let number = try? toNumber(value: value, ctx: "prefix expression") {
-                if let _ = ctx.DECREMENT() {
-                    return JexNumber(value: number.doubleValue - 1)
-                } else if let _ = ctx.INCREMENT() {
-                    return JexNumber(value: number.doubleValue + 1)
-                }
+            let number = toNumber(value: value, ctx: "prefix expression")
+            if let _ = ctx.DECREMENT() {
+                return JexNumber(value: number.doubleValue - 1)
+            } else if let _ = ctx.INCREMENT() {
+                return JexNumber(value: number.doubleValue + 1)
             }
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitPostfixExpression(_ ctx: JexLangParser.PostfixExpressionContext) -> JexValue {
@@ -921,18 +903,18 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         // Handle identifier expression (variables)
         if let expr = expr as? JexLangParser.IdentifierExpressionContext {
             if let varName = expr.IDENTIFIER()?.getText() {
-                if (self.scope.hasVariable(varName)) {
-                    let jexValue = self.scope.getVariable(varName)
-                    if let number = try? toNumber(value: jexValue, ctx: "prefix expression") {
-                        let newValue = JexNumber(value:
-                            ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
-                        )
-                        try? self.scope.assignVariable(varName, value: newValue)
-                        return jexValue; // return the original value before increment/decrement
-                    }
+                if (!self.scope.hasVariable(varName)) {
+                    NSException.raise(jexLangError: UndefinedVariableError(variableName: varName))
+                    return JexNull()
                 }
-                // TODO: throw error says transform name not found
-                return JexNil()
+                
+                let jexValue = self.scope.getVariable(varName)
+                let number = toNumber(value: jexValue, ctx: "prefix expression")
+                let newValue = JexNumber(value:
+                    ctx.INCREMENT() != nil ? number.doubleValue + 1 : number.doubleValue - 1
+                )
+                self.scope.assignVariable(varName, value: newValue)
+                return jexValue; // return the original value before increment/decrement
             }
         }
         // Handle property access expression (obj.pro or obj[prop])
@@ -942,28 +924,32 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             if (
                 !object.isObject()
             ) {
-                // TODO: throw error says transform name not found
-                return JexNil()
+                NSException.raise(jexLangError: JexLangRuntimeError(message: "Cannot use postfix operator on a non-object property"))
+                return JexNull()
             }
             if
                 object.isObject(),
                 var objectValue = try? object.asObject(context: "Prefix Expression"),
-                let properyKey = try? propertyName.asString(context: "Prefix Expression"),
-                let currentValue = try? toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression")
+                let properyKey = try? propertyName.asString(context: "Prefix Expression")
             {
+                let currentValue = toNumber(value: objectValue[properyKey] ?? JexNull(), ctx: "Prefix Expression")
                 let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                objectValue[properyKey] = jexNewValue;
+                
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                let objectObj = object as! JexObject;
+                objectObj.set(properyKey, jexNewValue)
+                
                 return JexNumber(value: currentValue); // return the original value before increment/decrement
             }
         } else if let expr = expr as? JexLangParser.MemberIndexExpressionContext {
             let object = self.visit(expr.singleExpression())
             let propertyName = self.visit(expr.expressionSequence())
             
-            if object.isArray(),
-               var arrayValue = try? object.asArray(context: "Prefix Expression"),
-               let indexNumber = try? toNumber(value: propertyName, ctx: "Prefix Expression")
+            if object.isArray()
             {
+                var arrayValue = try! object.asArray(context: "Prefix Expression")
+                let indexNumber = toNumber(value: propertyName, ctx: "Prefix Expression")
                 let doubleValue = indexNumber.doubleValue
                 
                 var index = doubleValue.isNaN ? -1 : Int(doubleValue)
@@ -973,43 +959,49 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
                 }
                 
                 if
-                    index >= 0 && index < arrayValue.count,
-                    let currentValue = try? toNumber(value: arrayValue[index], ctx: "Prefix Expression")
+                    index >= 0 && index < arrayValue.count
                 {
+                    let currentValue = toNumber(value: arrayValue[index], ctx: "Prefix Expression")
                     let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    arrayValue[index] = jexNewValue
+                    
+                    let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                    
+                    let arrayObj = object as! JexArray;
+                    arrayObj.set(index, jexNewValue)
+                    
                     return JexNumber(value: currentValue); // return the original value before increment/decrement
                 }
             } else if
-                object.isObject(),
-                var objectValue = try? object.asObject(context: "Prefix Expression"),
-                let properyKey = try? toString(value: propertyName, ctx: "Prefix Expression")
+                object.isObject()
             {
-                if let currentValue = try? toNumber(value: objectValue[properyKey] ?? JexNil(), ctx: "Prefix Expression") {
-                    let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
-                    let jexNewValue = JexValueFactory.fromDouble(double: newValue)
-                    objectValue[properyKey] = jexNewValue
-                    return JexNumber(value: currentValue); // return the original value before increment/decrement
-                }
+                var objectValue = try! object.asObject(context: "Prefix Expression")
+                let properyKey = toString(value: propertyName, ctx: "Prefix Expression")
+                let currentValue = toNumber(value: objectValue[properyKey] ?? JexNull(), ctx: "Prefix Expression")
+                
+                let newValue = ctx.INCREMENT() != nil ? currentValue.doubleValue + 1 : currentValue.doubleValue - 1
+                let jexNewValue = JexValueFactory.fromNumber(double: newValue)
+                
+                let objectObj = object as! JexObject;
+                objectObj.set(properyKey, jexNewValue)
+                
+                return JexNumber(value: currentValue); // return the original value before increment/decrement
             }
         } else {
             // For other expressions, we'll just calculate but not store.
             let value = self.visit(expr)
-            if let number = try? toNumber(value: value, ctx: "postfix expression") {
-                if let _ = ctx.DECREMENT() {
-                    return JexNumber(value: number.doubleValue - 1)
-                } else if let _ = ctx.INCREMENT() {
-                    return JexNumber(value: number.doubleValue + 1)
-                }
+            let number = toNumber(value: value, ctx: "postfix expression")
+            if let _ = ctx.DECREMENT() {
+                return JexNumber(value: number.doubleValue - 1)
+            } else if let _ = ctx.INCREMENT() {
+                return JexNumber(value: number.doubleValue + 1)
             }
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitErrorNode(_ node: ErrorNode) -> JexValue {
-        let location = SyntaxErrorLocation(
+        _ = SyntaxErrorLocation(
             line: node.getSymbol()?.getLine() ?? 0,
             column: node.getSymbol()?.getCharPositionInLine() ?? 0,
             offendingSymbol: node.getText()
@@ -1035,7 +1027,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
         }
         
         // TODO: throw error says transform name not found
-        return JexNil()
+        return JexNull()
     }
     
     private func escapeTokenText(_ text: String?) -> String {
@@ -1048,7 +1040,7 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
     }
     
     public override func defaultResult() -> JexValue {
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitIfExpression(_ ctx: JexLangParser.IfExpressionContext) -> (any JexValue)? {
@@ -1057,28 +1049,27 @@ public class EvalVisitor: JexLangBaseVisitor<JexValue> {
             condition = self.visit(expressionSequenceContext)
         }
         
-        if let isBool = (try? toBoolean(value: condition, ctx: "if expression")), isBool == true {
+        if toBoolean(value: condition, ctx: "if expression") {
             return self.visit(ctx.block())
         } else if let elseIfStatement = ctx.elseIfStatement() {
             return self.visit(elseIfStatement)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitElseIfClause(_ ctx: JexLangParser.ElseIfClauseContext) -> (any JexValue)? {
         let condition = self.visit(ctx.expressionSequence())
         
         // empty array and objects are falsy
-        if let isBool = (try? toBoolean(value: condition, ctx: "else if expression")),
-            isBool
+        if toBoolean(value: condition, ctx: "else if expression")
         {
             return self.visit(ctx.block())
         } else if let elseIfStatement = ctx.elseIfStatement() {
             return self.visit(elseIfStatement)
         }
         
-        return JexNil()
+        return JexNull()
     }
     
     public override func visitElseClause(_ ctx: JexLangParser.ElseClauseContext) -> (any JexValue)? {

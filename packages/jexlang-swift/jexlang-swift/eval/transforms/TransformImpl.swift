@@ -7,6 +7,5 @@
 
 import Foundation
 
-public protocol TransformImpl {
-    func apply(_ input: JexValue, _ ctx: EvaluatorContext) -> JexValue
-}
+public typealias TransformImpl = (_ input: JexValue, _ ctx: EvaluatorContext) -> JexValue
+

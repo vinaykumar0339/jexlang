@@ -8,10 +8,37 @@
 import Foundation
 
 public class JexArray: JexValue {
-    private let value: [JexValue]
+    private var value: [JexValue]
     
     init(value: [JexValue]) {
         self.value = value
+    }
+    
+    public func get(_ index: Int) -> JexValue {
+        return value[index]
+    }
+
+    public func set(_ index: Int, _ newValue: JexValue) {
+        value[index] = newValue
+    }
+    
+    public func push(_ value: JexValue) {
+        self.value.append(value)
+    }
+    
+    public func pop() -> JexValue? {
+        guard !value.isEmpty else {
+            return nil
+        }
+        return value.removeLast()
+    }
+
+    public var count: Int {
+        value.count
+    }
+    
+    public var isEmpty: Bool {
+        value.isEmpty
     }
     
     public func isInteger() -> Bool {
@@ -34,7 +61,7 @@ public class JexArray: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     
@@ -54,8 +81,12 @@ public class JexArray: JexValue {
         return "[\(value.map(\.description).joined(separator: ", "))]"
     }
     
-    public func toObject() -> AnyObject? {
-        return value as AnyObject
+    public func toObject() -> Any {
+        var list = [Any]()
+        for item in value {
+            list.append(item.toObject())
+        }
+        return list
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -84,6 +115,14 @@ public class JexArray: JexValue {
     
     public func asObject(context: String) throws -> [String : JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
+    }
+    
+    public func isEqual(to other: any JexValue) -> Bool {
+        // For Array, it should reference equality
+        if (!other.isArray()) {
+            return false
+        }
+        return self === other
     }
     
 }

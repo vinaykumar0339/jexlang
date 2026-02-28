@@ -69,6 +69,7 @@ public class Utils {
         return value.getType();
     }
 
+    // Swift Library have throw syntax. so please use optional try in swift code.
     public static boolean toBoolean(JexValue v, String ctx) {
         if (v instanceof JexNull) return false;
         if (v instanceof JexBoolean) return v.asBoolean(ctx);
@@ -138,6 +139,7 @@ public class Utils {
         }
     }
 
+    // Swift Library have throw syntax. so please use optional try in swift code.
     public static String toString(JexValue value, String ctx) {
         if (value instanceof JexNull) {
             return "null";
@@ -417,7 +419,7 @@ public class Utils {
         if (a.isString() && b.isInteger()) {
             try {
                 int num = Integer.parseInt(a.asString("=="));
-                return jsEqual(JexValue.fromInteger(num), b);
+                return jsEqual(JexValue.fromNumber(num), b);
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -425,7 +427,7 @@ public class Utils {
         if (a.isInteger() && b.isString()) {
             try {
                 int num = Integer.parseInt(b.asString("=="));
-                return jsEqual(a, JexValue.fromInteger(num));
+                return jsEqual(a, JexValue.fromNumber(num));
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -433,7 +435,7 @@ public class Utils {
         if (a.isString() && b.isDouble()) {
             try {
                 double num = Double.parseDouble(a.asString("=="));
-                return jsEqual(JexValue.fromDouble(num), b);
+                return jsEqual(JexValue.fromNumber(num), b);
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -441,13 +443,26 @@ public class Utils {
         if (a.isDouble() && b.isString()) {
             try {
                 double num = Double.parseDouble(b.asString("=="));
-                return jsEqual(a, JexValue.fromDouble(num));
+                return jsEqual(a, JexValue.fromNumber(num));
             } catch (NumberFormatException e) {
                 return false;
             }
         }
 
-        // 6. object → primitive conversion (like JS ToPrimitive)
+        // 6. isArray → primitive conversion (like JS ToPrimitive)
+        if (a.isArray() && !b.isArray()) {
+            return jsEqual(toPrimitive(a), b);
+        }
+        if (b.isArray() && !a.isArray()) {
+            return jsEqual(a, toPrimitive(b));
+        }
+
+        // 7. isArray == isArray → reference equality
+        if (a.isArray() && b.isArray()) {
+            return a == b;
+        }
+
+        // 8. object → primitive conversion (like JS ToPrimitive)
         if (a.isObject() && !b.isObject()) {
             return jsEqual(toPrimitive(a), b);
         }
@@ -455,7 +470,7 @@ public class Utils {
             return jsEqual(a, toPrimitive(b));
         }
 
-        // 7. object == object → reference equality
+        // 9. object == object → reference equality
         if (a.isObject() && b.isObject()) {
             return a == b;
         }

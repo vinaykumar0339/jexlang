@@ -18,7 +18,31 @@ public class JexObject: JexValue {
     }
     
     
-    private let value: [String: JexValue]
+    private var value: [String: JexValue]
+    
+    public func get(_ key: String) -> JexValue? {
+        return value[key]
+    }
+
+    public func set(_ key: String, _ newValue: JexValue) {
+        value[key] = newValue
+    }
+
+    public func remove(_ key: String) {
+        value.removeValue(forKey: key)
+    }
+
+    public func contains(_ key: String) -> Bool {
+        value[key] != nil
+    }
+
+    public var keys: [String] {
+        Array(value.keys)
+    }
+
+    public var count: Int {
+        value.count
+    }
     
     init(value: [String : JexValue]) {
         self.value = value
@@ -32,12 +56,12 @@ public class JexObject: JexValue {
         return "{\(value.map { "\($0.key): \($0.value)" }.joined(separator: ", "))}"
     }
     
-    public func toObject() -> AnyObject? {
-        var map: [String: AnyObject] = [:]
+    public func toObject() -> Any {
+        var map: [String: Any] = [:]
         for (key, val) in value {
             map[key] = val.toObject();
         }
-        return map as NSDictionary
+        return map
     }
     
     public func asInteger(context: String) throws -> Int {
@@ -60,7 +84,7 @@ public class JexObject: JexValue {
         throw JexValueFactory.typeError(want: "string", ctx: context, actualValue: self)
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false;
     }
     
@@ -90,6 +114,14 @@ public class JexObject: JexValue {
     
     public func isObject() -> Bool {
         return true
+    }
+    
+    public func isEqual(to other: any JexValue) -> Bool {
+        // For Object, it should reference equality
+        if (!other.isObject()) {
+            return false
+        }
+        return self === other;
     }
     
 }

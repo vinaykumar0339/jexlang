@@ -14,7 +14,7 @@ public final class MapFuncRegistry: FuncRegistry {
         self.map = funcMap
     }
 
-    public func set(_ name: String, _ fn: FuncImpl) {
+    public func set(_ name: String, _ fn: @escaping FuncImpl) {
         map[name] = fn
     }
 
@@ -34,6 +34,6 @@ public final class MapFuncRegistry: FuncRegistry {
         guard let fn = map[name] else {
             fatalError("Unknown function: \(name)")
         }
-        return fn.apply(ctx, args)
+        return fn(ctx, args)
     }
 }

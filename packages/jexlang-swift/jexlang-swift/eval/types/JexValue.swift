@@ -13,13 +13,13 @@ public protocol JexValue: AnyObject, CustomStringConvertible {
     func isNumber() -> Bool
     func isBoolean() -> Bool
     func isString() -> Bool
-    func isNil() -> Bool
+    func isNull() -> Bool
     func isArray() -> Bool
     func isObject() -> Bool
     
     func getType() -> String
     
-    func toObject() -> AnyObject?
+    func toObject() -> Any
     
     func asDouble(context: String) throws -> Double
     func asInteger(context: String) throws -> Int
@@ -28,6 +28,8 @@ public protocol JexValue: AnyObject, CustomStringConvertible {
     func asString(context: String) throws -> String
     func asArray(context: String) throws -> [JexValue]
     func asObject(context: String) throws -> [String: JexValue]
+    
+    func isEqual(to other: JexValue) -> Bool
     
 }
 
@@ -52,7 +54,7 @@ public class JexValueFactory {
         return JexNumber(value: NSNumber(value: double))
     }
     
-    static func fromNumer(int: Int) -> JexNumber {
+    static func fromNumber(int: Int) -> JexNumber {
         return JexNumber(value: NSNumber(value: int))
     }
     
@@ -80,14 +82,15 @@ public class JexValueFactory {
         return JexObject(value: object)
     }
     
-    static func fromArray(value: [AnyObject]) -> JexArray {
+    static func fromArray(value: [Any]) -> JexArray {
         let jexList = value.map { from($0) }
         return fromArray(array: jexList)
     }
 
     static func fromObject(value: Any) -> JexObject {
-        guard let map = value as? [String: AnyObject] else {
-            fatalError("Unsupported object type: \(type(of: value))")
+        guard let map = value as? [String: Any] else {
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Unsupported object type: \(type(of: value)). expected [String: Any]"))
+            return fromObject(object: [:])
         }
 
         var jexMap: [String: JexValue] = [:]
@@ -97,44 +100,71 @@ public class JexValueFactory {
         return fromObject(object: jexMap)
     }
     
-    static func fromNil() -> JexNil {
-        return JexNil()
+    static func fromNil() -> JexNull {
+        return JexNull()
     }
     
-    static func from(_ value: AnyObject?) -> JexValue {
-            guard let value = value else {
-                return fromNil()
+    private static func unwrapAllOptionals(_ value: Any?) -> Any? {
+        var current: Any? = value
+
+        while true {
+            guard let unwrapped = current else {
+                return nil
             }
 
-            switch value {
-            case let num as NSNumber:
-                // NSNumber can also represent Bool, so check that first
-                if CFGetTypeID(num) == CFBooleanGetTypeID() {
-                    return fromBoolean(value: num.boolValue)
-                } else {
-                    return fromNumber(number: num)
-                }
+            let mirror = Mirror(reflecting: unwrapped)
 
-            case let intVal as Int:
-                return fromInteger(integer: intVal)
+            guard mirror.displayStyle == .optional else {
+                return unwrapped
+            }
 
-            case let doubleVal as Double:
-                return fromDouble(double: doubleVal)
-
-            case let boolVal as Bool:
-                return fromBoolean(value: boolVal)
-
-            case let str as String:
-                return fromString(string: str)
-
-            case let list as [AnyObject]:
-                return fromArray(value: list)
-
-            case let map as [String: Any]:
-                return fromObject(value: map)
-
-            default:
-                fatalError("Unsupported type: \(type(of: value)). Supported types: nil, NSNumber, Int, Double, Bool, String, [Any], [String: Any]")
+            if let child = mirror.children.first {
+                current = child.value
+            } else {
+                return nil
             }
         }
+    }
+
+    
+    static func from(_ value: Any?) -> JexValue {
+        guard let value = unwrapAllOptionals(value) else {
+           return fromNil()
+       }
+
+        switch value {
+
+        case let intVal as Int:
+            return fromNumber(int: intVal)
+
+        case let doubleVal as Double:
+            return fromNumber(double: doubleVal)
+            
+        // NOTE: Make sure bool check is before NSNumber and after Int or Double other wise true or false and yes or no captured by NSNumber causing it converting bool into NSNumber.
+        case let boolVal as Bool:
+            return fromBoolean(value: boolVal)
+            
+        case let num as NSNumber:
+            return fromNumber(number: num)
+
+        case let str as String:
+            return fromString(string: str)
+
+        case let list as [Any]:
+            return fromArray(value: list)
+
+        case let map as [String: Any]:
+            return fromObject(value: map)
+        
+        case _ as NSNull:
+            return fromNil()
+            
+        case let jexValue as JexValue:
+            return jexValue
+
+        default:
+            fatalError("Unsupported type: \(type(of: value)). Supported types: nil, NSNumber, Int, Double, Bool, String, [Any], [String: Any]")
+        }
+    }
+
 }

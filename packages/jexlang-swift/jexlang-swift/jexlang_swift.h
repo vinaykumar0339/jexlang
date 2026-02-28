@@ -10,6 +10,8 @@
 //! Project version number for jexlang_swift.
 FOUNDATION_EXPORT double jexlang_swiftVersionNumber;
 
+#import <jexlang_swift/ObjectiveCExceptionCatcher.h>
+
 //! Project version string for jexlang_swift.
 FOUNDATION_EXPORT const unsigned char jexlang_swiftVersionString[];
 

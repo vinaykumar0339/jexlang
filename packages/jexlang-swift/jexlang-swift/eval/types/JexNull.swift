@@ -7,7 +7,8 @@
 
 import Foundation
 
-public class JexNil: JexValue {
+public class JexNull: JexValue {
+    
     public func isInteger() -> Bool {
         return false
     }
@@ -28,7 +29,7 @@ public class JexNil: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return true
     }
     
@@ -40,8 +41,9 @@ public class JexNil: JexValue {
         return false
     }
     
-    public func toObject() -> AnyObject? {
-        return nil
+    public func toObject() -> Any {
+        // NOTE: To make force return nil using this hack.
+        return nil as AnyObject?
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -73,11 +75,15 @@ public class JexNil: JexValue {
     }
     
     public func getType() -> String {
-        return "nil"
+        return "null"
     }
     
     public var description: String {
-        return "nil"
+        return "null"
+    }
+    
+    public func isEqual(to other: any JexValue) -> Bool {
+        return JexlangSwift.isEqual(self, other)
     }
 
 }

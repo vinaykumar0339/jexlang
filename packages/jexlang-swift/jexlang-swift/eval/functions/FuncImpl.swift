@@ -7,7 +7,5 @@
 
 import Foundation
 
-public protocol FuncImpl {
-    func apply(_ ctx: EvaluatorContext, _ args: [JexValue]) -> JexValue
-}
+public typealias FuncImpl = (_ ctx: EvaluatorContext, _ args: [JexValue]) -> JexValue
 

@@ -1,5 +1,5 @@
 // Generated from JexLang.g4 by ANTLR 4.13.2
-import Antlr4
+//import Antlr4
 
 open class JexLangLexer: Lexer {
 

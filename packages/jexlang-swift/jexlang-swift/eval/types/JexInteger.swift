@@ -35,7 +35,7 @@ public class JexInteger: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     
@@ -55,8 +55,8 @@ public class JexInteger: JexValue {
         return "\(value)"
     }
     
-    public func toObject() -> AnyObject? {
-        return value as AnyObject;
+    public func toObject() -> Any {
+        return value;
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -85,6 +85,10 @@ public class JexInteger: JexValue {
     
     public func asObject(context: String) throws -> [String : JexValue] {
         throw JexValueFactory.typeError(want: "object", ctx: context, actualValue: self)
+    }
+    
+    public func isEqual(to other: any JexValue) -> Bool {
+        return JexlangSwift.isEqual(self, other)
     }
     
 }

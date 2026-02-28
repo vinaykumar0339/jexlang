@@ -408,7 +408,7 @@ JexLang provides several built-in global variables that are available by default
 | `SQRT1_2` | Square root of 1/2 | 0.7071067811865476 |
 | `SQRT2` | Square root of 2 | 1.4142135623730951 |
 | `VERSION` | JexLang version | Current version string |
-| `__CLIENT_LANGUAGE` | Implementation language | "javascript", "java"
+| `__CLIENT_LANGUAGE` | Implementation language | "javascript", "java", "swift"
 
 These constants can be used directly in expressions:
 

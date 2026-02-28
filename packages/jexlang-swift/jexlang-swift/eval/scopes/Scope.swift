@@ -36,11 +36,12 @@ public final class Scope {
     }
 
     // MARK: - Variable Declaration
-    public func declareVariable(_ name: String, value: JexValue, isConst: Bool) throws {
+    public func declareVariable(_ name: String, value: JexValue, isConst: Bool) {
         let isGlobalScope = (self.scopeType == .global)
 
         if variables[name] != nil && !isGlobalScope {
-            throw JexLangRuntimeError(message: "Variable '\(name)' is already declared.")
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Variable '\(name)' is already declared."))
+            return
         }
 
         variables[name] = value
@@ -54,24 +55,26 @@ public final class Scope {
     }
 
     // MARK: - Variable Assignment
-    public func assignVariable(_ name: String, value: JexValue) throws {
+    public func assignVariable(_ name: String, value: JexValue) {
         guard let scope = resolveScope(for: name) else {
-            throw JexLangRuntimeError(message: "Variable '\(name)' is not declared.")
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Variable '\(name)' is not declared."))
+            return
         }
 
         if scope.constants.contains(name) {
-            throw JexLangRuntimeError(message: "Variable '\(name)' is a constant and cannot be re-declared or modified.")
+            NSException.raise(jexLangError: JexLangRuntimeError(message: "Variable '\(name)' is a constant and cannot be re-declared or modified."))
+            return
         }
 
         scope.variables[name] = value
     }
 
     // MARK: - Declare or Assign
-    public func declareAndAssignVariable(_ name: String, value: JexValue, isConst: Bool) throws {
+    public func declareAndAssignVariable(_ name: String, value: JexValue, isConst: Bool) {
         if variables[name] != nil {
-            try assignVariable(name, value: value)
+            assignVariable(name, value: value)
         } else {
-            try declareVariable(name, value: value, isConst: isConst)
+            declareVariable(name, value: value, isConst: isConst)
         }
     }
 
@@ -110,7 +113,7 @@ public final class Scope {
             return parent.getVariable(name)
         }
 
-        return JexNil()
+        return JexNull()
     }
 
     public func hasVariable(_ name: String) -> Bool {

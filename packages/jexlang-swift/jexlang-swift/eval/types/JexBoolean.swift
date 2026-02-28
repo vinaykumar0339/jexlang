@@ -28,7 +28,7 @@ public class JexBoolean: JexValue {
         return false
     }
     
-    public func isNil() -> Bool {
+    public func isNull() -> Bool {
         return false
     }
     
@@ -44,8 +44,8 @@ public class JexBoolean: JexValue {
         return "boolean"
     }
     
-    public func toObject() -> AnyObject? {
-        return value as AnyObject
+    public func toObject() -> Any {
+        return value
     }
     
     public func asDouble(context: String) throws -> Double {
@@ -83,6 +83,10 @@ public class JexBoolean: JexValue {
     
     public var description: String {
         return "\(value)"
+    }
+    
+    public func isEqual(to other: any JexValue) -> Bool {
+        return JexlangSwift.isEqual(self, other)
     }
     
 }
